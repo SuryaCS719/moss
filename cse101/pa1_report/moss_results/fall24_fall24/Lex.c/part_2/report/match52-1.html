@@ -1,0 +1,126 @@
+<html>
+<head>
+<title>/fall24/srhazra/pa1/Lex.c</title>
+</head>
+<body bgcolor="white">
+<hr/>
+/fall24/srhazra/pa1/Lex.c<p></p><pre>
+/* Srishta Hazra
+srhazra
+pa1
+*/
+
+#define _POSIX_C_SOURCE 200809L
+
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;string.h&gt;
+
+#include "List.h"
+
+<a name="0"></a><font color="#FF0000"><a href="match52-0.html#0" target="0"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_0_85.gif"/></a>
+
+int main(int argc, char *argv[]) {
+    FILE *input_file, *output_file;
+    int line_count = 0;
+    int ch;
+
+    // check if correct number of arguments are provided
+    if (argc != 3) {
+        fprintf(stderr, "Usage: %s &lt;input_file&gt; &lt;output_file&gt;\n", argv[0]);
+        exit(EXIT_FAILURE);
+    }
+
+    // open input file for reading
+    input_file = fopen(argv[1], "r");
+    if (!input_file) {
+        fprintf(stderr, "cannot open file %s for reading\n", argv[1]);
+        exit(EXIT_FAILURE);
+    }
+
+    // open output file for writing
+    output_file = fopen(argv[2], "w");
+    if (!output_file) {
+        fprintf(stderr, "cannot open file %s for writing\n", argv[2]);
+        fclose(input_file);
+        exit(EXIT_FAILURE);
+    }
+
+    // count the number of lines in the input file
+    while ((ch = getc(input_file)) != EOF) {
+        if (ch == '\n') {
+            line_count++;
+        }
+    }
+
+    // allocate memory for storing lines from input file
+    char **lines_array = malloc(line_count * sizeof(char *));
+    if (lines_array == NULL) {
+        fprintf(stderr, "memory allocation failed\n");
+        fclose(input_file);
+        fclose(output_file);
+        exit(EXIT_FAILURE);
+    }
+
+    // rewind input file to start reading lines
+    rewind(input_file);
+
+    // read each line from input file into lines_array
+    for (int i = 0; i &lt; line_count; i++) {
+        lines_array[i] = malloc(1024 * sizeof(char));
+        if (lines_array[i] == NULL) {
+            fprintf(stderr, "failed to allocate memory for line %d\n", i);
+            fclose(input_file);
+            fclose(output_file);
+            for (int j = 0; j &lt; i; j++) {
+                free(lines_array[j]);
+            }
+            free(lines_array);
+            exit(EXIT_FAILURE);
+        }
+        fgets(lines_array[i], 1024, input_file);
+    }
+
+    // new list to store indices for sorting
+    List list = newList();
+
+    // insert indices into list to sort lines lexicographically
+    for (int i = 0; i &lt; line_count; i++) {
+        moveBack(list);
+        while (index(list) &gt;= 0 &amp;&amp; strcmp(lines_array[get(list)], lines_array[i]) &gt; 0) {
+            movePrev(list);
+        }
+
+        // insert index into the correct position
+        if (index(list) &gt;= 0) {
+            insertAfter(list, i);
+        } else {
+            prepend(list, i);
+        }
+    }
+
+    // write sorted lines to output file
+    moveFront(list);
+    while (index(list) &gt;= 0) {
+</font><a name="1"></a><font color="#00FF00"><a href="match52-0.html#1" target="0"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_1_9.gif"/></a>
+
+        fprintf(output_file, "%s", lines_array[get(list)]);
+        moveNext(list);
+    }
+
+    // free allocated memory for lines
+    for (int i = 0; i &lt; line_count; i++) {
+        free(lines_array[i]);
+    }
+    free(lines_array);
+
+    fclose(input_file);
+    fclose(output_file);
+
+    freeList(&amp;list);
+
+    return 0;
+</font>}
+</pre>
+</body>
+</html>

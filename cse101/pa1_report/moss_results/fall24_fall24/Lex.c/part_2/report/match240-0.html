@@ -1,0 +1,92 @@
+<html>
+<head>
+<title>/fall24/shmarath/pa1/Lex.c</title>
+</head>
+<body bgcolor="white">
+<hr/>
+/fall24/shmarath/pa1/Lex.c<p></p><pre>
+/***
+* Shubham Marathe
+* shmarath
+* 2024 Fall CSE101 PA1
+* Lex.c
+* Indirect Alphabetizer using the List ADT
+***/
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;string.h&gt;
+#include "List.h"
+
+int main(int argc, char* argv[]) {
+    if (argc != 3) {
+        fprintf(stderr, "Usage: %s &lt;input file&gt; &lt;output file&gt;\n", argv[0]);
+        return EXIT_FAILURE;
+    }
+
+    FILE* inFile = fopen(argv[1], "r");
+    FILE* outFile = fopen(argv[2], "w");
+
+    if (inFile == NULL) {
+        fprintf(stderr, "Lex Error: Cannot open file %s for reading.\n", argv[1]);
+        return EXIT_FAILURE;
+    }
+<a name="1"></a><font color="#00FF00"><a href="match240-1.html#1" target="1"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_1_10.gif"/></a>
+
+    if (outFile == NULL) {
+        fprintf(stderr, "Lex Error: Cannot open file %s for writing.\n", argv[2]);
+        fclose(inFile);
+        return EXIT_FAILURE;
+    }
+
+    int lineCount = 0;
+    char buffer[256];
+
+    while (fgets(buffer, sizeof(buffer), inFile) != NULL) {
+</font>        lineCount++;
+    }
+
+    char** lines = calloc(lineCount, sizeof(char*));
+    rewind(inFile);
+
+    for (int i = 0; i &lt; lineCount; i++) {
+<a name="0"></a><font color="#FF0000"><a href="match240-1.html#0" target="1"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_0_14.gif"/></a>
+
+        fgets(buffer, sizeof(buffer), inFile);
+        lines[i] = calloc(strlen(buffer) + 1, sizeof(char));
+        strcpy(lines[i], buffer);
+    }
+
+    List indexList = newList();
+    append(indexList, 0);
+
+    for (int i = 1; i &lt; lineCount; i++) {
+</font>        moveFront(indexList);
+        while (index(indexList) &gt;= 0) {
+            if (strcmp(lines[i], lines[get(indexList)]) &lt; 0) {
+                insertBefore(indexList, i);
+                break;
+            }
+            moveNext(indexList);
+        }
+        if (index(indexList) == -1) {
+            append(indexList, i);
+        }
+    }
+
+    for (moveFront(indexList); index(indexList) &gt;= 0; moveNext(indexList)) {
+        fprintf(outFile, "%s", lines[get(indexList)]);
+    }
+
+    for (int i = 0; i &lt; lineCount; i++) {
+        free(lines[i]);
+    }
+    free(lines);
+    freeList(&amp;indexList);
+    fclose(inFile);
+    fclose(outFile);
+
+    return 0;
+}
+</pre>
+</body>
+</html>

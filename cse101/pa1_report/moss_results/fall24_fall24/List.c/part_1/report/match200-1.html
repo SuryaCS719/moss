@@ -1,0 +1,394 @@
+<html>
+<head>
+<title>/fall24/rsadhra/pa1/List.c</title>
+</head>
+<body bgcolor="white">
+<hr/>
+/fall24/jlopezc2/pa1/List.c<p></p><pre>
+//Jacqueline Lopez
+//jlopezc2
+//pa1
+
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include "List.h" 
+
+//Referenced/ inspo from Queue.c provided on webpage
+//Node structure
+typedef struct NodeObj {
+    int data;
+    struct NodeObj* prev;
+    struct NodeObj* next;
+} NodeObj;
+
+typedef NodeObj* Node;
+
+//List Structure
+typedef struct ListObj {
+    Node front;
+    Node back;
+    Node cursor;
+    int length;
+    int index;
+} ListObj;
+
+//Creating and returning a new empty list
+List newList(void) {
+    List L = malloc(sizeof(ListObj));
+    L-&gt;front = L-&gt;back = L-&gt;cursor = NULL;
+    L-&gt;length = 0;
+    L-&gt; index = -1;
+    return L;
+}
+
+
+//Freeing memory
+void freeList(List* pL) {
+    if (pL != NULL &amp;&amp; *pL != NULL) {
+        clear(*pL);
+        free(*pL);
+        *pL = NULL;
+    }
+}
+
+
+//number of elements in the list
+<a name="0"></a><font color="#FF0000"><a href="match200-0.html#0" target="0"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_0_5.gif"/></a>
+
+int length(List L) {
+    return L-&gt;length;
+}
+
+
+//index of cursor
+int index(List L) {
+    return L-&gt;cursor != NULL ? L-&gt;index : -1;
+}
+
+
+//front of list value
+int front(List L) {
+    if (L-&gt;length &gt; 0) {
+        return L-&gt;front-&gt;data;
+    }
+    printf("Error: empty list");
+    exit(EXIT_FAILURE);
+}
+
+
+//back of list value
+int back(List L) {
+    if (L-&gt;length &gt; 0 ) {
+        return L-&gt;back-&gt;data;
+    }
+    printf("Error: empty list");
+    exit(EXIT_FAILURE);
+}
+
+
+//value of cursor
+int get(List L) {
+</font>    if (L == NULL) {
+        printf("Error: NULL list\n");
+        exit(EXIT_FAILURE);
+    }
+    if (L-&gt;cursor == NULL) {
+        printf("Error: undefined\n");
+        exit(EXIT_FAILURE);
+    }
+    
+    return L-&gt;cursor-&gt;data;
+}
+
+
+//checking if lists are equal
+bool equals(List A, List B) {
+    if (A-&gt;length != B-&gt;length) return false;
+    Node nodeA = A-&gt;front;
+    Node nodeB = B-&gt;front;
+    while (nodeA != NULL &amp;&amp; nodeB != NULL) {
+        if (nodeA-&gt;data != nodeB-&gt;data) return false;
+        nodeA = nodeA-&gt;next;
+        nodeB = nodeB-&gt;next;
+    }
+    return true;
+}
+
+
+//clearing list
+
+void clear(List L) {
+    while (L-&gt;length &gt; 0) {
+        deleteFront(L);
+    }
+    L-&gt;cursor = NULL;
+    L-&gt;index = -1;
+}
+
+
+//value at cursor 
+void set(List L, int x) {
+    if (L-&gt;length &gt; 0 &amp;&amp; L-&gt;cursor != NULL) {
+<a name="5"></a><font color="#FF0000"><a href="match200-0.html#5" target="0"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_0_2.gif"/></a>
+
+        L-&gt;cursor-&gt;data = x;
+    } else {
+        printf("Error: undefined\n");
+        exit(EXIT_FAILURE);
+    }
+}
+
+
+//move the cursor to front
+
+void moveFront(List L) {
+    if (L-&gt;length &gt; 0) {
+        L-&gt;cursor = L-&gt;front;
+        L-&gt;index = 0;
+</font>        
+    } else {
+        L-&gt;cursor = NULL;
+        L-&gt;index = -1;
+        //printf("List is empty, set to NULL\n");
+    }
+}
+
+
+//move cursor to back
+void moveBack(List L) {
+    if (L-&gt;length &gt; 0) {
+        L-&gt;cursor = L-&gt;back;
+        L-&gt;index = L-&gt;length - 1;
+        
+    } else {
+        L-&gt;cursor = NULL;
+        L-&gt;index = -1;
+        //printf("List is empty, set to NULL\n");
+    }
+}
+
+
+//move cursor to prev step
+void movePrev(List L) {
+    if (L-&gt;cursor != NULL) {
+        if (L-&gt;cursor == L-&gt;front) {
+            L-&gt;cursor = NULL;
+            L-&gt;index = -1;
+        } else {
+            L-&gt;cursor = L-&gt;cursor-&gt;prev;
+            L-&gt;index--;
+        }
+    }
+}
+
+
+//move cursor to next step
+void moveNext(List L) {
+    if (L-&gt;cursor != NULL) {
+        if (L-&gt;cursor == L-&gt;back) {
+            L-&gt;cursor = NULL;
+            L-&gt;index = -1;
+        } else {
+            L-&gt;cursor = L-&gt;cursor-&gt;next;
+            L-&gt;index++;
+        }
+    }
+}
+
+
+//prepend new element in front
+void prepend(List L, int x) {
+    Node node = malloc(sizeof(NodeObj));
+    node-&gt;data = x;
+    node-&gt;prev = NULL;
+    node-&gt;next = L-&gt;front;
+    if (L-&gt;front != NULL) {
+        L-&gt;front-&gt;prev = node;
+    }
+    L-&gt;front = node;
+    if (L-&gt;length == 0) {
+        L-&gt;back = L-&gt;front;
+    }
+    L-&gt;length++;
+    if (L-&gt;index != -1) L-&gt;index++;
+}
+
+
+//append new element to back
+void append(List L, int x) {
+    Node node = malloc(sizeof(NodeObj));
+    node-&gt;data = x;
+    node-&gt;next = NULL;
+    node-&gt;prev = L-&gt;back;
+    if (L-&gt;back != NULL) {
+        L-&gt;back-&gt;next = node;
+    }
+    L-&gt;back = node;
+    if (L-&gt;length == 0) {
+        L-&gt;front = L-&gt;back;
+    }
+    L-&gt;length++;
+}
+
+
+//insert element before cursor
+void insertBefore(List L, int x) {
+    if (L-&gt;length &gt; 0 &amp;&amp; L-&gt;cursor != NULL) {
+        Node node = malloc(sizeof(NodeObj));
+        node-&gt;data = x;
+        node-&gt;prev = L-&gt;cursor-&gt;prev;
+        node-&gt;next = L-&gt;cursor;
+        if (L-&gt;cursor-&gt;prev != NULL) {
+            L-&gt;cursor-&gt;prev-&gt;next = node;
+        }
+        L-&gt;cursor-&gt;prev = node;
+        if (L-&gt;cursor == L-&gt;front) {
+<a name="3"></a><font color="#00FFFF"><a href="match200-0.html#3" target="0"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_3_2.gif"/></a>
+
+            L-&gt;front = node;
+        }
+        L-&gt;length++;
+        L-&gt;index++;
+    } else {
+        printf("Error: empty list\n");
+        exit(EXIT_FAILURE);
+    }
+}
+
+
+//insert element after cursor
+void insertAfter(List L, int x) {
+    if (L-&gt;length &gt; 0 &amp;&amp; L-&gt;cursor != NULL) {
+</font>        Node node = malloc(sizeof(NodeObj));
+        node-&gt;data = x;
+        node-&gt;prev = L-&gt;cursor;
+        node-&gt;next = L-&gt;cursor-&gt;next;
+        if (L-&gt;cursor-&gt;next != NULL) {
+            L-&gt;cursor-&gt;next-&gt;prev = node;
+        }
+        L-&gt;cursor-&gt;next = node;
+        if (L-&gt;cursor == L-&gt;back) {
+<a name="4"></a><font color="#FF00FF"><a href="match200-0.html#4" target="0"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_4_2.gif"/></a>
+
+            L-&gt;back = node;
+        }
+        L-&gt;length++;
+    } else {
+        printf("Error: undefined cursor or empty list\n");
+        exit(EXIT_FAILURE);
+    }
+}
+
+
+//deletes front node
+void deleteFront(List L) {
+    if (L-&gt;length &gt; 0) {
+        Node node = L-&gt;front;
+        if (L-&gt;length &gt; 1) {
+</font>            L-&gt;front = L-&gt;front-&gt;next;
+            L-&gt;front-&gt;prev = NULL;
+        } else {
+<a name="2"></a><font color="#0000FF"><a href="match200-0.html#2" target="0"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_2_3.gif"/></a>
+
+            L-&gt;front = L-&gt;back = NULL;
+        }
+        free(node);
+        L-&gt;length--;
+        if (L-&gt;index != -1) L-&gt;index--;
+    } else {
+        printf("Error: empty list\n");
+        exit(EXIT_FAILURE);
+    }
+}
+
+
+//deletes back node 
+void deleteBack(List L) {
+    if (L-&gt;length &gt; 0) {
+        Node node = L-&gt;back;
+        if (L-&gt;length &gt; 1) {
+</font>            L-&gt;back = L-&gt;back-&gt;prev;
+            L-&gt;back-&gt;next = NULL;
+        } else {
+            L-&gt;back = L-&gt;front = NULL;
+        }
+        free(node);
+        L-&gt;length--;
+        if (L-&gt;cursor == node) {
+            L-&gt;cursor = NULL;
+            L-&gt;index = -1;
+        }
+    } else {
+        printf("Error: empty list\n");
+        exit(EXIT_FAILURE);
+    }
+}
+
+
+//deletes cursor node
+void delete(List L) {
+    if (L-&gt;length &gt; 0 &amp;&amp; L-&gt;cursor != NULL) {
+        Node node = L-&gt;cursor;
+        if (L-&gt;cursor == L-&gt;front) {
+            deleteFront(L);
+        } else if (L-&gt;cursor == L-&gt;back) {
+            deleteBack(L);
+        } else {
+            L-&gt;cursor-&gt;prev-&gt;next = L-&gt;cursor-&gt;next;
+<a name="1"></a><font color="#00FF00"><a href="match200-0.html#1" target="0"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_1_3.gif"/></a>
+
+            L-&gt;cursor-&gt;next-&gt;prev = L-&gt;cursor-&gt;prev;
+            free(node);
+            L-&gt;length--;
+        }
+        L-&gt;cursor = NULL;
+        L-&gt;index = -1;
+    } else {
+        printf("Error: empty list or undefined cursor\n");
+        exit(EXIT_FAILURE);
+    }
+}
+
+
+
+//printing list of data
+void printList(FILE* out, List L) {
+    Node node = L-&gt;front;
+    while (node != NULL) {
+        fprintf(out, "%d ", node-&gt;data);
+</font>        node = node-&gt;next;
+    }
+}
+
+
+//creates a copy of list L
+List copyList(List L) {
+    List X = newList();
+    Node node = L-&gt;front;
+    while (node != NULL) {
+        append(X, node-&gt;data);
+        node = node-&gt;next;
+    }
+    return X;
+}
+
+
+
+
+List concatList(List A, List B) {
+    List X = newList();
+    Node node = A-&gt;front;
+    while (node != NULL) {
+        append(X, node-&gt;data);
+        node = node-&gt;next;
+    }
+    node = B-&gt;front;
+    while (node != NULL) {
+        append(X, node-&gt;data);
+        node = node-&gt;next;
+    }
+    return X;
+
+}</pre>
+</body>
+</html>

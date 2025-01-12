@@ -1,0 +1,110 @@
+<html>
+<head>
+<title>/fall24/ftenzinl/pa1/Lex.c</title>
+</head>
+<body bgcolor="white">
+<hr/>
+/fall24/ftenzinl/pa1/Lex.c<p></p><pre>
+/***
+* Tenzin Lekphel 
+* ftenzinl
+* 2024 Fall CSE101 PA1 
+* Lex.c
+* Lex.c sorts file lines alphabetically and writes the sorted lines to an output file.
+***/ 
+
+
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;string.h&gt;
+#include "List.h"
+
+#define MAX_LEN 160
+
+int main(int argc, char* argv[]) {
+
+    if (argc != 3) {
+        fprintf(stderr, "Usage: %s &lt;input file&gt; &lt;output file&gt;\n", argv[0]);
+        exit(EXIT_FAILURE);
+    }
+
+    FILE* inFile = fopen(argv[1], "r");
+    if (inFile == NULL) {
+        fprintf(stderr, "Unable to open file %s for reading\n", argv[1]);
+        exit(EXIT_FAILURE);
+    }
+    FILE* outFile = fopen(argv[2], "w");
+    if (outFile == NULL) {
+        fprintf(stderr, "Unable to open file %s for writing\n", argv[2]);
+<a name="0"></a><font color="#FF0000"><a href="match117-1.html#0" target="1"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_0_62.gif"/></a>
+
+        fclose(inFile);
+        exit(EXIT_FAILURE);
+    }
+
+    char line[MAX_LEN];
+    int lineCount = 0;
+    while (fgets(line, MAX_LEN, inFile) != NULL) {
+        lineCount++;
+    }
+
+    char** lines = malloc(lineCount * sizeof(char*));
+    if (lines == NULL) {
+        fprintf(stderr, "Memory allocation failed\n");
+        fclose(inFile);
+        fclose(outFile);
+        exit(EXIT_FAILURE);
+    }
+    rewind(inFile);
+
+    for (int i = 0; i &lt; lineCount; i++) {
+        if (fgets(line, MAX_LEN, inFile) != NULL) {
+            lines[i] = strdup(line);
+            if (lines[i] == NULL) {
+                fprintf(stderr, "Memory allocation failed\n");
+                for (int j = 0; j &lt; i; j++) {
+                    free(lines[j]);
+                }
+                free(lines);
+                fclose(inFile);
+                fclose(outFile);
+                exit(EXIT_FAILURE);
+            }
+        }
+    }
+
+    List list = newList();
+    for (int i = 0; i &lt; lineCount; i++) {
+        moveFront(list);
+        while (index(list) &gt;= 0) {
+            int cmp = strcmp(lines[i], lines[get(list)]);
+            if (cmp &lt; 0) {
+                insertBefore(list, i);
+                break;
+            }
+            moveNext(list);
+        }
+        if (index(list) &lt; 0) {
+            append(list, i);
+        }
+    }
+
+    moveFront(list);
+    while (index(list) &gt;= 0) {
+        fprintf(outFile, "%s", lines[get(list)]);
+</font>        moveNext(list);
+    }
+
+    for (int i = 0; i &lt; lineCount; i++) {
+        free(lines[i]);
+    }
+    free(lines);
+    freeList(&amp;list);
+    fclose(inFile);
+    fclose(outFile);
+
+    return 0;
+}
+</pre>
+</body>
+</html>

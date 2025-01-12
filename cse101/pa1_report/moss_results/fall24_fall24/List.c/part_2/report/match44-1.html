@@ -1,0 +1,288 @@
+<html>
+<head>
+<title>/fall24/jpmalik/pa1/List.c</title>
+</head>
+<body bgcolor="white">
+<hr/>
+/fall24/jpmalik/pa1/List.c<p></p><pre>
+//#jpmalik juhi malik pa1
+
+
+
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;stdbool.h&gt;
+#include "List.h"
+
+typedef struct NodeObj *Node;
+
+<a name="0"></a><font color="#FF0000"><a href="match44-0.html#0" target="0"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_0_99.gif"/></a>
+
+typedef struct NodeObj {
+    int data;
+    Node next;
+    Node prev;
+} NodeObj;
+
+typedef struct ListObj {
+    Node front;
+    Node back;
+    Node cursor;
+    int length;
+    int index;
+} ListObj;
+
+void* safeMalloc(size_t size) {
+    void *ptr = malloc(size);
+    if (!ptr) {
+        fprintf(stderr, "Memory allocation failed\n");
+        exit(EXIT_FAILURE);
+    }
+    return ptr;
+}
+
+Node newNode(int data) {
+    Node N = safeMalloc(sizeof(NodeObj));
+    N-&gt;data = data;
+    N-&gt;next = NULL;
+    N-&gt;prev = NULL;
+    return N;
+}
+
+void freeNode(Node *pN) {
+    if (pN &amp;&amp; *pN) {
+        free(*pN);
+        *pN = NULL;
+    }
+}
+
+List newList() {
+    List L = safeMalloc(sizeof(ListObj));
+    L-&gt;front = L-&gt;back = L-&gt;cursor = NULL;
+    L-&gt;length = 0;
+    L-&gt;index = -1;
+    return L;
+}
+
+void freeList(List *pL) {
+    if (pL &amp;&amp; *pL) {
+        while ((*pL)-&gt;length != 0) {
+            deleteFront(*pL);
+        }
+        free(*pL);
+        *pL = NULL;
+    }
+}
+
+int length(List L) {
+    return L ? L-&gt;length : -1;
+}
+
+int index(List L) {
+    return L ? L-&gt;index : -1;
+}
+
+int front(List L) {
+    if (!L || L-&gt;length == 0) exit(EXIT_FAILURE);
+    return L-&gt;front-&gt;data;
+}
+
+int back(List L) {
+    if (!L || L-&gt;length == 0) exit(EXIT_FAILURE);
+    return L-&gt;back-&gt;data;
+}
+
+int get(List L) {
+    if (!L || L-&gt;length == 0 || L-&gt;index &lt; 0) exit(EXIT_FAILURE);
+    return L-&gt;cursor-&gt;data;
+}
+
+bool equals(List A, List B) {
+    if (!A || !B || A-&gt;length != B-&gt;length) return false;
+
+    for (Node N = A-&gt;front, M = B-&gt;front; N &amp;&amp; M; N = N-&gt;next, M = M-&gt;next) {
+        if (N-&gt;data != M-&gt;data) return false;
+    }
+    return true;
+}
+
+void clear(List L) {
+    if (!L) exit(EXIT_FAILURE);
+    Node current = L-&gt;front;
+    while (current) {
+        Node nextNode = current-&gt;next;
+        free(current);
+        current = nextNode;
+    }
+    L-&gt;front = L-&gt;back = L-&gt;cursor = NULL;
+    L-&gt;length = 0;
+    L-&gt;index = -1;
+}
+
+void set(List L, int x) {
+    if (!L || L-&gt;length == 0 || L-&gt;index &lt; 0) exit(EXIT_FAILURE);
+    L-&gt;cursor-&gt;data = x;
+}
+
+void moveFront(List L) {
+    if (L &amp;&amp; L-&gt;length != 0) {
+        L-&gt;cursor = L-&gt;front;
+        L-&gt;index = 0;
+    }
+}
+
+void moveBack(List L) {
+    if (L &amp;&amp; L-&gt;length != 0) {
+        L-&gt;cursor = L-&gt;back;
+        L-&gt;index = L-&gt;length - 1;
+    }
+}
+
+void movePrev(List L) {
+    if (L &amp;&amp; L-&gt;cursor) {
+        L-&gt;cursor = L-&gt;cursor-&gt;prev;
+        L-&gt;index = (L-&gt;cursor == NULL) ? -1 : L-&gt;index - 1;
+    }
+}
+
+void moveNext(List L) {
+    if (L &amp;&amp; L-&gt;cursor) {
+        L-&gt;cursor = L-&gt;cursor-&gt;next;
+        L-&gt;index = (L-&gt;cursor == NULL) ? -1 : L-&gt;index + 1;
+    }
+}
+
+void prepend(List L, int x) {
+    if (!L) exit(EXIT_FAILURE);
+    Node N = newNode(x);
+    if (L-&gt;length == 0) {
+        L-&gt;front = L-&gt;back = N;
+    } else {
+        N-&gt;next = L-&gt;front;
+        L-&gt;front-&gt;prev = N;
+        L-&gt;front = N;
+    }
+    if (L-&gt;index != -1) L-&gt;index++;
+    L-&gt;length++;
+}
+
+void append(List L, int x) {
+    if (!L) exit(EXIT_FAILURE);
+    Node N = newNode(x);
+    if (L-&gt;length == 0) {
+        L-&gt;front = L-&gt;back = N;
+    } else {
+        N-&gt;prev = L-&gt;back;
+        L-&gt;back-&gt;next = N;
+        L-&gt;back = N;
+    }
+    L-&gt;length++;
+}
+
+void insertBefore(List L, int x) {
+    if (!L || L-&gt;index &lt; 0) exit(EXIT_FAILURE);
+    if (L-&gt;cursor == L-&gt;front) {
+        prepend(L, x);
+    } else {
+        Node N = newNode(x);
+        Node cursorPrev = L-&gt;cursor-&gt;prev;
+        N-&gt;next = L-&gt;cursor;
+        N-&gt;prev = cursorPrev;
+        cursorPrev-&gt;next = N;
+        L-&gt;cursor-&gt;prev = N;
+        L-&gt;index++;
+        L-&gt;length++;
+    }
+}
+
+void insertAfter(List L, int x) {
+    if (!L || L-&gt;index &lt; 0) exit(EXIT_FAILURE);
+    if (L-&gt;cursor == L-&gt;back) {
+        append(L, x);
+    } else {
+        Node N = newNode(x);
+        Node cursorNext = L-&gt;cursor-&gt;next;
+        N-&gt;prev = L-&gt;cursor;
+        N-&gt;next = cursorNext;
+        L-&gt;cursor-&gt;next = N;
+        if (cursorNext) {
+            cursorNext-&gt;prev = N;
+        }
+        L-&gt;length++;
+    }
+}
+
+void deleteFront(List L) {
+    if (!L || L-&gt;length == 0) exit(EXIT_FAILURE);
+    Node oldFront = L-&gt;front;
+    L-&gt;front = L-&gt;front-&gt;next;
+    if (L-&gt;front) {
+        L-&gt;front-&gt;prev = NULL;
+    } else {
+        L-&gt;back = NULL;  // List is now empty
+    }
+    L-&gt;length--;
+    if (L-&gt;index == 0) {
+        L-&gt;cursor = NULL;
+        L-&gt;index = -1;
+    } else if (L-&gt;index != -1) {
+        L-&gt;index--;
+    }
+    freeNode(&amp;oldFront);
+}
+
+void deleteBack(List L) {
+    if (!L || L-&gt;length == 0) exit(EXIT_FAILURE);
+    Node oldBack = L-&gt;back;
+    L-&gt;back = L-&gt;back-&gt;prev;
+    if (L-&gt;back) {
+        L-&gt;back-&gt;next = NULL;
+    } else {
+        L-&gt;front = NULL;  // List is now empty
+    }
+    L-&gt;length--;
+    if (L-&gt;index == L-&gt;length) {
+        L-&gt;cursor = NULL;
+        L-&gt;index = -1;
+    }
+    freeNode(&amp;oldBack);
+}
+
+void delete(List L) {
+    if (!L || L-&gt;length == 0 || L-&gt;index &lt; 0) exit(EXIT_FAILURE);
+    Node cursorNode = L-&gt;cursor;
+    if (cursorNode == L-&gt;front) {
+        deleteFront(L);
+    } else if (cursorNode == L-&gt;back) {
+        deleteBack(L);
+    } else {
+        Node prevNode = cursorNode-&gt;prev;
+        Node nextNode = cursorNode-&gt;next;
+        prevNode-&gt;next = nextNode;
+        nextNode-&gt;prev = prevNode;
+        L-&gt;cursor = NULL;
+        L-&gt;index = -1;
+        L-&gt;length--;
+        freeNode(&amp;cursorNode);
+    }
+}
+
+void printList(FILE *out, List L) {
+    if (!L) exit(EXIT_FAILURE);
+    for (Node N = L-&gt;front; N != NULL; N = N-&gt;next) {
+        fprintf(out, "%d ", N-&gt;data);
+    }
+}
+
+List copyList(List L) {
+    if (!L) exit(EXIT_FAILURE);
+    List duplicate = newList();
+    for (Node N = L-&gt;front; N != NULL; N = N-&gt;next) {
+        append(duplicate, N-&gt;data);
+</font>    }
+    return duplicate;
+}
+
+</pre>
+</body>
+</html>

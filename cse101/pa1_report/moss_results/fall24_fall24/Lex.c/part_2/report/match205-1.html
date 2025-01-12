@@ -1,0 +1,85 @@
+<html>
+<head>
+<title>/fall24/nlanz/pa1/Lex.c</title>
+</head>
+<body bgcolor="white">
+<hr/>
+/fall24/rwang196/pa1/Lex.c<p></p><pre>
+/****************************************************************************************
+*  Pa1
+*  Ray Wang
+*  rwang196
+*****************************************************************************************/
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;string.h&gt;
+#include "List.h"
+#define MAX_LENGTH 100
+
+int main(int argc, char* argv[]) {
+    if (argc != 3) {
+        fprintf(stderr, "Format: %s &lt;input file&gt; &lt;output file&gt;\n", argv[0]);
+        return EXIT_FAILURE;
+    }
+
+    FILE* inputFile = fopen(argv[1], "r");
+    if (inputFile == NULL) {
+        fprintf(stderr, "Can't read the file %s\n", argv[1]);
+        return EXIT_FAILURE;
+    }
+
+    FILE* outputFile = fopen(argv[2], "w");
+    if (outputFile == NULL) {
+        fprintf(stderr, "Cant' read the file %s\n", argv[2]);
+        fclose(inputFile);
+        return EXIT_FAILURE;
+    }
+
+    //put lines in an array
+    int count = 0;
+    char buffer[MAX_LENGTH];
+    while (fgets(buffer, sizeof(buffer), inputFile) != NULL) {
+        count++;
+    }
+
+    rewind(inputFile);
+    char** lines = calloc(count, sizeof(char*));
+    for (int i = 0; i &lt; count; i++) {
+        fgets(buffer, sizeof(buffer), inputFile);
+        lines[i] = strdup(buffer);
+    }
+
+    //sorting
+<a name="0"></a><font color="#FF0000"><a href="match205-0.html#0" target="0"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_0_30.gif"/></a>
+
+    List l = newList();
+    for (int i = 0; i &lt; count; i++) {
+        moveFront(l);
+        while (index(l) != -1 &amp;&amp; strcmp(lines[get(l)], lines[i]) &lt; 0) {
+            moveNext(l);
+        }
+        if (index(l) == -1) {
+            append(l, i);
+        } else {
+            insertBefore(l, i);
+        }
+    }
+
+    for (moveFront(l); index(l) != -1; moveNext(l)) {
+        fprintf(outputFile, "%s", lines[get(l)]);
+</font>    }
+
+    for (int i = 0; i &lt; count; i++) {
+        free(lines[i]);
+    }
+    free(lines);
+    freeList(&amp;l);
+
+    fclose(inputFile);
+    fclose(outputFile);
+
+    return EXIT_SUCCESS;
+}
+</pre>
+</body>
+</html>

@@ -1,0 +1,107 @@
+<html>
+<head>
+<title>/fall24/emesafnt/pa1/Lex.c</title>
+</head>
+<body bgcolor="white">
+<hr/>
+/fall24/emesafnt/pa1/Lex.c<p></p><pre>
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;string.h&gt;
+#include "List.h"
+
+#define MAX_LEN 300
+
+int main(int argc, char *argv[]) {
+    if (argc != 3) {
+        fprintf(stderr, "%s\n", argv[0]);
+        return EXIT_FAILURE;
+    }
+
+    FILE *inputFile = fopen(argv[1], "r");
+    if (inputFile == NULL) {
+        fprintf(stderr, "%s\n", argv[1]);
+        return EXIT_FAILURE;
+    }
+
+    FILE *outputFile = fopen(argv[2], "w");
+    if (outputFile == NULL) {
+        fprintf(stderr, "%s\n", argv[2]);
+<a name="0"></a><font color="#FF0000"><a href="match110-1.html#0" target="1"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_0_55.gif"/></a>
+
+        fclose(inputFile);
+        return EXIT_FAILURE;
+    }
+
+    char buffer[MAX_LEN];
+    int numlines = 0;
+
+    while (fgets(buffer, MAX_LEN, inputFile) != NULL) {
+        numlines++;
+    }
+
+    rewind(inputFile);
+
+    char **lineA = (char **)calloc(numlines, sizeof(char *));
+    if (lineA == NULL) {
+        fprintf(stderr, "fail\n");
+        fclose(inputFile);
+        fclose(outputFile);
+        return EXIT_FAILURE;
+    }
+
+    for (int i = 0; i &lt; numlines; i++) {
+        fgets(buffer, MAX_LEN, inputFile);
+        lineA[i] = (char *)malloc(strlen(buffer) + 1);
+        if (lineA[i] == NULL) {
+            fprintf(stderr, "Error: Memory allocation failed for line %d\n", i);
+            for (int j = 0; j &lt; i; j++) {
+                free(lineA[j]);
+            }
+            free(lineA);
+            fclose(inputFile);
+            fclose(outputFile);
+            return EXIT_FAILURE;
+        }
+        strcpy(lineA[i], buffer);
+    }
+
+    List New = newList();
+
+    for (int i = 0; i &lt; numlines; i++) {
+        if (length(New) == 0) {
+            append(New, i);
+        } else {
+            moveFront(New);
+            while (index(New) &gt;= 0 &amp;&amp; strcmp(lineA[i], lineA[get(New)]) &gt; 0) {
+                moveNext(New);
+</font>            }
+            if (index(New) &gt;= 0) {
+                insertBefore(New, i);
+            } else {
+                append(New, i);
+            }
+        }
+    }
+
+    for (moveFront(New); index(New) &gt;= 0; moveNext(New)) {
+<a name="1"></a><font color="#00FF00"><a href="match110-1.html#1" target="1"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_1_8.gif"/></a>
+
+        fprintf(outputFile, "%s", lineA[get(New)]);
+    }
+
+    for (int i = 0; i &lt; numlines; i++) {
+        free(lineA[i]);
+    }
+    free(lineA);
+
+    fclose(inputFile);
+    fclose(outputFile);
+    freeList(&amp;New);
+</font>
+    return EXIT_SUCCESS;
+}
+
+</pre>
+</body>
+</html>

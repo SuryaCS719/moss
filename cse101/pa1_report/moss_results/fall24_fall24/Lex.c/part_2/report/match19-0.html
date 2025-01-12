@@ -1,0 +1,129 @@
+<html>
+<head>
+<title>/fall24/jli841/pa1/Lex.c</title>
+</head>
+<body bgcolor="white">
+<hr/>
+/fall24/jli841/pa1/Lex.c<p></p><pre>
+/*
+ * Name: Lemon Foxmere
+ * CruzID: 2021655
+ * Assignment: pa1
+ */
+
+// posix bs
+#define _POSIX_C_SOURCE 200809L
+
+#include &lt;stdlib.h&gt;
+#include &lt;stdio.h&gt;
+#include &lt;string.h&gt;
+#include "List.h"
+
+<a name="0"></a><font color="#FF0000"><a href="match19-1.html#0" target="1"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_0_99.gif"/></a>
+
+int main(int argc, char **argv) {
+    // check if the number of arguments is 3 (2 args)
+    if (argc != 3) {
+        fprintf(stderr, "Usage: %s &lt;input file&gt; &lt;output file&gt;\n", argv[0]);
+        exit(1);
+    }
+
+    // open the input file
+    FILE* input = fopen(argv[1], "r");
+    if (input == NULL) {
+        fprintf(stderr, "Error: Cannot open file %s\n", argv[1]);
+        exit(1);
+    }
+
+    // read how many lines are in the input file
+    size_t n = 0; // amt of lines
+    size_t lineChars = 0; // how many characters in the current line
+    int c; // current char
+    for(c = getc(input); c != EOF; c = getc(input)){
+        lineChars++;
+        if (c == '\n'){
+            n++;
+            lineChars = 0;
+        }
+    }
+    if (lineChars &gt; 0) { // the file does not end in a new line
+        n++;
+    }
+    fseek(input, 0, SEEK_SET); // reset pointer
+
+    // create string array of length n into heap
+    char** lines = (char**) malloc(n * sizeof(char*));
+
+    // read lines
+    char* line = NULL;
+    size_t len = 0;
+    int i = 0;
+    while (getline(&amp;line, &amp;len, input) != -1){
+        lines[i] = (char*) malloc((strlen(line) + 1) * sizeof(char));
+        // if line doesnt end in newline, add newline
+        if (line[strlen(line) - 1] != '\n') {
+            strcat(line, "\n");
+        }
+        strcpy(lines[i], line);
+        i++;
+    } // read all lines
+    free(line);
+    fclose(input);
+
+    // create new List
+    List L = newList();
+
+    // insertion append all the lines
+    for (i = 0; (size_t)i &lt; n; i++) { // "i" is the word's current index
+        moveFront(L); // move cursor to front
+
+        if(length(L) == 0) { // if list is empty, add the first element
+            append(L, (int)i);
+            continue;
+        }
+
+        // compare the current line with the line in the list using strcmp
+        while (index(L) != -1) { // while cursor is defined
+            if (strcmp(lines[get(L)], lines[i]) &gt; 0) { // if the current line is greater than the line in the list
+                insertBefore(L, (int)i); // insert the line before the cursor
+                break;
+            }
+            moveNext(L); // move cursor to the next element
+        }
+        // if the cursor reaches the end, append the line
+        if (index(L) == -1) {
+            append(L, (int)i);
+        }
+    }
+
+    // printList(stdout, L);
+    // printf("\n");
+
+    // write lines to output file
+    FILE* output = fopen(argv[2], "w");
+    if (output == NULL) {
+        fprintf(stderr, "Error: Cannot open file %s\n", argv[2]);
+        exit(1);
+    }
+
+    moveFront(L);
+    while (index(L) != -1) {
+        fprintf(output, "%s", lines[get(L)]);
+        moveNext(L);
+    }
+
+    fclose(output);
+
+    freeList(&amp;L);
+
+    // go thru lines and free all line
+    for (i = 0; (size_t)i &lt; n; i++) {
+        free(lines[i]);
+    }
+    free(lines);
+
+    return 0;
+</font>}
+</pre>
+</body>
+</html>

@@ -1,0 +1,117 @@
+<html>
+<head>
+<title>/fall24/acasta34/pa1/Lex.c</title>
+</head>
+<body bgcolor="white">
+<hr/>
+/fall24/acasta34/pa1/Lex.c<p></p><pre>
+/***
+* Angel Castaneda// First and Last Name
+* acasta34 // UCSC UserID
+* 2024 Fall CSE101 PA1 // Replace ID with assignment number 
+* Lex.c // FileName
+***/ 
+
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;string.h&gt;
+#include "List.h"
+
+#define MAX_LEN 360  // Increase the maximum length of a line to 360 characters
+
+<a name="0"></a><font color="#FF0000"><a href="match89-0.html#0" target="0"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_0_67.gif"/></a>
+
+int main(int argc, char *argv[]) {
+    FILE *in, *out;
+    char line[MAX_LEN];
+    int lineCount = 0;
+    char **lines;
+
+    // Check command line for correct number of arguments
+    if (argc != 3) {
+        fprintf(stderr, "Usage: %s &lt;input file&gt; &lt;output file&gt;\n", argv[0]);
+        exit(EXIT_FAILURE);
+    }
+
+    // Open input file for reading
+    if ((in = fopen(argv[1], "r")) == NULL) {
+        fprintf(stderr, "Unable to open file %s for reading\n", argv[1]);
+        exit(EXIT_FAILURE);
+    }
+
+    // Open output file for writing
+    if ((out = fopen(argv[2], "w")) == NULL) {
+        fprintf(stderr, "Unable to open file %s for writing\n", argv[2]);
+        exit(EXIT_FAILURE);
+    }
+
+    // Count the number of lines in the input file
+    while (fgets(line, MAX_LEN, in) != NULL) {
+        lineCount++;
+    }
+
+    // Allocate memory for storing the lines
+    lines = malloc(lineCount * sizeof(char *));
+    if (lines == NULL) {
+        fprintf(stderr, "Memory allocation failed for lines array\n");
+        exit(EXIT_FAILURE);
+    }
+
+    // Rewind input file to read lines
+    rewind(in);
+
+    // Read lines from input file into the lines array
+    for (int i = 0; i &lt; lineCount; i++) {
+        fgets(line, MAX_LEN, in);
+        lines[i] = malloc((strlen(line) + 1) * sizeof(char));
+        if (lines[i] == NULL) {
+            fprintf(stderr, "Memory allocation failed for line %d\n", i);
+            exit(EXIT_FAILURE);
+        }
+        strcpy(lines[i], line);
+    }
+
+    // Create a new List to hold the indices of the lines
+    List L = newList();
+    append(L, 0);
+
+    // Use Insertion Sort to build the List with sorted indices
+    for (int i = 1; i &lt; lineCount; i++) {
+</font>        moveFront(L);
+        while (index(L) &gt;= 0) {
+<a name="1"></a><font color="#00FF00"><a href="match89-0.html#1" target="0"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_1_17.gif"/></a>
+
+            int j = get(L);
+            if (strcmp(lines[i], lines[j]) &lt; 0) {
+                insertBefore(L, i);
+                break;
+            }
+            moveNext(L);
+        }
+        if (index(L) &lt; 0) {
+            append(L, i);
+        }
+    }
+
+    // Write the sorted lines to the output file
+    for (moveFront(L); index(L) &gt;= 0; moveNext(L)) {
+        fprintf(out, "%s", lines[get(L)]);
+</font>    }
+
+    // Free allocated memory
+    for (int i = 0; i &lt; lineCount; i++) {
+        free(lines[i]);
+    }
+    free(lines);
+    freeList(&amp;L);
+
+    // Close files
+    fclose(in);
+    fclose(out);
+
+    return 0;
+}
+
+</pre>
+</body>
+</html>

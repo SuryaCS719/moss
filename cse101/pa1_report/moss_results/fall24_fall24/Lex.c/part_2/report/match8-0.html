@@ -1,0 +1,129 @@
+<html>
+<head>
+<title>/fall24/ashar139/pa1/Lex.c</title>
+</head>
+<body bgcolor="white">
+<hr/>
+/fall24/ashar139/pa1/Lex.c<p></p><pre>
+/***
+* Arnav Sharma
+* ashar139
+* 2024 Fall CSE101 PA1
+* Lex.c
+* Test client for List ADT
+***/ 
+
+#include&lt;stdio.h&gt;
+#include&lt;stdlib.h&gt;
+#include&lt;stdbool.h&gt;
+#include&lt;stddef.h&gt;
+#include&lt;string.h&gt;
+#include"List.h"
+
+#define MAX_LEN 300
+
+<a name="0"></a><font color="#FF0000"><a href="match8-1.html#0" target="1"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_0_99.gif"/></a>
+
+int main(int argc, char* argv[]){
+   if (argc != 3){
+      fprintf(stderr, "MUST DO: ./Lex &lt;inputfile&gt; &lt;outputfile&gt;\n");
+      exit(EXIT_FAILURE);
+   }
+
+   FILE *infile, *outfile;
+
+   size_t num_lines = 0;
+   char line[MAX_LEN];
+   char** thearray;
+   bool nonew = false;
+
+   infile = fopen(argv[1], "r");
+      if( infile==NULL ){
+      fprintf(stderr, "Unable to open file %s for reading\n", argv[1]);
+      exit(EXIT_FAILURE);
+   }
+
+   outfile = fopen(argv[2], "w");
+   if(outfile == NULL){
+      fprintf(stderr, "Unable to open file %s for writing\n", argv[2]);
+      exit(EXIT_FAILURE);
+   }
+
+   while( fgets(line, MAX_LEN, infile) != NULL)  {
+      num_lines++;
+   }
+
+   rewind(infile);
+   
+   thearray = (char **)calloc(sizeof(char *), num_lines);
+   
+   int i = 0;
+   while( fgets(line, MAX_LEN, infile) != NULL)  {
+      char *newS = malloc((strlen(line)+2) * sizeof(char));
+      newS[0] = '\0';
+      strcat(newS, line);
+      if (newS[strlen(newS)-1] != '\n'){
+         nonew = true;
+         strcat(newS, "\n");
+      }
+      newS[strlen(newS)] = '\0';
+      thearray[i] = newS;
+      i++;
+   }
+
+   List A = newList();
+
+   for (int j = 0; j &lt; num_lines; j++) {
+
+      if (j == 0){
+         append(A, j);
+      } else {
+         moveFront(A);
+         int k = 0;
+         bool wenthrough = false;
+
+         while (k &lt; length(A)) {
+            
+            if (strcmp(thearray[j], thearray[get(A)]) &lt; 0) {
+               insertBefore(A, j);
+               wenthrough = false;
+               break;
+            }
+            k++;
+            moveNext(A);
+            wenthrough = true;
+         }
+         
+
+         if (k &lt;= length(A) &amp;&amp; wenthrough){
+                  append(A, j);
+                  
+         }
+      }
+      
+   }
+   
+   moveFront(A);
+   for (int j = 0; j &lt; length(A); j++){
+      if ((j == num_lines-1) &amp;&amp; (nonew)){
+         char* r = strrchr(thearray[get(A)], '\n');
+         *r = ' ';
+         fprintf(outfile, "%s", thearray[get(A)]);
+      } else {
+         fprintf(outfile, "%s", thearray[get(A)]);
+      }
+      moveNext(A);
+   }
+   fclose(infile);
+   fclose(outfile);
+
+   freeList(&amp;A);
+   for (size_t f = 0; f &lt; num_lines; f++) {
+      free(thearray[f]);
+   }
+   free(thearray);
+</font>
+   return(0);
+}</pre>
+</body>
+</html>

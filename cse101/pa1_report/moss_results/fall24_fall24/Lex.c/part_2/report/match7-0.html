@@ -1,0 +1,189 @@
+<html>
+<head>
+<title>/fall24/tkodituw/pa1/Lex.c</title>
+</head>
+<body bgcolor="white">
+<hr/>
+/fall24/tkodituw/pa1/Lex.c<p></p><pre>
+#include&lt;unistd.h&gt;
+#include&lt;string.h&gt;
+#include&lt;stdlib.h&gt;
+
+#include"List.h"
+
+#define MAX_LEN 1000
+#define MAX_LINES 1000
+
+/*void bubbleSort(List L, char* stringArray[]) {
+    if (length(L) &lt;= 1) return;  // No need to sort if the list has 1 or fewer elements
+
+    bool swapped;
+    
+    do {
+        swapped = false;
+        moveFront(L);  // Move cursor to the front of the list
+        //printf("%d",front(L));
+
+        // Iterate through the list, comparing adjacent elements
+        while (index(L) &gt;= 0 &amp;&amp; index(L) &lt; length(L) - 1) {
+            // Get the current element and the next element for comparison
+            int currentData = get(L);  // Current node's data (index to stringArray)
+            moveNext(L);  // Move to next node
+            int nextData = get(L);  // Next node's data (index to stringArray)
+
+            // Compare the strings in stringArray by the data in the nodes
+            if (strcmp(stringArray[currentData], stringArray[nextData]) &gt; 0) {
+                // Swap the node data if the current string is greater than the next string
+                movePrev(L);  // Move back to the current node
+                set(L, nextData);  // Set current node to nextData
+                moveNext(L);  // Move to the next node again
+                set(L, currentData);  // Set next node to currentData
+                swapped = true;
+            }
+        }
+    } while (swapped);
+}*/
+
+<a name="0"></a><font color="#FF0000"><a href="match7-1.html#0" target="1"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_0_99.gif"/></a>
+
+void sortList(List L, char** lines) {
+    if (L == NULL || length(L) &lt;= 1) {
+        return;  // Nothing to sort if the list is empty or has only one element
+    }
+
+    // Start at the front of the list
+    moveFront(L);
+
+    for (int i = 0; i &lt; length(L) - 1; i++) {
+        // Move to the ith element
+        moveFront(L);
+        for (int k = 0; k &lt; i; k++) {
+            moveNext(L);
+        }
+
+        // Store the current minimum index in the list
+        int minIndex = get(L);
+        int minPosition = i;  // Position of the minimum found
+
+        // Traverse the rest of the list to find the minimum
+        for (int j = i + 1; j &lt; length(L); j++) {
+            moveNext(L);  // Move to the next element
+            int currentIndex = get(L);
+
+            // Compare lines[currentIndex] and lines[minIndex]
+            if (strcmp(lines[currentIndex], lines[minIndex]) &lt; 0) {
+                minIndex = currentIndex;
+                minPosition = j;
+            }
+        }
+
+        // If the smallest found is not already at the ith position, swap
+        if (minPosition != i) {
+            // Swap the values at index i and minPosition
+
+            // Move to the ith position again
+            moveFront(L);
+            for (int k = 0; k &lt; i; k++) {
+                moveNext(L);  // Move cursor to ith position
+            }
+            int currentIndex = get(L);  // Get the value at ith position
+
+            // Move to minPosition
+            moveFront(L);
+            for (int k = 0; k &lt; minPosition; k++) {
+                moveNext(L);  // Move cursor to minPosition
+            }
+            int minIndexNode = get(L);  // Get the value at minPosition
+
+            // Swap the values
+            moveFront(L);
+            for (int k = 0; k &lt; i; k++) {
+                moveNext(L);  // Move back to ith position
+            }
+            set(L, minIndexNode);  // Set the ith node to the minimum value
+
+            moveFront(L);
+            for (int k = 0; k &lt; minPosition; k++) {
+                moveNext(L);  // Move back to minPosition
+            }
+            set(L, currentIndex);  // Set the minPosition node to the current value
+        }
+    }
+}
+
+
+/*void writeToFile(FILE *out, List doc, char *stringArray[]) {
+    moveFront(doc);
+    for(int i=0;i&lt;line) {
+        int stringIndex = get(doc);
+        fprintf(out, "%s\n", stringArray[stringIndex]);
+        moveNext(doc);
+    }
+}*/
+
+int main(int argc, char *argv[]){
+    //Checking arguments
+    if(argc!=3){
+        //apple
+        fprintf(stderr, "Invalid quantity of arguments");
+        return 1;
+    }
+
+    //Creating new blank list
+    List doc=newList();
+    //append(doc, 0);
+
+    //Attempting to argument files
+    FILE *in=fopen(argv[1], "r");
+    if(in==NULL){
+        fprintf(stderr, "Unable to access input file");
+        return 1;
+    }
+    FILE *out=fopen(argv[2],"w");
+    if(out==NULL){
+        fprintf(stderr, "Unable to access output file");
+        return 1;
+    }
+
+    //Reading file, tokenizing (splitting the string), and appending indices to list in order (0,1,2,3...)
+    char line[MAX_LEN];
+    char *lines[MAX_LINES];
+    int line_count=0;
+    moveFront(doc);
+    while(fgets(line,MAX_LEN,in)!=NULL &amp;&amp; line_count&lt;MAX_LINES){
+        append(doc,line_count);
+        moveNext(doc);
+        //printf("%d",get(doc));
+        lines[line_count]=(char *)malloc(strlen(line)+1);
+        strcpy(lines[line_count], line);
+        line_count++;
+    }
+    //fclose(in);
+
+    //Sorting array, using bubble sort algorithm for now because it's simple, albeit slow. Inspired by: https://www.geeksforgeeks.org/bubble-sort-algorithm/
+    //bubbleSort(doc, lines);
+    sortList(doc,lines);
+
+    //printf("%d",front(doc));
+
+    //Write to output file
+    //writeToFile(out, doc, lines);
+    moveFront(doc);
+    for (int z = 0; z &lt; line_count; z++) {
+        //printf("%s", lines[get(doc)]);
+        fprintf(out, "%s\n", lines[get(doc)]);
+        moveNext(doc);
+    }
+
+    //Closing input file, freeing memory, end program successfully (exit code 0)
+    fclose(in);
+    fclose(out);
+    //freeList(&amp;doc);
+    //free(lines);
+    for(int i=0;i&lt;length(doc);i++){
+        free(lines[i]);
+    }
+    return 0;
+</font>}</pre>
+</body>
+</html>

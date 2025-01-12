@@ -1,0 +1,96 @@
+<html>
+<head>
+<title>/fall24/beschuma/pa1/Lex.c</title>
+</head>
+<body bgcolor="white">
+<hr/>
+/fall24/beschuma/pa1/Lex.c<p></p><pre>
+//Ben Schumacher
+//CruzID: 1976738
+//Assignment: PA1
+
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;string.h&gt;
+#include "List.h"
+#define MAXLENGTH 999
+
+<a name="0"></a><font color="#FF0000"><a href="match30-1.html#0" target="1"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_0_98.gif"/></a>
+
+void lexSortFile(const char* inputFile, const char* outputFile) {
+    FILE *in, *out;
+    char **lines;
+    int lineCount = 0, i;
+    List list;
+    in = fopen(inputFile, "r");
+    if (in == NULL) {
+        fprintf(stderr, "Unable to open file %s for reading\n", inputFile);
+        exit(EXIT_FAILURE);
+    }
+    char temp[MAXLENGTH];
+    while (fgets(temp, MAXLENGTH, in) != NULL) {
+        lineCount++;
+    }
+
+    lines = calloc(lineCount, sizeof(char*));
+    if (lines == NULL) {
+        fprintf(stderr, "Memory allocation failed\n");
+        exit(EXIT_FAILURE);
+    }
+
+
+    rewind(in); 
+    for (i = 0; i &lt; lineCount; i++) {
+        lines[i] = malloc(MAXLENGTH * sizeof(char));
+        if (lines[i] == NULL) {
+            fprintf(stderr, "Memory allocation failed\n");
+            exit(EXIT_FAILURE);
+        }
+        fgets(lines[i], MAXLENGTH, in);
+        lines[i][strcspn(lines[i], "\n")] = '\0'; // Remove newline character
+    }
+    fclose(in); 
+    list = newList();
+    append(list, 0); 
+    for (i = 1; i &lt; lineCount; i++) {
+        moveFront(list);
+        while (index(list) &gt;= 0 &amp;&amp; strcmp(lines[i], lines[get(list)]) &gt; 0) {
+            moveNext(list);
+        }
+        if (index(list) == -1) {
+            append(list, i); 
+        } else {
+            insertBefore(list, i);
+        }
+    }
+
+    out = fopen(outputFile, "w");
+    if (out == NULL) {
+        fprintf(stderr, "Unable to open file %s for writing\n", outputFile);
+        exit(EXIT_FAILURE);
+    }
+
+    for (moveFront(list); index(list) &gt;= 0; moveNext(list)) {
+        fprintf(out, "%s\n", lines[get(list)]);
+    }
+
+    fclose(out); 
+
+    for (i = 0; i &lt; lineCount; i++) {
+        free(lines[i]);
+    }
+    free(lines);
+    freeList(&amp;list);
+}
+
+int main(int argc, char* argv[]) {
+    if (argc != 3) {
+        fprintf(stderr, "Usage: %s &lt;input file&gt; &lt;output file&gt;\n", argv[0]);
+        return EXIT_FAILURE;
+    }
+    lexSortFile(argv[1], argv[2]);
+</font>    return EXIT_SUCCESS;
+}
+</pre>
+</body>
+</html>

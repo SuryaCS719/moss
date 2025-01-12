@@ -1,0 +1,125 @@
+<html>
+<head>
+<title>/fall24/jeantony/pa1/Lex.c</title>
+</head>
+<body bgcolor="white">
+<hr/>
+/fall24/jeantony/pa1/Lex.c<p></p><pre>
+/*
+Jeffrey Antony
+2051767
+pa1
+Lex.c
+*/
+
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;string.h&gt;
+#include &lt;stdbool.h&gt;
+#include "List.h"
+
+#define MAX_LEN 150
+//Check that there are only two command line arguments
+//Quit with stderr if more/less than 2 cla given
+
+//Count num lines on input file = n
+//Create string array of len n, read lines of file as strings and put them in the array
+//Allocate memory
+
+
+//Create list w elements that are the indices of the string array
+//Arrange in an order that indeirectly sorts the array
+//Start with emtpy list, insert indicer one by one using Insertion Sort
+
+
+//Use list to print aray in alpha order to output file
+
+<a name="1"></a><font color="#00FF00"><a href="match217-1.html#1" target="1"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_1_10.gif"/></a>
+
+char *strdup(const char *s);
+
+int main(int argc, char * argv[]){
+
+    FILE *in, *out;
+    char line[MAX_LEN];
+</font>    int n = 0;
+    // check command line for correct number of arguments
+    if( argc != 3 ){
+        fprintf(stderr, "Usage: %s &lt;input file&gt; &lt;output file&gt;\n", argv[0]);
+        exit(1);
+    }
+
+    // open files for reading and writing 
+    // read
+    in = fopen(argv[1], "r");
+        if( in==NULL ){
+        fprintf(stderr, "Unable to open file %s for reading\n", argv[1]);
+        exit(1);
+    }
+    // write
+    out = fopen(argv[2], "w");
+    if( out==NULL ){
+        printf("Unable to open file %s for writing\n", argv[2]);
+        exit(1);
+    }
+
+    // read each line of input file, then count and print tokens
+    while( fgets(line, MAX_LEN, in) != NULL)  {
+        n++;
+    }
+
+    char **stringArray = calloc(n, sizeof(char *));
+    rewind(in);
+
+    // duplicate line from file and store in the array
+    for(int i = 0; i &lt; n; i++){
+        fgets(line, MAX_LEN, in);
+        stringArray[i] = strdup(line);
+    }
+
+    // allocate memory for L
+<a name="0"></a><font color="#FF0000"><a href="match217-1.html#0" target="1"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_0_14.gif"/></a>
+
+    List L = newList();
+    for(int i = 0; i &lt; n; i++){
+        append(L, i);
+    }
+    clear(L);
+
+    // appending indices at the right place
+    for(int i = 0; i &lt; n; i++){
+        char *temp = stringArray[i];
+        moveFront(L);
+        while(L-&gt;index &gt;= 0 &amp;&amp; strcmp(temp, stringArray[get(L)]) &gt; 0){
+</font>            moveNext(L);
+        }
+        if(L-&gt;index &lt; 0){
+            append(L, i);
+        }else{
+            insertBefore(L, i);
+        }
+    }
+
+    // write the sorted lines to the output file
+    moveFront(L);
+    while(L-&gt;index &gt;= 0){
+        fprintf(out, "%s", stringArray[get(L)]);
+        moveNext(L);
+    }
+
+    // free allocated memory and close the files
+    for (int i = 0; i &lt; n; i++){
+        free(stringArray[i]);
+    }
+    free(stringArray);
+    freeList(&amp;L);
+    fclose(in);
+    fclose(out);
+
+    return 0;
+}
+
+
+</pre>
+</body>
+</html>

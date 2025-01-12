@@ -1,0 +1,108 @@
+<html>
+<head>
+<title>/fall24/raellope/pa1/Lex.c</title>
+</head>
+<body bgcolor="white">
+<hr/>
+/fall24/raellope/pa1/Lex.c<p></p><pre>
+// Randall Lopez raellope@ucsc.edu PA1
+
+
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;string.h&gt;
+#include "List.h"
+
+#define MAX_LEN 160
+
+int main(int argc, char *argv[]) {
+    FILE *in, *out;
+    char line[MAX_LEN];
+    char **lines;
+
+
+    int line_count = 0;
+
+    // Check for correct argument count
+    if (argc != 3) {
+        printf("Usage: %s inputfile outputfile\n", argv[0]);
+        return 1;
+
+    }
+
+    // Open files for reading and writing
+    in = fopen(argv[1], "r");
+    out = fopen(argv[2], "w");
+
+
+
+    // Check if files opened successfully
+    if (in == NULL || out == NULL) {
+        printf("Error: unable to open file.\n");
+        return 1;
+    }
+
+    // Read lines to count the total number of lines
+    while (fgets(line, MAX_LEN, in) != NULL) {
+        line_count++;
+    }
+    
+    // Allocate memory to store lines
+    lines = malloc(line_count * sizeof(char *));
+    rewind(in);  // Go back to the beginning of the file
+
+    // Store each line into the array
+<a name="0"></a><font color="#FF0000"><a href="match68-1.html#0" target="1"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_0_21.gif"/></a>
+
+    for (int i = 0; i &lt; line_count; i++) {
+        fgets(line, MAX_LEN, in);
+        lines[i] = malloc(strlen(line) + 1);
+        strcpy(lines[i], line);
+
+
+    }
+
+    // Create a new list to hold indices for sorting
+    List L = newList();
+    append(L, 0);  // Start by appending the first index (0)
+
+    // Insertion sort: insert indices into the list lexicographically
+    for (int i = 1; i &lt; line_count; i++) {
+</font>        moveFront(L);
+
+
+        while (index(L) &gt;= 0 &amp;&amp; strcmp(lines[i], lines[get(L)]) &gt; 0) {
+            moveNext(L);
+        }
+        if (index(L) &gt;= 0) {
+            insertBefore(L, i);
+        } else {
+<a name="1"></a><font color="#00FF00"><a href="match68-1.html#1" target="1"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_1_14.gif"/></a>
+
+            append(L, i);  // Insert at the back
+        }
+    }
+
+    // Write the sorted lines to the output file
+    moveFront(L);
+    while (index(L) &gt;= 0) {
+        fprintf(out, "%s", lines[get(L)]);
+        moveNext(L);
+    }
+
+    // Free the list and memory for each line
+    freeList(&amp;L);
+    for (int i = 0; i &lt; line_count; i++) {
+</font>        free(lines[i]);
+    }
+    free(lines);
+
+    // Close the files
+    fclose(in);
+    fclose(out);
+
+    return 0;
+}
+</pre>
+</body>
+</html>

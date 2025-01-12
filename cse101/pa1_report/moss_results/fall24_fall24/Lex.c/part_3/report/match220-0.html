@@ -1,0 +1,89 @@
+<html>
+<head>
+<title>/fall24/chrubens/pa1/Lex.c</title>
+</head>
+<body bgcolor="white">
+<hr/>
+/fall24/chrubens/pa1/Lex.c<p></p><pre>
+// Name: Cooper Rubens
+// CruzID: chrubens || chrubens@ucsc.edu
+// ID : 1965238
+// Assignment: pa1
+
+
+
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;string.h&gt;
+#include "List.h"
+
+int main(int argc, char* argv[]) {
+    if (argc != 3) {
+        fprintf(stderr, "Usage: %s &lt;input file&gt; &lt;output file&gt;\n", argv[0]);
+        exit(1);
+    }
+
+    FILE* inFile = fopen(argv[1], "r");
+    if (inFile == NULL) {
+        fprintf(stderr, "Error: Cannot open input file %s\n", argv[1]);
+        exit(1);
+    }
+
+    FILE* outFile = fopen(argv[2], "w");
+    if (outFile == NULL) {
+        fprintf(stderr, "Error: Cannot open output file %s\n", argv[2]);
+        exit(1);
+    }
+
+<a name="0"></a><font color="#FF0000"><a href="match220-1.html#0" target="1"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_0_23.gif"/></a>
+
+    int lineCount = 0;
+    char line[256];
+    while (fgets(line, sizeof(line), inFile) != NULL) {
+        lineCount++;
+    }
+
+    rewind(inFile);
+
+    char** linesArray = calloc(lineCount, sizeof(char*));
+    for (int i = 0; i &lt; lineCount; i++) {
+        fgets(line, sizeof(line), inFile);
+        linesArray[i] = malloc(strlen(line) + 1);
+</font>        strcpy(linesArray[i], line);
+    }
+
+    List indexList = newList();
+    append(indexList, 0);
+
+    for (int i = 1; i &lt; lineCount; i++) {
+        moveFront(indexList);
+        while (index(indexList) &gt;= 0 &amp;&amp; strcmp(linesArray[i], linesArray[get(indexList)]) &gt; 0) {
+            moveNext(indexList);
+        }
+        if (index(indexList) &gt;= 0) {
+            insertBefore(indexList, i);
+        } else {
+            append(indexList, i);
+        }
+    }
+
+    moveFront(indexList);
+    while (index(indexList) &gt;= 0) {
+        fprintf(outFile, "%s", linesArray[get(indexList)]);
+        moveNext(indexList);
+    }
+
+    for (int i = 0; i &lt; lineCount; i++) {
+        free(linesArray[i]);
+    }
+    free(linesArray);
+    freeList(&amp;indexList);
+
+    fclose(inFile);
+    fclose(outFile);
+
+    return 0;
+}
+</pre>
+</body>
+</html>

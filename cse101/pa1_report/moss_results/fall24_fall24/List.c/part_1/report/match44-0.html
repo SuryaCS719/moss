@@ -1,0 +1,414 @@
+<html>
+<head>
+<title>/fall24/bhudick/pa1/List.c</title>
+</head>
+<body bgcolor="white">
+<hr/>
+/fall24/bhudick/pa1/List.c<p></p><pre>
+/***
+* Brian Hudick
+* bhudick
+* 2024 Fall CSE101 PA1
+* List.c
+* ADT Functions for a doubly linked list to be used in Lex.c and ListClient.c
+***/ 
+
+#include &lt;stdio.h&gt;
+#include "List.h"
+
+
+//structues---------------------------------------------------------------------------
+<a name="0"></a><font color="#FF0000"><a href="match44-1.html#0" target="1"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_0_99.gif"/></a>
+
+typedef struct NodeObj {
+    int data;
+    Node next;
+    Node previous;
+} NodeObj;
+
+typedef struct ListObj{
+    int length;
+    int index;
+    Node front;
+    Node back;
+    Node cursor;
+} ListObj;
+
+
+//constructor/decontructor functions--------------------------------------------------
+
+List newList(void){
+    List newList= malloc(sizeof(ListObj));
+    if(newList){
+        newList-&gt;front = NULL;
+        newList-&gt;back = NULL;
+        newList-&gt;cursor = NULL;
+
+        newList-&gt;index = -1;
+        newList-&gt;length = 0;
+    }
+    return newList;
+}
+
+void freeList(List* pL){
+    if(pL &amp;&amp; *pL){
+        clear(*pL);
+        free(*pL);
+        *pL = NULL;
+    }
+
+
+    return;
+}
+
+Node createNode(int data) {
+    Node NodeComponent = malloc(sizeof(NodeObj));
+    if(NodeComponent){
+        NodeComponent-&gt;data = data;
+        NodeComponent-&gt;previous = NULL;
+        NodeComponent-&gt;next = NULL;
+    }
+
+    return NodeComponent;
+}
+
+void deleteNode(Node* target){
+    if((*target)){
+        free(*target);
+        (*target) = NULL;
+    }
+
+    return;
+}
+
+// Access functions ----------------------------------------------------------------
+
+int length(List L){
+    return L-&gt;length;
+}
+
+int index(List L){
+    if(L-&gt;index &lt; 0){
+        return -1;
+    }
+    return L-&gt;index;
+}
+
+int front(List L){
+
+    if(length(L) &gt; 0){
+        return L-&gt;front-&gt;data;
+    }
+    //return -2 to indicate an empty list
+    return -2;
+}
+
+int back(List L){
+    if(length(L) &gt; 0){
+        return L-&gt;back-&gt;data;
+    }
+    //return -2 to indicate an empty list
+    return -2;
+}
+
+int get(List L){
+    if(length(L) &gt; 0 &amp;&amp; index(L) &gt;= 0){
+        return L-&gt;cursor-&gt;data;
+    }
+    //return -2 to indicate an empty list
+    return -2;
+}
+
+bool equals(List A, List B){
+    Node A_node = A-&gt;front;
+    Node B_node = B-&gt;front;
+
+    if(length(A) != length(B)){
+        return false;
+    }
+    //loops through the node chains and returns false if any difference is detected between A and B
+    for(int i = 0; i &lt; length(A); i++){
+        if(A_node-&gt;data != B_node-&gt;data){
+            return false;
+        }
+
+        A_node = A_node-&gt;next;
+        B_node = B_node-&gt;next;
+    }
+
+    return true;
+}
+
+//Manipulation functions------------------------------------------------------------
+
+void clear(List L){
+    if(length(L) &gt; 0){
+        //delete's the front node until nothing is left
+        while(length(L) &gt; 0){
+            deleteFront(L);
+        }
+        L-&gt;length = 0;
+        L-&gt;index = -1;
+        //printf("index modified under clear!\n");
+    }
+
+    return;
+}
+
+void set(List L, int x){
+    //length and index check
+    if(length(L) &gt; 0 &amp;&amp; index(L) &gt;= 0){
+        //modify data of node that's under cursor
+        L-&gt;cursor-&gt;data = x;
+    }
+    return;
+}
+
+void moveFront(List L){
+    //length check
+    if(length(L) &gt; 0){
+        //set cursor to front and index to zero
+        L-&gt;cursor = L-&gt;front;
+        L-&gt;index = 0;
+        //printf("index modified under movefront, is now %d!\n", L-&gt;index);
+    }
+    //printf("index return %d!\n", L-&gt;index);
+    return;
+}
+
+void moveBack(List L){
+    //length check
+    if(length(L)&gt;0){
+        //set cursor to back and index to -1
+        L-&gt;cursor = L-&gt;back;
+        L-&gt;index = length(L) - 1;
+        //printf("index modified under moveBack!\n");
+    }
+    return;
+}
+
+void movePrev(List L){
+    //checks if cursor is at the front and if it isn't, then is moves to the previous node
+    if(L-&gt;cursor &amp;&amp; L-&gt;cursor != L-&gt;front){
+        L-&gt;cursor = L-&gt;cursor-&gt;previous;
+        L-&gt;index -= 1;
+        //printf("index modified under moveprev1!\n");
+    //otherwise, cursor becomes undefined
+    }else if(L-&gt;cursor &amp;&amp; L-&gt;cursor == L-&gt;front){
+        L-&gt;cursor = NULL;
+        L-&gt;index = -1;
+        //printf("index modified under MovePrev2!\n");
+    }else{
+        return;
+    }
+}
+
+void moveNext(List L){
+    //checks if cursor is at the back and if it isn't, then is moves to the next node
+    if(L-&gt;cursor &amp;&amp; L-&gt;cursor != L-&gt;back){
+        L-&gt;cursor = L-&gt;cursor-&gt;next;
+        L-&gt;index += 1;
+        //printf("index modified under move next1!\n");
+    //otherwise, cursor becomes undefined
+    }else if(L-&gt;cursor &amp;&amp; L-&gt;cursor == L-&gt;back){
+        L-&gt;cursor = NULL;
+        L-&gt;index = -1;
+        //printf("index modified under moenext2!\n");
+    }else{
+        return;
+    }
+}
+
+void prepend(List L, int x){
+    Node preNode = createNode(x);
+    //check if empty
+    if(length(L) &gt; 0){
+        //links the current front and new node together before making "preNode" the new front
+        preNode-&gt;next = L-&gt;front;
+        L-&gt;front-&gt;previous = preNode;
+        L-&gt;front = preNode;
+        L-&gt;length += 1;
+        if(L-&gt;cursor){
+            L-&gt;index += 1;
+            //printf("index modified under prepend1!\n");
+        }
+    }else{
+        //otherwise makes preNode the back and front
+        L-&gt;front = preNode;
+        L-&gt;back = preNode;
+        L-&gt;length += 1;
+        L-&gt;index += 1;
+        //printf("index modified under prepend2!\n");
+    }
+}
+
+void append(List L, int x){
+    Node postNode = createNode(x);
+    if(length(L) &gt; 0){
+        //links the current back and new node together before making "postNode" the new back
+        postNode-&gt;previous = L-&gt;back;
+        L-&gt;back-&gt;next = postNode;
+        L-&gt;back = postNode;
+        L-&gt;length += 1;
+        
+    }else{
+        //otherwise makes postNode the back and front
+        L-&gt;front = postNode;
+        L-&gt;back = postNode;
+        L-&gt;length += 1;
+        //printf("index modified under append2!\n");
+    }
+}
+
+void insertBefore(List L, int x){
+    //prereq check
+    if(length(L) &lt;= 0 || index(L) &lt; 0){
+        return;
+    }
+    
+    if(L-&gt;cursor != L-&gt;front){
+        Node beforeNode = createNode(x);
+        beforeNode-&gt;next = L-&gt;cursor;
+        beforeNode-&gt;previous = L-&gt;cursor-&gt;previous;
+        L-&gt;cursor-&gt;previous-&gt;next= beforeNode;
+        L-&gt;cursor-&gt;previous = beforeNode;
+        L-&gt;index += 1;
+        L-&gt;length += 1;
+        //printf("index modified under insertB!\n");
+    }else{
+    //if at front, prepend
+        prepend(L, x);
+    }
+    return;
+}
+
+void insertAfter(List L, int x){
+    //prereq check
+    if(length(L) &lt;= 0 || index(L) &lt; 0){
+        //checks if cursor is at the back
+        return;
+    }
+    if(L-&gt;cursor != L-&gt;back){
+        Node afterNode = createNode(x);
+        afterNode-&gt;previous = L-&gt;cursor;
+        afterNode-&gt;next = L-&gt;cursor-&gt;next;
+        L-&gt;cursor-&gt;next-&gt;previous = afterNode;
+        L-&gt;cursor-&gt;next = afterNode;
+        L-&gt;length += 1;
+        //printf("index modified under insertA!\n");
+
+    }else{
+    //if at back, append
+        append(L, x);
+    }
+
+    return;
+}
+
+void deleteFront(List L){
+    if(length(L) &gt; 0){
+        //get the front node
+        Node delete = L-&gt;front;
+        //check if cursor exists
+        if(L-&gt;cursor){
+            L-&gt;index -= 1;
+            //printf("index modified under delete1!\n");
+
+        }
+        //if front is the only node in the list
+        if(L-&gt;cursor == L-&gt;front){
+            L-&gt;cursor = NULL;
+            L-&gt;index -= 1;
+            //printf("index modified under delete2!\n");
+        }
+        //if non-empty create a new front, otherwise clear the front and back
+        if(length(L) &gt; 1){
+            L-&gt;front = L-&gt;front-&gt;next;
+            L-&gt;front-&gt;previous = NULL;
+        }else{
+            L-&gt;front = NULL;
+            L-&gt;back = NULL;
+        }
+
+        L-&gt;length -= 1;
+        //printf("index modified under delete3!\n");
+        //delete the old front node
+        deleteNode(&amp;delete);
+    }
+    return;
+}
+
+void deleteBack(List L){
+    if(length(L) &gt; 0){
+        //get the front node
+        Node delete = L-&gt;back;
+
+        //if back is the only node in the list
+        if(L-&gt;cursor == L-&gt;back){
+            L-&gt;cursor = NULL;
+            L-&gt;index = -1;
+        }
+        //if non-empty create a new front, otherwise clear the front and back
+        if(length(L) &gt; 1){
+            L-&gt;back = L-&gt;back-&gt;previous;
+            L-&gt;back-&gt;next = NULL;
+        }else{
+            L-&gt;front = NULL;
+            L-&gt;back = NULL;
+        }
+
+        L-&gt;length -= 1;
+        //delete the old front node
+        deleteNode(&amp;delete);
+    }
+    return;
+}
+
+void delete(List L){
+    if(length(L) &gt; 0 &amp;&amp; index(L) &gt;= 0){
+        Node curse = L-&gt;cursor;
+        if(L-&gt;cursor == L-&gt;front){
+            deleteFront(L);
+        }else if(L-&gt;cursor == L-&gt;back){
+            deleteBack(L);
+        }else{
+            //links the nodes before and after cursor before deleting cursor
+            curse-&gt;next-&gt;previous = curse-&gt;previous;
+            curse-&gt;previous-&gt;next = curse-&gt;next;
+            deleteNode(&amp;curse);
+            L-&gt;length -= 1;
+            L-&gt;index = -1;
+            L-&gt;cursor = NULL;
+        }
+    }
+
+    return;
+}
+
+void printList(FILE* output, List L){
+    if(L == NULL){
+        fprintf(stderr, "Warning, can't copy Null list");
+        exit(EXIT_FAILURE);
+    }
+
+    for(Node N = L-&gt;front; N != NULL; N = N-&gt;next){
+        fprintf(output, "%d", N-&gt;data);
+    }
+}
+
+List copyList(List L){
+    if(L == NULL){
+        fprintf(stderr, "Warning, can't copy Null list");
+        exit(EXIT_FAILURE);
+    }
+    List listCopy = newList();
+
+    for(Node N = L-&gt;front; N != NULL; N = N-&gt;next){
+        append(listCopy, N-&gt;data);
+</font>    }
+
+    return listCopy;
+}
+</pre>
+</body>
+</html>

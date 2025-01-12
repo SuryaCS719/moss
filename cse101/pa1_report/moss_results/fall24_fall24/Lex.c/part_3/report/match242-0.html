@@ -1,0 +1,108 @@
+<html>
+<head>
+<title>/fall24/rgiancha/pa1/Lex.c</title>
+</head>
+<body bgcolor="white">
+<hr/>
+/fall24/rgiancha/pa1/Lex.c<p></p><pre>
+/***
+* Ruhan Gianchandani
+* rgiancha
+* 2024 Fall CSE101 PA1 
+* Lex.c
+* All the functionality for Lex to sort a file using the List ADT
+***/ 
+
+#include&lt;stdio.h&gt;
+#include&lt;stdlib.h&gt;
+#include&lt;stdbool.h&gt;
+#include&lt;string.h&gt;
+#include "List.h"
+
+#define MAX_LEN 300
+
+<a name="1"></a><font color="#00FF00"><a href="match242-1.html#1" target="1"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_1_8.gif"/></a>
+
+int main(int argc, char * argv[]){
+
+    int line_count;
+    FILE *in, *out;
+    char line[MAX_LEN];
+
+    if (argc != 3){
+        fprintf(stderr, "Usage: %s &lt;input file&gt; &lt;output file&gt;\n", argv[0]);
+</font>        exit(1);
+    }
+
+    in = fopen(argv[1], "r");
+    if(in == NULL){
+        printf("Unable to open file %s for reading\n", argv[1]);
+        exit(1);
+    }
+
+    out = fopen(argv[2], "w");
+    if (out == NULL){
+<a name="0"></a><font color="#FF0000"><a href="match242-1.html#0" target="1"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_0_9.gif"/></a>
+
+        printf("Unable to open file %s for writing\n", argv[2]);
+        exit(1);
+    }
+
+    line_count = 0;
+    while(fgets(line, MAX_LEN, in) != NULL)  {
+        line_count++;
+    }
+
+    char** lines = calloc(line_count, sizeof(char*));
+</font>    fclose(in);
+    in = fopen(argv[1], "r");
+        if(in == NULL){
+        printf("Unable to open file %s for reading\n", argv[1]);
+        exit(1);
+    }
+
+    for (int i = 0; i &lt; line_count; i++) {
+        if (fgets(line, MAX_LEN, in) != NULL) {
+            lines[i] = malloc((strlen(line) + 1) * sizeof(char));
+            strcpy(lines[i], line);
+        }
+    }
+
+    List L = newList();
+    int x;
+    for (int i = 0; i &lt; line_count; i++) {
+        bool inserted = false;
+        for(moveFront(L); index(L)&gt;=0; moveNext(L)){
+            x = get(L);
+            if (strcmp(lines[i],lines[x]) &lt; 0){
+                insertBefore(L, i);
+                inserted = true;
+                break;
+            } 
+        }
+        if (!inserted){
+            append(L, i);
+        }
+    }
+
+    for(moveFront(L); index(L)&gt;=0; moveNext(L)){
+        x = get(L);
+        fprintf(out, lines[x]);
+        if (strchr(lines[x], '\n') == NULL){
+            fprintf(out, "\n");
+        }
+    }
+    for (int i = 0; i &lt; line_count; i++) {
+        free(lines[i]);
+    }
+    free(lines);
+    freeList(&amp;L);
+    
+    // close files 
+    fclose(in);
+    fclose(out);
+
+    return(0);
+}</pre>
+</body>
+</html>

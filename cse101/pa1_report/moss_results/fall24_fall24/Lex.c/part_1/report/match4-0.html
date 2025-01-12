@@ -1,0 +1,144 @@
+<html>
+<head>
+<title>/fall24/riyer4/pa1/Lex.c</title>
+</head>
+<body bgcolor="white">
+<hr/>
+/fall24/riyer4/pa1/Lex.c<p></p><pre>
+//--------------------------------------------------------------------------------
+// Ria Iyer
+//
+// riyer4@ucsc.edu
+//
+// Pa1
+// -------------------------------------------------------------------------------
+
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;string.h&gt;
+#include "List.h"
+
+#define maxlength 100
+
+// added functions to make it easier
+<a name="0"></a><font color="#FF0000"><a href="match4-1.html#0" target="1"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_0_99.gif"/></a>
+
+int countfilelines(char* filename);
+void filetoarray(char** array, int n, char* filename);
+void sortlist(List L, char** array, int n);
+void arraytofile(char** array, List L, char* filename);
+
+int main(int argc, char* argv[]) {
+    // check for # of arguments and send error if != 3
+    if (argc != 3) {
+        fprintf(stderr, "Needs 3 arguments");
+        exit(1);
+    }
+
+    // count # of lines in file
+    int numlines = countfilelines(argv[1]);
+
+    // allocate memory for each line 
+    char** stringarray = calloc(numlines, sizeof(char*));
+    for (int i = 0; i &lt; numlines; i++) {
+        stringarray[i] = calloc(maxlength, sizeof(char));
+    }
+
+    // read file into string array
+    filetoarray(stringarray, numlines, argv[1]);
+
+    // create and sort the list
+    List sortedlist = newList();
+    sortlist(sortedlist, stringarray, numlines);
+
+    // write the sorted array into the output file
+    arraytofile(stringarray, sortedlist, argv[2]);
+
+    // free memory allocated for the string array
+    for (int i = 0; i &lt; numlines; i++) {
+        free(stringarray[i]);
+    }
+    free(stringarray);
+
+    // free the list
+    freeList(&amp;sortedlist);
+
+    return 0;
+}
+
+// counts the lines in the file
+int countfilelines(char* filename) {
+    FILE* file = fopen(filename, "r");
+    if (file == NULL) {
+        fprintf(stderr, "Error: Unable to open file");
+        exit(1);
+    }
+
+    int linecount = 0;
+    char buffer[maxlength];
+    while (fgets(buffer, maxlength, file) != NULL) {
+        linecount++;
+    }
+
+    fclose(file);
+    return linecount;
+}
+
+// reads the input file and puts it into the array
+void filetoarray(char** array, int n, char* filename) {
+    FILE* file = fopen(filename, "r");
+    if (file == NULL) {
+        fprintf(stderr, "Error: Unable to open file");
+        exit(1);
+    }
+
+    int i = 0;
+    while (i &lt; n &amp;&amp; fgets(array[i], maxlength, file) != NULL) {
+        array[i][strcspn(array[i], "\n")] = '\0';  // Remove the newline character
+        i++;
+    }
+
+    fclose(file);
+}
+
+// sorts the indicies by sorting the string array
+void sortlist(List L, char** array, int n) {
+    // inserts the first index into the list
+    append(L, 0);
+
+    // sorting through insertion
+    for (int i = 1; i &lt; n; i++) {
+        char* currentstr = array[i];
+        moveFront(L);
+        while (index(L) &gt;= 0 &amp;&amp; strcmp(currentstr, array[get(L)]) &gt; 0) {
+            moveNext(L);
+        }
+        if (index(L) == -1) {
+            append(L, i);  // inserts at the end granted currentstr is the largest
+        } else {
+            insertBefore(L, i);  // inserts before the first larger element
+        }
+    }
+}
+
+// writes sorted array to output file using the sorted indicies
+void arraytofile(char** array, List L, char* filename) {
+    FILE* file = fopen(filename, "w");
+    if (file == NULL) {
+        fprintf(stderr, "Error: Unable to open file");
+        exit(1);
+    }
+
+    // goes through the list and prints the strings from the array
+    moveFront(L);
+    while (index(L) &gt;= 0) {
+        fprintf(file, "%s\n", array[get(L)]);
+        moveNext(L);
+</font>    }
+
+    fclose(file);
+}
+
+</pre>
+</body>
+</html>

@@ -1,0 +1,131 @@
+<html>
+<head>
+<title>/fall24/zzhan442/pa1/Lex.c</title>
+</head>
+<body bgcolor="white">
+<hr/>
+/fall24/zzhan442/pa1/Lex.c<p></p><pre>
+/***
+ * Zeyuan Zhang
+ * zzhan442
+ * 2024 Fall CSE101 PA1
+ * Lex.c
+ * Main program
+ ***/
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;stdbool.h&gt;
+#include &lt;string.h&gt;
+#include &lt;assert.h&gt;
+#include "List.h"
+
+#define MAX_LEN 300
+
+<a name="2"></a><font color="#0000FF"><a href="match92-0.html#2" target="0"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_2_12.gif"/></a>
+
+int main(int argc, char *argv[])
+{
+   int line_count;
+   FILE *in, *out;
+   char buffer[MAX_LEN];
+
+   // check command line for correct number of arguments
+   if (argc != 3)
+   {
+      printf("Usage: %s &lt;input file&gt; &lt;output file&gt;\n", argv[0]);
+      exit(1);
+</font>   }
+
+   // open input file
+   in = fopen(argv[1], "r");
+   if (in == NULL)
+   {
+<a name="0"></a><font color="#FF0000"><a href="match92-0.html#0" target="0"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_0_38.gif"/></a>
+
+      printf("Unable to open file %s for reading\n", argv[1]);
+      exit(1);
+   }
+
+   // count number of lines from input file
+   line_count = 0;
+   while (fgets(buffer, MAX_LEN, in) != NULL)
+   {
+      line_count++;
+   }
+   printf("line_count: %d\n", line_count);
+
+   // create a string array of length line_count
+   char **lines = malloc(line_count * sizeof(char *));
+   assert(lines != NULL);
+
+   // read each line and store it in the array
+   rewind(in);
+   for (int i = 0; i &lt; line_count; i++)
+   {
+      if (fgets(buffer, MAX_LEN, in) != NULL)
+      {
+         int len = strlen(buffer);
+         lines[i] = malloc((len + 1) * sizeof(char));
+         assert(lines[i] != NULL);
+         strcpy(lines[i], buffer);
+      }
+   }
+
+   // create a List whose elements are indices of string array, the order of nodes should be sorted
+   List L = newList();
+   prepend(L, 0);
+   for (int i = 1; i &lt; line_count; i++)
+</font>   {
+      moveBack(L);          // set cursor at back
+      while (index(L) &gt;= 0) // if cursor is defined
+      {
+         int x = get(L);                      // get element at cursor
+<a name="1"></a><font color="#00FF00"><a href="match92-0.html#1" target="0"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_1_32.gif"/></a>
+
+         if (strcmp(lines[i], lines[x]) &gt;= 0) // strcmp(s1, s2)&gt;=0 if s1 comes after/identical to s2
+         {
+            insertAfter(L, i);
+            break;
+         }
+         movePrev(L);
+      }
+      if (index(L) == -1)
+      {
+         prepend(L, i); // if L is traversed and no element inserted, then the element should be at front
+      }
+   }
+
+   // open output file
+   out = fopen(argv[2], "w");
+   if (out == NULL)
+   {
+      printf("Unable to open file %s for writing\n", argv[2]);
+      exit(1);
+   }
+
+   // print string array in alphabetical order to output file
+   moveFront(L);
+   while (index(L) &gt;= 0)
+   {
+      int x = get(L);
+      fprintf(out, "%s", lines[x]); // newline at last loop?
+      moveNext(L);
+   }
+
+   // close files
+   fclose(in);
+   fclose(out);
+
+   // free the allocated memory
+   for (int i = 0; i &lt; line_count; i++)
+   {
+      free(lines[i]);
+   }
+   free(lines);
+</font>   freeList(&amp;L);
+
+   return (0);
+}
+</pre>
+</body>
+</html>

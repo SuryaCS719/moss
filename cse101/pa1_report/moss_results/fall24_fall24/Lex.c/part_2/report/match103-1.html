@@ -1,0 +1,92 @@
+<html>
+<head>
+<title>/fall24/hzliang/pa1/Lex.c</title>
+</head>
+<body bgcolor="white">
+<hr/>
+/fall24/hzliang/pa1/Lex.c<p></p><pre>
+#include &lt;stdio.h&gt;
+#include &lt;string.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;stdbool.h&gt;
+#include &lt;stdint.h&gt;
+#include &lt;stdbool.h&gt;
+
+#include "List.h"
+#define MAX_LEN 10000
+
+<a name="0"></a><font color="#FF0000"><a href="match103-0.html#0" target="0"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_0_62.gif"/></a>
+
+int main(int argc, char* argv[]){
+    if (argc != 3) {
+        fprintf(stderr, "Usage: %s &lt;input file&gt; &lt;output file&gt;\n", argv[0]);
+        return 1;
+    }
+    FILE *in, *out;
+    in = fopen(argv[1],"r");
+    out = fopen(argv[2], "w");
+    if (in == NULL) {
+        fprintf(stderr, "Error: cannot open input file %s\n", argv[1]);
+        return 1;
+    }
+    if (out == NULL) {
+        fprintf(stderr, "Error: cannot open output file %s\n", argv[2]);
+        fclose(in);
+        return 1;
+    }
+
+    size_t n = 0;
+    char line[MAX_LEN];
+		while(fgets(line, MAX_LEN, in) != NULL){
+			n++;
+		}	
+		rewind(in);
+		char** strings = calloc(n,sizeof(line));
+		int x = 0;
+    while (fgets(line, MAX_LEN, in) != NULL) {
+        strings[x] = calloc(strlen(line)+1,sizeof(char));
+        strcpy(strings[x], line);
+				x++;
+    }
+		//printf("n:%ld\n",n);
+
+    List indList = newList();
+    append(indList, 0); //first element
+    for(int i = 1;i &lt; n;i++){
+        moveFront(indList); //move pointer to front of list.
+        while(index(indList) &gt;= 0){
+</font>            int currIn = get(indList);
+						//printf("CurrIn:%d\n",currIn);
+						//printf("string[i]:%s\n",strings[i]);
+            if(strcmp(strings[i],strings[currIn]) &lt; 0){
+                insertBefore(indList,i);
+<a name="1"></a><font color="#00FF00"><a href="match103-0.html#1" target="0"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_1_18.gif"/></a>
+
+                break;
+            }
+            moveNext(indList);
+        }
+				if(index(indList) == -1){
+					append(indList,i);
+				}
+    }
+    //print
+   	moveFront(indList);
+    while (index(indList) &gt;= 0) {
+				printf("%s\n", strings[get(indList)]);
+        fprintf(out, "%s", strings[get(indList)]);  
+        moveNext(indList);
+    }
+		for(int i = 0;i &lt; n;i++){
+</font>			free(strings[i]);
+		}
+
+    free(strings);
+    freeList(&amp;indList);  // Free the list
+    fclose(in);
+    fclose(out);
+    return 0;
+}
+</pre>
+</body>
+</html>

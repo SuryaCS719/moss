@@ -1,0 +1,109 @@
+<html>
+<head>
+<title>/fall24/smadhur/pa1/Lex.c</title>
+</head>
+<body bgcolor="white">
+<hr/>
+/fall24/smadhur/pa1/Lex.c<p></p><pre>
+/**
+ * Siddhant Madhur &lt;smadhur@ucsc.edu&gt;
+ * For PA1 (CSE 101)
+ */
+
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+
+#include "List.h"
+#include &lt;string.h&gt;
+
+#define MAX_CHARS_BUFFER 128
+
+<a name="0"></a><font color="#FF0000"><a href="match81-0.html#0" target="0"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_0_96.gif"/></a>
+
+int main(int argc, char** argv) 
+{
+    if (argc != 3) // Check if less than two arguments mentioned
+    {
+        fprintf(stderr, "Program can only utilize 2 arguments\n");
+        exit(1);
+    }
+
+
+    FILE *in, *out;
+    char* line = calloc(sizeof(char), MAX_CHARS_BUFFER);
+
+    in = fopen(argv[1], "r");
+    if (in == NULL) {
+        fprintf(stderr, "Could not open file\n");
+        exit(1);
+    }
+
+    out = fopen(argv[2], "w");
+    if (out == NULL) {
+        fprintf(stderr, "Could not open file\n");
+        exit(1);
+    }
+
+    int idx = 0;
+
+    List L = newList();
+
+    // create array of words
+
+    char *words[1028];
+
+
+
+    while (fgets(line, MAX_CHARS_BUFFER, in) != NULL)
+    {
+        char *word = malloc(sizeof(char) * 32);
+        int token_n = 0;
+        while(token_n &lt; 32)
+        {
+            if (line[token_n] == '\n' || line[token_n] == '\0')
+            {
+                break;
+            }
+            word[token_n] = line[token_n];
+            token_n += 1;
+        }
+        word[token_n] = '\0';
+        words[idx] = word;
+
+        idx += 1;
+    }
+
+    for (int i = 0; i &lt; idx; i++)
+    {
+        moveFront(L);
+        while (index(L) &gt;= 0)
+        {
+            if (strcmp(words[i],words[get(L)] ) &lt; 0) 
+            {
+                insertBefore(L, i);
+                break;
+            }
+            moveNext(L);
+        }
+        if (index(L) == -1)
+        {
+            append(L, i);
+        }
+    }
+
+    for (moveFront(L); index(L) &gt;= 0; moveNext(L))
+    {
+        fprintf(out, "%s \n", words[get(L)]);
+    }
+
+    fclose(out);
+    fclose(in);
+    for (int i = 0; i &lt; (idx); i++) 
+    {
+        free(words[i]);
+</font>    }
+    free(line);
+    freeList(&amp;L);
+}</pre>
+</body>
+</html>

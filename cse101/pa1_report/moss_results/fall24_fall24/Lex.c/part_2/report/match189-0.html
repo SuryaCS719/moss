@@ -1,0 +1,112 @@
+<html>
+<head>
+<title>/fall24/utewari/pa1/Lex.c</title>
+</head>
+<body bgcolor="white">
+<hr/>
+/fall24/utewari/pa1/Lex.c<p></p><pre>
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;assert.h&gt;
+#include &lt;stdbool.h&gt;
+#include &lt;string.h&gt;
+#include "List.h"
+
+<a name="0"></a><font color="#FF0000"><a href="match189-1.html#0" target="1"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_0_14.gif"/></a>
+
+void freeLines(char **lineArray, int count) {
+    for (int i = 0; i &lt; count; i++) {
+        free(lineArray[i]);
+    }
+    free(lineArray);
+}
+
+int main(int argc, char *argv[]) {
+    if (argc != 3) {
+        fprintf(stderr, "Usage: %s &lt;input_file&gt; &lt;output_file&gt;\n", argv[0]);
+</font>        return 1;
+    }
+
+    FILE *infile = fopen(argv[1], "r");
+    if (infile == NULL) {
+        perror("Error opening input file");
+        return 1;
+    }
+
+    FILE *outfile = fopen(argv[2], "w");
+    if (outfile == NULL) {
+        perror("Error opening output file");
+        fclose(infile); // Close infile if outfile fails to open
+        return 1;
+    }
+
+    // Counting the lines in the file
+    int lineCount = 0;
+    char buffer[256];
+
+    while (fgets(buffer, sizeof(buffer), infile) != NULL) {
+        lineCount++;
+    }
+    rewind(infile);
+
+    // Allocating memory for each line
+    char **lineArray = (char **)malloc(lineCount * sizeof(char *));
+    if (lineArray == NULL) { // Check allocation success
+        perror("Memory allocation failed for lineArray");
+        fclose(infile);
+        fclose(outfile);
+        freeLines(lineArray, lineCount);
+        return 1;
+    }
+    for (int i = 0; i &lt; lineCount; i++) {
+        lineArray[i] = (char *)malloc(256 * sizeof(char));
+        if (lineArray[i] == NULL) { // Check each line allocation
+            perror("Memory allocation failed for lineArray[i]");
+            freeLines(lineArray, i); // Free already allocated lines
+            fclose(infile);
+            fclose(outfile);
+            return 1;
+        }
+    }
+
+    // Read lines into the array
+    for (int i = 0; i &lt; lineCount; i++) {
+        fgets(lineArray[i], 256, infile);
+        lineArray[i][strcspn(lineArray[i], "\n")] = 0; // Remove newline character
+    }
+    fclose(infile);
+
+    List list = newList();
+    for (int i = 0; i &lt; lineCount; i++) {
+<a name="1"></a><font color="#00FF00"><a href="match189-1.html#1" target="1"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_1_9.gif"/></a>
+
+        if (i == 0) {
+            append(list, i);
+        } else {
+            moveFront(list);
+            while (index(list) &gt;= 0 &amp;&amp; strcmp(lineArray[get(list)], lineArray[i]) &lt; 0) {
+                moveNext(list);
+            }
+            if (index(list) &gt;= 0) {
+</font>                insertBefore(list, i);
+            } else {
+                append(list, i);
+            }
+        }
+    }
+
+    moveFront(list);
+    for (int i = 0; i &lt; length(list); i++) {
+        fprintf(outfile, "%s\n", lineArray[get(list)]);
+        moveNext(list);
+    }
+
+    fclose(outfile);
+    freeList(&amp;list);
+    freeLines(lineArray, lineCount);
+    return 0;
+}
+
+</pre>
+</body>
+</html>

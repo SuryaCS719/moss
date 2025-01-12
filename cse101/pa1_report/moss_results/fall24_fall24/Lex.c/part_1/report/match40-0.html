@@ -1,0 +1,129 @@
+<html>
+<head>
+<title>/fall24/sesteqla/pa1/Lex.c</title>
+</head>
+<body bgcolor="white">
+<hr/>
+/fall24/sesteqla/pa1/Lex.c<p></p><pre>
+/* 
+* Samina Esteqlal
+* sesteqla
+* 2024 Fall CSE101 PA1
+* Lex.c
+* Main program where the inputs are arranged in lexicographic/alphabetical order
+*/
+
+#include &lt;stdlib.h&gt;
+#include &lt;string.h&gt;
+#include &lt;stdio.h&gt;
+#include "List.h"
+
+<a name="0"></a><font color="#FF0000"><a href="match40-1.html#0" target="1"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_0_45.gif"/></a>
+
+int count(char *fileName) {
+    FILE *f = fopen(fileName, "r");
+
+    if (f == NULL) {
+        fprintf(stderr, "Error, can't open file '%s'\n", fileName);
+        exit(1);
+    }
+
+    int counter = 0;
+    char l[1000];
+
+    while (fgets(l, 1000, f) != NULL) {
+        counter++;
+    }
+
+    fclose(f);
+    
+    return counter;
+}
+
+void read(char *fileName, char **lines, int numLines) {
+    FILE *f = fopen(fileName, "r");
+
+    if (f == NULL) {
+        fprintf(stderr, "Error, can't open file '%s'\n", fileName);
+        exit(1);
+    }
+
+    char l[1000];
+    int counter = 0;
+
+    while (fgets(l, 256, f) != NULL &amp;&amp; counter &lt; numLines) {
+        lines[counter] = malloc((strlen(l) + 1) * sizeof(char));
+        strcpy(lines[counter], l);
+        counter++;
+    }
+
+    fclose(f);
+}
+
+int main(int argc, char **argv) {
+	if (argc != 3) {										// Check if the correct number of arguments are provided
+		fprintf(stderr, "Usage: %s &lt;input file&gt; &lt;output file&gt;\n", argv[0]);
+</font><a name="2"></a><font color="#0000FF"><a href="match40-1.html#2" target="1"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_2_18.gif"/></a>
+
+		exit(1);
+	}
+	
+    int counter = count(argv[1]);
+    char **l = malloc(counter * sizeof(char *));
+    if (l == NULL) {								// Check if input file can be opened
+        fprintf(stderr, "Error, cannot open input file...\n");
+        exit(1);
+    }
+
+    read(argv[1], l, counter);
+
+    List L = newList();
+    
+    append(L, 0);
+    
+    for (int i = 1; i &lt; counter; i++) {
+        moveFront(L);
+
+        while (index(L) &gt;= 0 &amp;&amp; strcmp(l[i], l[get(L)]) &gt; 0) {
+</font><a name="1"></a><font color="#00FF00"><a href="match40-1.html#1" target="1"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_1_23.gif"/></a>
+
+            moveNext(L);
+        }
+
+        if (index(L) &gt;= 0) {
+            insertBefore(L, i);
+        }
+
+        else {
+            append(L, i);
+        }
+    }
+
+    FILE *outputFile = fopen(argv[2], "w");
+
+    if (outputFile == NULL) {
+        fprintf(stderr, "Error, output file '%s' could not be opened.\n", argv[2]);
+        exit(1);
+    }		
+
+    moveFront(L);
+
+    while (index(L) &gt;= 0) {
+        fprintf(outputFile, "%s", l[get(L)]);
+        moveNext(L);
+    }
+
+    fclose(outputFile);
+
+    freeList(&amp;L);
+
+    for (int i = 0; i &lt; counter; i++) {
+</font>        free(l[i]);
+    }
+
+    free(l);
+    
+  	return 0;
+}</pre>
+</body>
+</html>

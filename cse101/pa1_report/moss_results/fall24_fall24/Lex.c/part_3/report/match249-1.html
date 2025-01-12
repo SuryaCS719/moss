@@ -1,0 +1,114 @@
+<html>
+<head>
+<title>/fall24/misaini/pa1/Lex.c</title>
+</head>
+<body bgcolor="white">
+<hr/>
+/fall24/aediga/pa1/Lex.c<p></p><pre>
+//Ash Ediga
+//Cruz ID: 1862893
+//pa1
+
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;string.h&gt;
+#include "List.h"
+
+#define MAX_LINE_LENGTH 256
+
+int main(int argc, char* argv[]) {
+    if (argc != 3) {
+        fprintf(stderr, "Usage: %s &lt;input file&gt; &lt;output file&gt;\n", argv[0]);
+        exit(EXIT_FAILURE);
+    }
+
+<a name="1"></a><font color="#00FF00"><a href="match249-0.html#1" target="0"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_1_8.gif"/></a>
+
+    char* inputFileName = argv[1];
+    char* outputFileName = argv[2];
+
+   
+    FILE* inputFile = fopen(inputFileName, "r");
+    if (inputFile == NULL) {
+        fprintf(stderr, "Error: unable to open input file %s\n", inputFileName);
+</font>        exit(EXIT_FAILURE);
+    }
+
+    FILE* outputFile = fopen(outputFileName, "w");
+    if (outputFile == NULL) {
+        fprintf(stderr, "Error: unable to open output file %s\n", outputFileName);
+        fclose(inputFile);
+        exit(EXIT_FAILURE);
+    }
+
+    // reda
+    char** lines = NULL;
+    int lineCount = 0;
+    int capacity = 10;
+
+    lines = malloc(capacity * sizeof(char*));
+    if (lines == NULL) {
+        fprintf(stderr, "Error: unable to allocate memory for lines\n");
+        fclose(inputFile);
+        fclose(outputFile);
+        exit(EXIT_FAILURE);
+    }
+
+    char buffer[MAX_LINE_LENGTH];
+    while (fgets(buffer, MAX_LINE_LENGTH, inputFile) != NULL) {
+        if (lineCount &gt;= capacity) {
+            capacity *= 2;
+            lines = realloc(lines, capacity * sizeof(char*));
+            if (lines == NULL) {
+                fprintf(stderr, "Error: unable to reallocate memory for lines\n");
+                fclose(inputFile);
+                fclose(outputFile);
+                exit(EXIT_FAILURE);
+            }
+        }
+<a name="0"></a><font color="#FF0000"><a href="match249-0.html#0" target="0"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_0_9.gif"/></a>
+
+        lines[lineCount] = malloc((strlen(buffer) + 1) * sizeof(char));
+        if (lines[lineCount] == NULL) {
+            fprintf(stderr, "Error: unable to allocate memory for line\n");
+            fclose(inputFile);
+            fclose(outputFile);
+            exit(EXIT_FAILURE);
+</font>        }
+        strcpy(lines[lineCount], buffer);
+        lineCount++;
+    }
+
+    
+    List sortedIndices = newList();
+    for (int i = 0; i &lt; lineCount; i++) {
+        moveFront(sortedIndices);
+        while (index(sortedIndices) &gt;= 0 &amp;&amp; strcmp(lines[i], lines[get(sortedIndices)]) &gt; 0) {
+            moveNext(sortedIndices);
+        }
+        if (index(sortedIndices) == -1) {
+            append(sortedIndices, i);
+        } else {
+            insertBefore(sortedIndices, i);
+        }
+    }
+
+    //write to output
+    for (moveFront(sortedIndices); index(sortedIndices) &gt;= 0; moveNext(sortedIndices)) {
+        fprintf(outputFile, "%s", lines[get(sortedIndices)]);
+    }
+
+    
+    fclose(inputFile);
+    fclose(outputFile);
+    for (int i = 0; i &lt; lineCount; i++) {
+        free(lines[i]);
+    }
+    free(lines);
+    freeList(&amp;sortedIndices);
+
+    return 0;
+}
+</pre>
+</body>
+</html>

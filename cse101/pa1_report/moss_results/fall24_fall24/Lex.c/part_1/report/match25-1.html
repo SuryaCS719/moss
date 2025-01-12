@@ -1,0 +1,104 @@
+<html>
+<head>
+<title>/fall24/ajakilat/pa1/Lex.c</title>
+</head>
+<body bgcolor="white">
+<hr/>
+/fall24/ajakilat/pa1/Lex.c<p></p><pre>
+/***
+ * Ananya Jakilati
+ * ajakilat
+ * 2024 Fall CSE 101 PA1
+ * Lex.c
+ * Main file to alphabetize the lines and print in output file
+ ***/
+
+#include&lt;string.h&gt;
+#include&lt;stdio.h&gt;
+#include&lt;assert.h&gt;
+#include&lt;stdlib.h&gt;
+#include"List.h"
+
+<a name="0"></a><font color="#FF0000"><a href="match25-0.html#0" target="0"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_0_97.gif"/></a>
+
+int main(int argc, char *argv[]) {
+  if (argc != 3) {
+    fprintf(stderr, "USAGE: Lex &lt;input_file&gt; &lt;output_file&gt;\n");
+    exit(EXIT_FAILURE);
+  }
+
+  FILE *input1 = fopen(argv[1], "r");
+  FILE *output = fopen(argv[2], "w");
+
+  if (input1 == NULL || output == NULL) {
+    printf("File Error: could not open file\n");
+    exit(EXIT_FAILURE);
+  }
+  
+  int lines = 0;
+  char letter = 'a';
+  int max = 0;
+  int count_max = 0;
+  while ((letter = fgetc(input1)) != EOF) {
+    count_max = count_max + 1;
+    if (letter == '\n') {
+      lines = lines + 1;
+      if (count_max &gt; max) {
+        max = count_max;
+      }
+      count_max = 0;
+    }
+  }
+
+  fclose(input1);
+
+  FILE *input2 = fopen(argv[1], "r"); 
+  char **linesArray = malloc((lines+1)*sizeof(char *));
+  int line = 0;
+  int num_lines = 0;
+  while (!feof(input2) &amp;&amp; !ferror(input2)) {
+    linesArray[line] = malloc((max+1)*sizeof(char));
+    if (fgets(linesArray[line], max+1, input2) != NULL) {
+      line = line + 1;
+    }
+    num_lines = num_lines + 1;
+  }
+  
+  List sorted_list = newList();
+  append(sorted_list, 0);
+  moveFront(sorted_list);
+  for (int i = 1; i &lt; line; i++) {
+    moveFront(sorted_list);
+    for (int j = 0; j &lt; length(sorted_list); j++) {
+      if (strcmp(linesArray[get(sorted_list)], linesArray[i]) &gt; 0) {
+        insertBefore(sorted_list, i);
+	break;
+      } else if ((j == (length(sorted_list) - 1))) {
+        insertAfter(sorted_list, i);
+        break;
+      } else {
+        moveNext(sorted_list);
+      }
+    }
+    //printf(" %s \n", linesArray[i]);
+  }
+
+  //printList(output, sorted_list);
+  moveFront(sorted_list);
+  for (int i = 0; i &lt; length(sorted_list); i++) {
+    int a = get(sorted_list);
+    fprintf(output, "%s", linesArray[a]);
+    moveNext(sorted_list);
+  }
+  for (int i = 0; i &lt; num_lines; i++){
+    free(linesArray[i]);
+  }
+  freeList(&amp;sorted_list);
+  free(linesArray);
+  fclose(input2);
+  fclose(output);
+  return 0;
+</font>}
+</pre>
+</body>
+</html>

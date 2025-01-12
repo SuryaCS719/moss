@@ -1,0 +1,109 @@
+<html>
+<head>
+<title>/fall24/coslewis/pa1/Lex.c</title>
+</head>
+<body bgcolor="white">
+<hr/>
+/fall24/coslewis/pa1/Lex.c<p></p><pre>
+/***
+* Cole Lewis
+* coslewis
+* 2040477
+* 2024 Fall CSE101 PA1
+* Lex.c
+* Lex file for I/O for the IntegerList ADT
+***/
+
+#include &lt;assert.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;stdio.h&gt;
+#include &lt;string.h&gt;
+#include &lt;stdbool.h&gt;
+#include "List.h"
+
+#define MAX_LEN 300
+
+<a name="0"></a><font color="#FF0000"><a href="match44-0.html#0" target="0"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_0_99.gif"/></a>
+
+int main(int argc, char * argv[]) {
+    int line_count;
+
+    FILE *in;
+    FILE *out;
+    char line[MAX_LEN];
+
+    if (argc != 3) { // 3 because the program name counts as an argument
+        fprintf(stderr, "Usage: %s &lt;input file&gt; &lt;output file&gt;\n", argv[0]);
+        exit(EXIT_FAILURE);
+    }
+
+    in = fopen(argv[1], "r");
+    if (in == NULL) {
+        fprintf(stderr, "Unable to open file %s for reading\n", argv[1]);
+        exit(EXIT_FAILURE);
+    }
+
+    out = fopen(argv[2], "w");
+    if (out == NULL) {
+        fprintf(stderr, "Unable to open file %s for writing\n", argv[2]);
+        exit(EXIT_FAILURE);
+    }
+
+    line_count = 0;
+    while (fgets(line, MAX_LEN, in) != NULL) {
+        line_count++;
+    }
+
+    rewind(in); // rewinds "in" file so that when I read it again, it starts from the beginning
+
+    char** strArr = malloc(line_count * sizeof(char*));
+    assert(strArr != NULL);
+
+    int lineI = 0;
+    while (fgets(line, MAX_LEN, in) != NULL) {
+        line[strcspn(line, "\n")] = 0;
+        strArr[lineI] = malloc(sizeof(char[MAX_LEN]));
+        memcpy(strArr[lineI], line, sizeof(char[MAX_LEN]));
+        lineI++;
+    }
+
+    List L = newList();
+    append(L, 0); // places the first item into the empty list
+
+    for (int i = 1; i &lt; line_count; i++) {
+        moveBack(L);
+        while (index(L) &gt;= 0) {
+            if (strcmp(strArr[i], strArr[get(L)]) &gt; 0) {
+                insertAfter(L, i);
+                break;
+            } else if (index(L) == 0) {
+                insertBefore(L, i);
+                break;
+            }
+            movePrev(L);
+        }
+    }
+
+    
+    // printList(stdout, L);
+    // printf("\n");
+    moveFront(L);
+    for (int i = 0; i &lt; length(L); i++) {
+        // printf("%s\n", strArr[get(L)]);
+        fprintf(out, "%s\n", strArr[get(L)]);
+        moveNext(L);
+    }
+
+    freeList(&amp;L);
+    for (int i = 0; i &lt; line_count; i++) {
+        free(strArr[i]);
+    }
+    free(strArr);
+    strArr = NULL;
+
+    fclose(in);
+    fclose(out);
+    exit(EXIT_SUCCESS);
+</font>}</pre>
+</body>
+</html>

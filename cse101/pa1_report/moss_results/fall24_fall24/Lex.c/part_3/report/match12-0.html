@@ -1,0 +1,91 @@
+<html>
+<head>
+<title>/fall24/tpdeshmu/pa1/Lex.c</title>
+</head>
+<body bgcolor="white">
+<hr/>
+/fall24/tpdeshmu/pa1/Lex.c<p></p><pre>
+/***
+* Tanmay Deshmukh // First and Last Name
+* tpdeshmu // UCSC UserID
+* 2024 Fall CSE101 PA1 // Replace ID with assignment number 
+* Lex.c // FileName
+* Uses List ADT for alphabetically organizing multiple strings // Description
+***/ 
+#include&lt;stdio.h&gt;
+#include&lt;stdlib.h&gt;
+#include&lt;string.h&gt;
+#include "List.h"
+#define MAX_LEN 300
+<a name="0"></a><font color="#FF0000"><a href="match12-1.html#0" target="1"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_0_98.gif"/></a>
+
+int main(int argc, char** argv){
+    if(argc != 3){
+        fprintf(stderr,"Two arguments were not given\n");
+        exit(EXIT_FAILURE);
+    }
+    FILE* input = fopen(argv[1],"r");
+    if(input==NULL){
+      printf("Unable to open file %s for reading\n", argv[1]);
+      exit(1);
+    }
+    FILE* output = fopen(argv[2],"w");
+    if(output==NULL){
+      printf("Unable to open file %s for writing\n", argv[2]);
+      exit(1);
+    }
+    char line[MAX_LEN];
+    int count = 0;
+    char* token;
+    while(fgets(line, MAX_LEN, input)!=NULL){
+        token = strtok(line,"\n");
+        while(token!=NULL){
+            count++;
+            token = strtok(NULL, "\n");
+        }
+    }
+    char** lines = malloc(sizeof(char*)*count);
+    rewind(input);
+    int ind = 0;
+    while(fgets(line, MAX_LEN, input)!=NULL){
+        token = strtok(line,"\n");
+        while(token!=NULL){
+            lines[ind]=strdup(token);
+            token = strtok(NULL, "\n");
+            ind++;
+        }
+    }
+    List sorted = newList();
+    append(sorted,0);
+    for(int i = 1; i&lt;count; i++){
+        moveFront(sorted);
+        while(index(sorted)!=-1){
+            if(strcmp(lines[i],lines[get(sorted)])&lt;=0){
+                insertBefore(sorted, i);
+                break;
+            }
+            moveNext(sorted);
+        }
+        if(index(sorted)==-1){
+            append(sorted,i);
+        }
+    }
+    moveFront(sorted);
+    while(index(sorted)!=-1){
+        fprintf(output, lines[get(sorted)]);
+        if(index(sorted)&lt;length(sorted)-1){
+            fprintf(output, "\n");
+        }
+        moveNext(sorted);
+    }
+    fclose(input);
+    fclose(output);
+    for(int i = 0; i&lt;count; i++){
+        free(lines[i]);
+    }
+    free(lines);
+    freeList(&amp;sorted); 
+</font>    return 0;
+}</pre>
+</body>
+</html>

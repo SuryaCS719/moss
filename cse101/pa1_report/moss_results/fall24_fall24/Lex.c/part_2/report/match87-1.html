@@ -1,0 +1,161 @@
+<html>
+<head>
+<title>/fall24/sapottab/pa1/Lex.c</title>
+</head>
+<body bgcolor="white">
+<hr/>
+/fall24/sapottab/pa1/Lex.c<p></p><pre>
+//-----------------------------------------------------------------------------
+// Saish Pottabathula
+// 2068265
+// PA1
+// Lex.c
+//-----------------------------------------------------------------------------
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;stdbool.h&gt;
+#include &lt;string.h&gt;
+#include "List.h"
+
+#define MAX_LEN 300
+
+<a name="1"></a><font color="#00FF00"><a href="match87-0.html#1" target="0"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_1_10.gif"/></a>
+
+int main(int argc, char *argv[]) {
+    int line_count;
+    FILE *in, *out;
+    char line[MAX_LEN];
+    char tokenBuffer[MAX_LEN];
+    char *token;
+    
+
+    // check command line for correct number of arguments
+    if (argc != 3) {
+        printf("Usage: %s &lt;input file&gt; &lt;output file&gt;\n", argv[0]);
+</font>        exit(1);
+    }
+
+    // open files for reading and writing 
+    in = fopen(argv[1], "r");
+    if (in == NULL) {
+        printf("Unable to open file %s for reading\n", argv[1]);
+        exit(1);
+    }
+
+    out = fopen(argv[2], "w");
+    if (out == NULL) {
+<a name="0"></a><font color="#FF0000"><a href="match87-0.html#0" target="0"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_0_54.gif"/></a>
+
+        printf("Unable to open file %s for writing\n", argv[2]);
+        exit(1);
+    }
+
+    // find out line count
+    line_count = 0;
+    while (fgets(line, MAX_LEN, in) != NULL) { // fgets reads each line of up to MAX_LEN chars
+        line_count++;
+    }
+    rewind(in); // reset file pointer to the beginning of the file
+
+    // initialize char array of length line_count
+    char **strList = malloc(line_count * sizeof(char *));  // array of strings (pointers to char)
+    int *indices = malloc(line_count * sizeof(int));       // array of line indices
+    int indexing = 0;
+
+    // process each line
+    while (fgets(line, MAX_LEN, in) != NULL) { 
+        tokenBuffer[0] = '\0'; // initialize tokenBuffer as an empty string
+
+        // get first token
+        token = strtok(line, " \n");  // look for space or new line as delimiters
+        while (token != NULL) {  // process each token in the line
+            // update token buffer
+            strcat(tokenBuffer, "   ");
+            strcat(tokenBuffer, token);
+            //strcat(tokenBuffer, "\n");
+
+            // get next token
+            token = strtok(NULL, " \n");
+        }
+
+        // allocate memory for storing this line's tokens and copy tokenBuffer to strList
+        strList[indexing] = malloc((strlen(tokenBuffer) + 1) * sizeof(char));
+        strcpy(strList[indexing], tokenBuffer);  // copy tokenBuffer to strList
+
+        indices[indexing] = indexing;  // store the index of the line
+        indexing++;
+
+        // print tokens and line index to the output file
+        //fprintf(out, "line %d:\n", indexing);
+        //fprintf(out, "%s\n", tokenBuffer);
+    }
+   /*
+    // print strList and indices for verification
+    printf("Printing strList (Array of strings) and indices (Array of line indices):\n");
+    for (int i = 0; i &lt; line_count; i++) {
+        printf("strList[%d]: %s\n", i, strList[i]);
+        printf("indices[%d]: %d\n", i, indices[i]);
+   }
+   */
+   
+
+   if (line_count == 0){
+      fclose(in);
+      fclose(out);
+      free(strList);
+      free(indices);
+      return 0;
+   }
+
+   List L = newList();
+   append(L, 0);
+
+   for (int i = 1; i &lt; line_count; i++) {
+      // Move to the front of the list
+      moveFront(L);
+      
+      // Get the current index we're trying to place
+      int currentIndex = i;
+
+      // Traverse the list and find the correct position to insert currentIndex
+      while (index(L) &gt;= 0) {
+         int listIndex = get(L);  // Get the current index in the List
+         
+         // Compare the strings at the two indices
+         if (strcmp(strList[currentIndex], strList[listIndex]) &lt; 0) {
+               // If current string should come before, insert it before this index
+               insertBefore(L, currentIndex);
+</font>               break;
+         }
+         moveNext(L);  // Move to the next element in the list
+      }
+
+      // If we reach the end of the list, append the index to the end
+      if (index(L) == -1) {
+         append(L, currentIndex);
+      }
+   }
+   moveFront(L);
+   while (index(L) &gt;= 0) {
+<a name="2"></a><font color="#0000FF"><a href="match87-0.html#2" target="0"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_2_8.gif"/></a>
+
+      fprintf(out, "%s\n", strList[get(L)]);
+      moveNext(L);
+   }
+
+   for (int i = 0; i &lt; line_count; i++) {
+      free(strList[i]);
+   }
+   free(strList);
+   free(indices);
+   freeList(&amp;L);
+
+    // close files 
+    fclose(in);
+    fclose(out);
+</font>
+    return 0;
+}
+</pre>
+</body>
+</html>

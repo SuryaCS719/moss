@@ -1,0 +1,96 @@
+<html>
+<head>
+<title>/fall24/scaquino/pa1/Lex.c</title>
+</head>
+<body bgcolor="white">
+<hr/>
+/fall24/asnagara/pa1/Lex.c<p></p><pre>
+/***
+* Ashwin Nagarajan 
+* asnagara 
+* 2024 Fall CSE101 PA1
+* Lex.c 
+* This file reads lines from an input text file and sorts them lexicographically using the List ADT. It writes these to an output file.
+***/ 
+
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;string.h&gt;
+#include "List.h" 
+
+#define MAX_LINE_LENGTH 1000
+
+int main(int argc, char *argv[]) {
+    if (argc != 3) {
+        fprintf(stderr, "Usage: %s &lt;input file&gt; &lt;output file&gt;\n", argv[0]);
+        exit(EXIT_FAILURE);
+    }
+
+<a name="0"></a><font color="#FF0000"><a href="match92-0.html#0" target="0"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_0_19.gif"/></a>
+
+    FILE *in = fopen(argv[1], "r");
+    if (in == NULL) {
+        fprintf(stderr, "Error: Unable to open file %s for reading\n", argv[1]);
+        exit(EXIT_FAILURE);
+    }
+
+    char **lines = NULL;
+    char buffer[MAX_LINE_LENGTH];
+    int lineCount = 0;
+
+    while (fgets(buffer, MAX_LINE_LENGTH, in) != NULL) {
+        lineCount++;
+</font>    }
+
+    lines = (char **)malloc(lineCount * sizeof(char *));
+    rewind(in); 
+
+    int i = 0;
+    while (fgets(buffer, MAX_LINE_LENGTH, in) != NULL) {
+        buffer[strcspn(buffer, "\n")] = '\0'; 
+        lines[i] = malloc(strlen(buffer) + 1); 
+        strcpy(lines[i], buffer);             
+        i++;
+    }
+    fclose(in); 
+
+    List list = newList();
+    for (i = 0; i &lt; lineCount; i++) {
+        moveFront(list);
+        while (index(list) &gt;= 0 &amp;&amp; strcmp(lines[get(list)], lines[i]) &lt; 0) {
+            moveNext(list);
+        }
+
+<a name="1"></a><font color="#00FF00"><a href="match92-0.html#1" target="0"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_1_9.gif"/></a>
+
+        if (index(list) &gt;= 0) {
+            insertBefore(list, i);
+        } else {
+            append(list, i);
+        }
+    }
+
+    FILE *out = fopen(argv[2], "w");
+    if (out == NULL) {
+</font>        fprintf(stderr, "Error: Unable to open file %s for writing\n", argv[2]);
+        exit(EXIT_FAILURE);
+    }
+
+    moveFront(list);
+    while (index(list) &gt;= 0) {
+        fprintf(out, "%s\n", lines[get(list)]);
+        moveNext(list);
+    }
+
+    for (i = 0; i &lt; lineCount; i++) {
+        free(lines[i]);
+    }
+    free(lines);
+    freeList(&amp;list);
+    fclose(out);
+
+    return 0;
+}
+</pre>
+</body>
+</html>

@@ -1,0 +1,96 @@
+<html>
+<head>
+<title>/fall24/mtai4/pa1/Lex.c</title>
+</head>
+<body bgcolor="white">
+<hr/>
+/fall24/mtai4/pa1/Lex.c<p></p><pre>
+//Mitchell Tai, mtai4,cse101, pa1, oct7,main program to indirectly sort a list,Lex.c,no special instructions.
+
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;string.h&gt;
+#include "List.h"
+
+#define MAX_LINE_LENGTH 255
+
+<a name="0"></a><font color="#FF0000"><a href="match106-0.html#0" target="0"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_0_70.gif"/></a>
+
+int main(int argc, char* argv[]) {
+    if (argc != 3) {
+        fprintf(stderr, "Usage: %s &lt;input file&gt; &lt;output file&gt;\n", argv[0]);
+        exit(-1);
+    }
+
+    FILE* in = fopen(argv[1], "r");
+    FILE* out = fopen(argv[2], "w");
+    if (in == NULL || out == NULL) {
+        fprintf(stderr, "Error: unable to open file %s for R/W.\n", in == NULL ? argv[1] : argv[2]);
+        if (out==NULL) { fclose(in); }
+        if (in==NULL) { fclose(out); }
+	exit(-1);
+    }
+
+    char line[MAX_LINE_LENGTH];
+    int lineCount = 0;
+    while (fgets(line, MAX_LINE_LENGTH, in) != NULL) {
+        lineCount++;
+    }
+    rewind(in);
+
+    
+    char** lines = calloc(lineCount, sizeof(char*));
+    if (lines == NULL) {
+        fprintf(stderr, "Error: unable to calloc.\n");
+        fclose(in);
+        fclose(out);
+        exit(-1);
+    }
+
+    for (int i = 0; i &lt; lineCount; i++) {
+        fgets(line, MAX_LINE_LENGTH, in);
+        lines[i] = calloc(strlen(line) + 1, sizeof(char));
+        if (lines[i] == NULL) {
+            fprintf(stderr, "Error: unable to calloc for line.\n");
+            fclose(in);
+            fclose(out);
+            exit(-1);
+        }
+        strcpy(lines[i], line);
+    }
+
+    List list = newList();
+    append(list, 0);
+    
+    for (int i = 1; i &lt; lineCount; i++) {
+</font>        moveFront(list);
+        while (index(list) &gt;= 0 &amp;&amp; strcmp(lines[i], lines[get(list)]) &gt; 0) {
+            moveNext(list);
+        }
+        if (index(list) &gt;= 0) {
+            insertBefore(list, i);
+        } else {
+            append(list, i);
+        }
+    }
+
+    
+    for (moveFront(list); index(list) &gt;= 0; moveNext(list)) {
+        fprintf(out, "%s", lines[get(list)]);
+    }
+
+    for (int i = 0; i &lt; lineCount; i++) {
+        free(lines[i]);
+    }
+    free(lines);
+    freeList(&amp;list);
+    
+    fclose(in);
+    fclose(out);
+
+    return 0;
+}
+
+</pre>
+</body>
+</html>

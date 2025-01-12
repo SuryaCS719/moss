@@ -1,0 +1,87 @@
+<html>
+<head>
+<title>/fall24/rwang196/pa1/Lex.c</title>
+</head>
+<body bgcolor="white">
+<hr/>
+/fall24/nlanz/pa1/Lex.c<p></p><pre>
+/***
+* Niko Lanz
+* nlanz
+* 2024 Fall CSE101 PA1
+* Lex.c
+* Sorts lines from input file
+***/
+
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;string.h&gt;
+#include "List.h"
+
+int main(int argc, char* argv[]){
+    FILE *in, *out;
+
+    if (argc != 3){
+        fprintf(stderr, "Usage: %s &lt;input file&gt; &lt;output file&gt;\n", argv[0]);
+        exit(EXIT_FAILURE);
+    }
+
+    in = fopen(argv[1], "r");
+    out = fopen(argv[2], "w");
+
+    fseek(in, 0, SEEK_END);
+    int totalFileLength = ftell(in);
+    fseek(in, 0, SEEK_SET);
+    char* buffer = malloc(totalFileLength + 1);
+    fread(buffer, 1, totalFileLength, in);
+    fclose(in);
+    buffer[totalFileLength] = 0;
+
+    int lines = 0;
+    for (int i = 0; i &lt; totalFileLength; i++) {
+        if (buffer[i] == '\n') {
+            lines++;
+            buffer[i] = '\0';
+        }
+    }
+
+    char** strings = malloc(lines * sizeof(void*));
+    int currentPositionInBuffer = 0;
+    for (int i = 0; i &lt; lines; i++) {
+        int length = strlen(buffer + currentPositionInBuffer);
+        strings[i] = strcpy(malloc(length + 1), buffer + currentPositionInBuffer);
+        currentPositionInBuffer += length + 1;
+        //printf("%s\n", strings[i]);
+    }
+
+<a name="0"></a><font color="#FF0000"><a href="match204-0.html#0" target="0"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_0_26.gif"/></a>
+
+    List list = newList();
+    for (int i = 0; i &lt; lines; i++) {
+        moveFront(list);
+        while (index(list) != -1 &amp;&amp; strcmp(strings[i], strings[get(list)]) &gt; 0) {
+            moveNext(list);
+        }
+        if (index(list) == -1) {
+            append(list, i);
+        } else {
+            insertBefore(list, i);
+        }
+    }
+
+    //save to file
+    for (moveFront(list); index(list) != -1; moveNext(list)) {
+        fprintf(out, "%s\n", strings[get(list)]);
+</font>    }
+    fclose(out);
+
+    //freeing stuff
+    freeList(&amp;list);
+    free(buffer);
+    for (int i = 0; i &lt; lines; i++) {
+        free(strings[i]);
+    }
+    free(strings);
+}</pre>
+</body>
+</html>

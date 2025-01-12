@@ -1,0 +1,133 @@
+<html>
+<head>
+<title>/fall24/mimichen/pa1/Lex.c</title>
+</head>
+<body bgcolor="white">
+<hr/>
+/fall24/mimichen/pa1/Lex.c<p></p><pre>
+// Author: Mike Chen
+// CruzID: mimichen
+// Assignment: pa1
+
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;string.h&gt;
+#include "list.h"  
+#include "list.c"
+
+#define MAX_LEN 300
+#define index getCursorIndex  // index -&gt; getCursorIndex
+
+<a name="0"></a><font color="#FF0000"><a href="match15-0.html#0" target="0"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_0_70.gif"/></a>
+
+int main(int argc, char *argv[]) {
+    int line_count = 0;
+    FILE *in, *out;
+    char line[MAX_LEN];
+
+    // -------------------------------------
+    // Step 1
+    if (argc != 3) {
+        printf("%s &lt;input file&gt; &lt;output file&gt;\n", argv[0]);
+        exit(1);
+    }
+
+    in = fopen(argv[1], "r");
+    if (in == NULL) {
+        printf("Unable to open file %s for reading\n", argv[1]);
+        exit(1);
+    }
+
+    out = fopen(argv[2], "w");
+    if (out == NULL) {
+        printf("Unable to open file %s for writing\n", argv[2]);
+        fclose(in);  
+        exit(1);
+    }
+
+    // -------------------------------------
+    // Step 2
+    while (fgets(line, MAX_LEN, in) != NULL) {
+        line_count++;
+    }
+
+    // create string array of size line_count
+    char **stringArray = malloc(line_count * sizeof(char *));
+    if (stringArray == NULL) {
+        fprintf(stderr, "error: unable to allocate memory\n");
+        fclose(in);
+        fclose(out);
+        exit(1);
+    }
+
+    for (int i = 0; i &lt; line_count; i++) {
+        stringArray[i] = malloc(MAX_LEN * sizeof(char));
+        if (stringArray[i] == NULL) {
+            fprintf(stderr, "error: unable to allocate memory for stringArray[%d]\n", i);
+            fclose(in);
+            fclose(out);
+            exit(1);
+        }
+    }
+
+    fseek(in, 0, SEEK_SET);
+
+    for (int i = 0; i &lt; line_count; i++) {
+        if (fgets(stringArray[i], MAX_LEN, in) != NULL) {
+            stringArray[i][strcspn(stringArray[i], "\n")] = '\0';  // Remove newline
+        } else {
+            fprintf(stderr, "error: unable to read line %d\n", i);
+            fclose(in);
+            fclose(out);
+            exit(1);
+        }
+    }
+
+    // -------------------------------------
+    // Step 3
+    List L = newList();
+    
+    append(L, 0);  // first element in list
+    for (int i = 1; i &lt; line_count; i++) {
+        moveBack(L);  // move cursor to the back
+        while (index(L) &gt;= 0 &amp;&amp; strcmp(stringArray[i], stringArray[get(L)]) &lt; 0) {
+</font><a name="1"></a><font color="#00FF00"><a href="match15-0.html#1" target="0"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_1_22.gif"/></a>
+
+            movePrev(L);  // move cursor to prev element
+        }
+        if (index(L) &gt;= 0) {
+            insertAfter(L, i);
+        } else {
+            prepend(L, i);  // insert at the front if no element is smaller
+        }
+    }
+
+    // -------------------------------------
+    // Step 4
+    moveFront(L);
+    while (index(L) &gt;= 0) {
+        if (fprintf(out, "%s\n", stringArray[get(L)]) &lt; 0) {
+            fprintf(stderr, "error: unable to write to output file\n");
+            fclose(in);
+            fclose(out);
+            freeList(&amp;L);
+            exit(1);
+        }
+        moveNext(L);
+    }
+
+    fflush(out);
+
+    // free mem
+    for (int i = 0; i &lt; line_count; i++) {
+        free(stringArray[i]);
+    }
+    free(stringArray);
+    freeList(&amp;L);
+    fclose(in);
+</font>    fclose(out);
+    return 0;
+}
+</pre>
+</body>
+</html>

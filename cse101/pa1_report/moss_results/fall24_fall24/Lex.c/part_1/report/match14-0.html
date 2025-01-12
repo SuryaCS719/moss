@@ -1,0 +1,162 @@
+<html>
+<head>
+<title>/fall24/arjakuma/pa1/Lex.c</title>
+</head>
+<body bgcolor="white">
+<hr/>
+/fall24/arjakuma/pa1/Lex.c<p></p><pre>
+/***
+* Arnav Kumar
+* arjakuma 
+* 2024 Fall CSE101 PA1
+* Lex.c
+* Lexographically sorts input lines from input file through a List ADT and outputs the sorted lines into an output file
+***/ 
+
+#include &lt;stdio.h&gt;
+#include &lt;stdbool.h&gt;
+#include &lt;string.h&gt;
+#include &lt;stdlib.h&gt;
+
+#include "List.h"
+
+#define MAX_LENGTH 256
+
+<a name="0"></a><font color="#FF0000"><a href="match14-1.html#0" target="1"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_0_95.gif"/></a>
+
+bool checkIfSeen(int seen[], int element, int length) {
+	for (int i = 0; i &lt; length; i++) {
+		if ((int) seen[i] == (int) element) {
+			//printf("Comparing %d (i) to %d (seen)... result is true\n", i, seen[i]);
+			return true;
+		}
+	}
+	return false;
+}
+
+// gets next element in array that is NOT NULL
+int getWordIndex(char **arr, int length) {
+	for(int i = 0; i &lt; length; i++) {
+		if (arr[i] != NULL) { return i;}
+	}
+	return -1;
+}
+
+void remove_newline(char *str) {
+	int length = strlen(str);
+
+	for (int i = 0; i &lt; length; i++) {
+		if (str[i] == '\n') {
+			str[i] = '\0';
+			break;
+		}
+	}
+}
+
+int main(int argc, char *argv[]) {
+    FILE *INPUT_FILE, *OUTPUT_FILE;
+
+    if (argc != 3) {
+        printf("Usage: %s &lt;input_file&gt; &lt;output_file&gt;\n", argv[0]);
+        exit(1);
+    }
+    // set up files with fopen()
+    INPUT_FILE = fopen(argv[1], "r");
+    OUTPUT_FILE = fopen(argv[2], "w");
+
+    //set up reading from input line by line with fgets()
+    char line[MAX_LENGTH];
+    int num_lines = 0;
+    while (fgets(line, MAX_LENGTH, INPUT_FILE)) {
+        num_lines++;
+    }
+    
+    char **words = malloc(num_lines * sizeof(char *));
+    rewind(INPUT_FILE);
+
+    for(int i = 0; i &lt; num_lines; i++) {
+        fgets(line, MAX_LENGTH, INPUT_FILE);
+	//remove_newline(line);
+	words[i] = malloc(MAX_LENGTH);
+	strcpy(words[i], line);
+    }
+    
+    // create empty list
+    List L = newList();
+    //add elements to list with their data as their indices in the array
+    
+    for(int i = 0; i &lt; num_lines; i++) {
+        append(L, i);
+    }
+    clear(L);
+    //sorting algorithm to add words one by one into the List ADT 
+    //loop through ListADT and compare it to elements in arr
+    for (int i = 0; i &lt; num_lines; i++) {
+	    if (length(L) &gt; 0) {
+	    	moveFront(L);
+	    }
+	    // keep looping until we reach a word in front of arr[i] and then we insert before that word in the List
+	    while (index(L) &gt;= 0 &amp;&amp; strcmp(words[i], words[get(L)]) &gt; 0) {
+		    moveNext(L);
+	    }
+	    //if we dont find a place to insert before in the List, we just append it to the end of the List
+	    //printList(stdout, L);
+	    //printf("\n");
+	    index(L) &lt; 0 ? append(L, i) : insertBefore(L, i);	
+	    		
+    } 
+	    
+	/*	  	    
+	Previous Algorithm... resulted in segmentation fault in large input files	
+    	//if there is one element left in the array we just add that to the end of the list and exit
+        if (index(L) + 1 == num_lines) {
+            set(L, getWordIndex(arr, num_lines));
+            break;
+        }
+
+        //traverse array to find the string that comes before all the other strings in the list
+        //we keep track of the INDEX of the string, not the string itself, by storing it in word_index
+	    for (int i = 0; i &lt; num_lines; i++) {
+            if ((arr[i] != NULL) &amp;&amp; (strcmp(arr[i], arr[word_index]) &lt; 0)) {	
+                word_index = i;
+		    }
+	    }
+        //store the index of the word into the List ADT with the set(List L, int x) function
+	    set(L, word_index);
+        //set the index of the word we added to the List ADT to NULL to remove it from the array
+	    free(arr[word_index]);
+	    arr[word_index] = NULL;
+        //function that returns the index of the next available word in the array as some of the elements are NULL
+	    word_index = getWordIndex(arr, num_lines-index(L));
+        //move the cursor to the next Node
+        moveNext(L);
+    }
+    
+    //debug statment
+    //printList(OUTPUT_FILE, out);
+    */
+    
+    //print out final answer to OUTPUT_FILE
+    moveFront(L);
+    for (int i = 0; i &lt; num_lines; i++) {
+        fprintf(OUTPUT_FILE, "%s", words[get(L)]);
+        moveNext(L);
+    }
+   
+    //free all memory allocations
+    for (int i = 0; i &lt; num_lines; i++) {
+	    //printf("%s", words[i]);
+	    free(words[i]);
+</font>    }
+
+    free(words);
+    freeList(&amp;L);
+    fclose(INPUT_FILE);
+    fclose(OUTPUT_FILE);
+    
+    return 0;
+}
+
+</pre>
+</body>
+</html>

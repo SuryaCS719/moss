@@ -1,0 +1,127 @@
+<html>
+<head>
+<title>/fall24/rmamidip/pa1/Lex.c</title>
+</head>
+<body bgcolor="white">
+<hr/>
+/fall24/rmamidip/pa1/Lex.c<p></p><pre>
+/****************************************************************************************
+ * Rohit Mamidipaka
+ * ID: 2009124
+ * PA 1
+ * Lex.c
+ * Sorts a list of strings in lexographic order, takes in input file
+ * and outputs into file
+ ****************************************************************************************/
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;stdbool.h&gt;
+#include &lt;string.h&gt;
+#include "List.h"
+
+#define MAX_LEN 300
+
+<a name="1"></a><font color="#00FF00"><a href="match78-0.html#1" target="0"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_1_16.gif"/></a>
+
+int main(int argc, char *argv[])
+{
+
+    int line_count;
+    FILE *in, *out;
+    char line[MAX_LEN];
+    char *token;
+
+    // check command line for correct number of arguments
+    if (argc != 3)
+    {
+        fprintf(stderr, "Usage: %s &lt;input file&gt; &lt;output file&gt;\n", argv[0]);
+        exit(1);
+    }
+
+    // open files for reading and writing
+    in = fopen(argv[1], "r");
+</font>    if (in == NULL)
+    {
+        fprintf(stderr, "Unable to open file %s for reading\n", argv[1]);
+        exit(1);
+    }
+
+<a name="0"></a><font color="#FF0000"><a href="match78-0.html#0" target="0"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_0_69.gif"/></a>
+
+    out = fopen(argv[2], "w");
+    if (out == NULL)
+    {
+        fprintf(stderr, "Unable to open file %s for writing\n", argv[2]);
+        exit(1);
+    }
+    // read each line of input file, then count and print tokens
+    line_count = 0;
+    while (fgets(line, MAX_LEN, in) != NULL)
+    {
+        line_count++;
+    }
+
+    // Allocate memory for the array of strings
+    char **stringArray = (char **)calloc(line_count, sizeof(char *));
+    if (stringArray == NULL)
+    {
+        printf("Memory allocation failed\n");
+        exit(1);
+    }
+    rewind(in);
+    for (int i = 0; i &lt; line_count; i++)
+    {
+        fgets(line, MAX_LEN, in);
+        stringArray[i] = (char *)calloc(256, sizeof(char));
+        if (stringArray[i] == NULL)
+        {
+            printf("Memory allocation failed for string %d\n", i);
+            return 1;
+        }
+        token = strtok(line, "\n");
+        strcpy(stringArray[i], token);
+    }
+
+    List ind = newList();
+    append(ind, 0);
+    moveFront(ind);
+
+    for (int i = 1; i &lt; line_count; i++)
+    {
+        moveFront(ind);
+        // while f &gt; c, f &gt; d, f &lt; g
+        // Take care of back case
+        if (strcmp(stringArray[i], stringArray[back(ind)]) &gt; 0)
+        {
+            append(ind, i);
+            continue;
+        }
+        while (strcmp(stringArray[i], stringArray[get(ind)]) &gt; 0)
+        {
+            moveNext(ind);
+        }
+        insertBefore(ind, i);
+    }
+
+    moveFront(ind);
+    while (index(ind) != -1)
+    {
+        fprintf(out, "%s\n", stringArray[get(ind)]);
+        moveNext(ind);
+    }
+
+    freeList(&amp;ind);
+
+    for (int i = 0; i &lt; line_count; i++)
+</font>    {
+        free(stringArray[i]);
+    }
+    free(stringArray);
+
+    // close files
+    fclose(in);
+    fclose(out);
+}
+</pre>
+</body>
+</html>

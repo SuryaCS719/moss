@@ -1,0 +1,109 @@
+<html>
+<head>
+<title>/fall24/nhingora/pa1/Lex.c</title>
+</head>
+<body bgcolor="white">
+<hr/>
+/fall24/nhingora/pa1/Lex.c<p></p><pre>
+/*
+Neha Hingorani
+nhingora
+Fall 24 - CSE 101
+Lex.c - Alphabetize lines with List ADT
+*/
+
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;string.h&gt;
+#include "List.h"
+
+
+#define MAX_LINE_LENGTH 256 // max length per line
+
+<a name="0"></a><font color="#FF0000"><a href="match61-0.html#0" target="0"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_0_99.gif"/></a>
+
+int main(int argc, char* argv[]) {
+    if (argc != 3) {
+        exit(EXIT_FAILURE);
+    }
+
+    FILE* inFile = fopen(argv[1], "r");
+    if (inFile == NULL) {
+        exit(EXIT_FAILURE);
+    }
+
+    // Count # of lines
+    char line[MAX_LINE_LENGTH];
+    int n = 0;
+    while (fgets(line, sizeof(line), inFile) != NULL) {
+        n++;
+    }
+    rewind(inFile); // Reset file pointer to start
+
+    //  memory for lines
+    char** lines = malloc(n * sizeof(char*));
+    for (int i = 0; i &lt; n; i++) {
+        lines[i] = malloc(MAX_LINE_LENGTH * sizeof(char));
+    }
+
+    // Read  into  array
+    int inndex = 0;
+    while (fgets(line, sizeof(line), inFile) != NULL) {
+        // Remove newlines
+        line[strcspn(line, "\n")] = 0;
+        strcpy(lines[inndex++], line);
+    }
+    fclose(inFile);
+
+    //  index List
+    List indexList = newList();
+
+    // add indices according to lexicographic order
+    for (int i = 0; i &lt; n; i++) {
+        int j;
+        for (j = 0; j &lt; length(indexList); j++) {
+            moveFront(indexList);
+            for (int k = 0; k &lt; j; k++) {
+                moveNext(indexList);
+            }
+            if (strcmp(lines[i], lines[get(indexList)]) &lt; 0) {
+                break;
+            }
+        }
+        // Insert index at the correct spot
+        if (j == length(indexList)) {
+            append(indexList, i); // Insert at back
+        } else {
+            insertBefore(indexList, i); // Insert before
+        }
+    }
+
+    // Write  sorted lines in output file
+    FILE* outFile = fopen(argv[2], "w");
+    if (outFile == NULL) {
+        freeList(&amp;indexList);
+        for (int i = 0; i &lt; n; i++) {
+            free(lines[i]);
+        }
+        free(lines);
+        exit(EXIT_FAILURE);
+    }
+
+    for (moveFront(indexList); index(indexList) &gt;= 0; moveNext(indexList)) {
+        fprintf(outFile, "%s\n", lines[get(indexList)]);
+    }
+
+    fclose(outFile);
+
+    // Free allocated memory
+    freeList(&amp;indexList);
+    for (int i = 0; i &lt; n; i++) {
+        free(lines[i]);
+    }
+    free(lines);
+
+    return 0;
+</font>}
+</pre>
+</body>
+</html>

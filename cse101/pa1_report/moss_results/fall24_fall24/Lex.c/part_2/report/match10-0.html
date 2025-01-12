@@ -1,0 +1,150 @@
+<html>
+<head>
+<title>/fall24/amachira/pa1/Lex.c</title>
+</head>
+<body bgcolor="white">
+<hr/>
+/fall24/amachira/pa1/Lex.c<p></p><pre>
+/*
+ * Aishwarya Machiraju
+ * CruzID: amachira
+ * pa1: Lex.c
+ */
+
+#include &lt;stdlib.h&gt;
+#include &lt;stdio.h&gt;
+#include "List.h"
+#include &lt;string.h&gt;
+#include &lt;string.h&gt;
+
+
+#define MAX_LEN 160
+
+// Function prototypes
+<a name="2"></a><font color="#0000FF"><a href="match10-1.html#2" target="1"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_2_12.gif"/></a>
+
+int countLines(FILE* in);
+char** readLines(FILE* in, int lineCount);
+void freeLines(char** lines, int lineCount);
+
+int main(int argc, char* argv[]) {
+    // Check for correct number of command line arguments
+    if (argc != 3) {
+        fprintf(stderr, "Usage: %s &lt;input file&gt; &lt;output file&gt;\n", argv[0]);
+        exit(EXIT_FAILURE);
+</font>    }
+
+    // Open input file for reading
+    FILE* in = fopen(argv[1], "r");
+    if (in == NULL) {
+        fprintf(stderr, "Error: could not open input file '%s'\n", argv[1]);
+        exit(EXIT_FAILURE);
+    }
+
+    // Open output file for writing
+<a name="1"></a><font color="#00FF00"><a href="match10-1.html#1" target="1"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_1_23.gif"/></a>
+
+    FILE* out = fopen(argv[2], "w");
+    if (out == NULL) {
+        fprintf(stderr, "Error: could not open output file '%s'\n", argv[2]);
+        fclose(in);
+        exit(EXIT_FAILURE);
+    }
+
+    // Step 2: Count the number of lines in the input file
+    int lineCount = countLines(in);
+    if (lineCount == 0) {
+        fprintf(stderr, "Error: input file '%s' is empty\n", argv[1]);
+        fclose(in);
+        fclose(out);
+        exit(EXIT_FAILURE);
+    }
+
+    // Step 3: Read lines into an array of strings
+    char** lines = readLines(in, lineCount);
+    if (lines == NULL) {
+        fprintf(stderr, "Error: failed to allocate memory for lines\n");
+        fclose(in);
+        fclose(out);
+        exit(EXIT_FAILURE);
+    }
+
+    // Step 4: Create a List to store indices and sort them using insertion sort
+    List sortedIndices = newList();
+    append(sortedIndices, 0); // Insert the first index
+
+    for (int i = 1; i &lt; lineCount; i++) {
+        moveFront(sortedIndices);
+        while (index(sortedIndices) &gt;= 0 &amp;&amp; strcmp(lines[get(sortedIndices)], lines[i]) &lt;= 0) {
+</font><a name="0"></a><font color="#FF0000"><a href="match10-1.html#0" target="1"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_0_51.gif"/></a>
+
+            moveNext(sortedIndices);
+        }
+        if (index(sortedIndices) &gt;= 0) {
+            insertBefore(sortedIndices, i);
+        } else {
+            append(sortedIndices, i);
+        }
+    }
+
+    // Step 5: Print the sorted lines to the output file using the sorted indices
+    moveFront(sortedIndices);
+    while (index(sortedIndices) &gt;= 0) {
+        fprintf(out, "%s", lines[get(sortedIndices)]);
+        moveNext(sortedIndices);
+    }
+
+    // Free allocated memory and close files
+    freeLines(lines, lineCount);
+    freeList(&amp;sortedIndices);
+    fclose(in);
+    fclose(out);
+
+    return EXIT_SUCCESS;
+}
+
+// Helper function to count the number of lines in a file
+int countLines(FILE* in) {
+    int lineCount = 0;
+    char line[MAX_LEN];
+
+    // Count the lines
+    while (fgets(line, MAX_LEN, in) != NULL) {
+        lineCount++;
+    }
+
+    rewind(in); // Reset file pointer to the start
+    return lineCount;
+}
+
+// Helper function to read lines into a dynamically allocated array of strings
+char** readLines(FILE* in, int lineCount) {
+    char line[MAX_LEN];
+    char** lines = (char**)malloc(lineCount * sizeof(char*));
+
+    if (lines == NULL) return NULL; // Check memory allocation
+
+    for (int i = 0; i &lt; lineCount; i++) {
+        if (fgets(line, MAX_LEN, in) != NULL) {
+            lines[i] = (char*)malloc((strlen(line) + 1) * sizeof(char)); // Allocate memory
+            if (lines[i] == NULL) {
+                freeLines(lines, i); // Free already allocated lines if memory allocation fails
+                return NULL;
+            }
+            strcpy(lines[i], line); // Copy the line into the newly allocated memory
+        }
+    }
+    return lines;
+}
+
+// Helper function to free the array of strings
+void freeLines(char** lines, int lineCount) {
+    for (int i = 0; i &lt; lineCount; i++) {
+        free(lines[i]); // Free each line
+    }
+    free(lines); // Free the array of pointers
+</font>}
+
+</pre>
+</body>
+</html>

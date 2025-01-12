@@ -1,0 +1,127 @@
+<html>
+<head>
+<title>/fall24/kvasa/pa1/Lex.c</title>
+</head>
+<body bgcolor="white">
+<hr/>
+/fall24/kvasa/pa1/Lex.c<p></p><pre>
+/****************************************
+Name: Koushik Vasa
+CruzId: kvasa
+Assignment: PA1
+Lex.c
+****************************************/
+
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;string.h&gt;
+#include "List.h"  
+
+// Function to count the number of lines in the input file
+<a name="0"></a><font color="#FF0000"><a href="match100-0.html#0" target="0"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_0_40.gif"/></a>
+
+int countLines(FILE *file) {
+    int lines = 0;
+    char ch;
+
+    //checking for newline characters
+    while ((ch = fgetc(file)) != EOF) {
+        if (ch == '\n') {
+            lines++;
+        }
+    }
+    rewind(file);
+    return lines;
+}
+
+// Function to read lines from the file into an array of strings
+char** readLines(FILE *file, int lineCount) {
+    char **lines = (char **)calloc(lineCount, sizeof(char *));
+    char buffer[256];
+    int i = 0;
+
+    // Read each line and allocate memory for it
+    while (fgets(buffer, sizeof(buffer), file) != NULL &amp;&amp; i &lt; lineCount) {
+        lines[i] = (char *)malloc((strlen(buffer) + 1) * sizeof(char));
+        strcpy(lines[i], buffer);  // Copy the line into the array
+        i++;
+    }
+
+    return lines;
+}
+
+int main(int argc, char *argv[]) {
+    // 1. Check if there are exactly two command line arguments
+    if (argc != 3) {
+        fprintf(stderr, "Usage: %s &lt;input file&gt; &lt;output file&gt;\n", argv[0]);
+</font>        return 1;
+    }
+
+    // Open the input file
+    FILE *input = fopen(argv[1], "r");
+    if (input == NULL) {
+        fprintf(stderr, "Error: could not open file %s\n", argv[1]);
+        return 1;
+    }
+
+    // Open the output file
+<a name="1"></a><font color="#00FF00"><a href="match100-0.html#1" target="0"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_1_32.gif"/></a>
+
+    FILE *output = fopen(argv[2], "w");
+    if (output == NULL) {
+        fprintf(stderr, "Error: could not open file %s for writing\n", argv[2]);
+        fclose(input);
+        return 1;
+    }
+
+    // 2. Count the number of lines in the input file
+    int lineCount = countLines(input);
+
+    // 3. Read the lines from the input file into an array
+    char **lines = readLines(input, lineCount);
+
+    // Close the input file now that we have read its content
+    fclose(input);
+
+    // 4. Create a List to store the indices of the lines in sorted order
+    List L = newList();
+    append(L, 0);  // Start by appending the first index (0)
+
+    // Use insertion sort to sort the indices of the lines
+    for (int i = 1; i &lt; lineCount; i++) {
+        char *currentLine = lines[i];
+        moveFront(L);
+        while (index(L) &gt;= 0) {
+            if (strcmp(currentLine, lines[get(L)]) &lt; 0) {
+                insertBefore(L, i);  // Insert index `i` before if it's lexicographically smaller
+                break;
+            }
+            moveNext(L);
+        }
+        if (index(L) == -1) {
+            append(L, i);  // If no smaller line found, append the index at the end
+</font>        }
+    }
+
+    // 5. Use the sorted List to print the lines in lexicographic order to the output file
+    moveFront(L);
+    while (index(L) &gt;= 0) {
+        fprintf(output, "%s", lines[get(L)]);  // Print the lines based on the sorted indices
+        moveNext(L);
+    }
+
+    // 6. Free the dynamically allocated memory
+    for (int i = 0; i &lt; lineCount; i++) {
+        free(lines[i]);  // Free each line
+    }
+    free(lines);  // Free the array of strings
+    freeList(&amp;L);  // Free the List
+
+    fclose(output);
+
+    return 0;
+}
+
+</pre>
+</body>
+</html>

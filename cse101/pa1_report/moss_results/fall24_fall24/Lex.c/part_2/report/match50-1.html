@@ -1,0 +1,120 @@
+<html>
+<head>
+<title>/fall24/vngo8/pa1/Lex.c</title>
+</head>
+<body bgcolor="white">
+<hr/>
+/fall24/vngo8/pa1/Lex.c<p></p><pre>
+/* Vincent Ngo
+ * vngo8
+ * pa1
+ *
+ * Lex.c
+ * The main program of pa1. Uses the List ADT to sort the input file in lexicographic order
+ *
+ */
+
+
+
+
+
+#include &lt;stdio.h&gt;
+#include &lt;stdbool.h&gt;
+#include &lt;stdlib.h&gt;
+#include "List.h"
+#include &lt;string.h&gt;
+
+
+<a name="0"></a><font color="#FF0000"><a href="match50-0.html#0" target="0"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_0_98.gif"/></a>
+
+int main(int argc, char *argv[]){
+  if (argc &lt; 3 ){
+    fprintf(stderr, "Error: not enough arguments detected\n");
+    exit(EXIT_FAILURE);
+  }
+  FILE *input;
+  char *fileName = argv[1];
+  char buffer[256];
+
+  List l = newList();
+  input = fopen(fileName, "r");
+  
+
+  int n = 0;
+
+  //Count the number of lines inside the buffer;
+
+  while (fgets(buffer, sizeof(buffer), input) != NULL){
+    if (strcmp(buffer, "\n") != 0){
+      n++;
+    }
+  }
+  rewind(input);
+
+
+  //Construct a string array of size n
+
+  char **stringArray = (char **)malloc(n * sizeof(char*));
+
+  int i = 0;
+  while (i &lt; n){
+    fgets(buffer, sizeof(buffer), input);
+    buffer[strcspn(buffer, "\n")] = '\0';
+    stringArray[i] = (char *)malloc(strlen(buffer) + 1);
+    strcpy(stringArray[i], buffer);
+    i += 1; 
+  }
+
+  fclose(input);
+
+  // Begin Insertion Sort
+
+  moveFront(l);
+  append(l, 0); 
+
+  for (int i = 1; i &lt; n; i++){
+    moveFront(l);
+
+    int flag = 0;
+    while (index(l) &lt; length(l) &amp;&amp; flag != 1){
+      if (strcmp(stringArray[i], stringArray[get(l)]) &lt; 0 || strcmp(stringArray[i], stringArray[get(l)]) == 0){
+        insertBefore(l, i);
+	      break;
+      } 
+
+      if (index(l) == length(l) - 1){
+        append(l,i);
+        flag = 1;
+        break;
+      }
+      moveNext(l);
+    }
+  }
+
+  char *outName = argv[2];
+  FILE *output = fopen(outName, "w");
+  moveFront(l);
+  
+
+  while (index(l) &gt;= 0){
+    fprintf(output, "%s\n", stringArray[get(l)]);
+    moveNext(l); 
+  }
+
+  fclose(output);
+   
+
+  //freeing all malloced data
+
+  for (int i = 0; i &lt; n; i++){
+    free(stringArray[i]);
+    stringArray[i] = NULL;
+  }
+  free(stringArray);
+</font>  freeList(&amp;l); 
+
+
+}
+</pre>
+</body>
+</html>

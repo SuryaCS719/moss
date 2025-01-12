@@ -1,0 +1,132 @@
+<html>
+<head>
+<title>/fall24/arnewton/pa1/Lex.c</title>
+</head>
+<body bgcolor="white">
+<hr/>
+/fall24/arnewton/pa1/Lex.c<p></p><pre>
+/*
+ * Author: Andy Newton
+ * CruzID: arnewton
+ * Assignment Name: pa1
+ */
+
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;string.h&gt;
+#include "List.h"
+
+#define LMAX 300
+
+<a name="0"></a><font color="#FF0000"><a href="match14-0.html#0" target="0"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_0_94.gif"/></a>
+
+int main(int argc, char* argv[]) {
+    if (argc != 3) {
+        fprintf(stderr, "Lex &lt;input file&gt; &lt;output file&gt;\n");
+        return 0;
+    }
+
+    FILE* f_in = fopen(argv[1], "r");
+    FILE* f_out = fopen(argv[2], "w+");
+
+    int nlines = 0;
+    int longest_line = 0;
+    while (!feof(f_in)) {
+        char dat[LMAX];
+        dat[0] = 0;
+        dat[LMAX - 1] = 0;
+        int ll = 0;
+        do {
+            fgets(dat, LMAX, f_in);
+            ll += LMAX;
+        } while (dat[LMAX - 1] == '\n');
+        nlines++;
+        if (dat[0] == 0) nlines--;
+
+        if (ll &gt; longest_line) longest_line = ll;
+    }
+
+    fseek(f_in, 0, SEEK_SET);
+
+//    printf("step 2\n");
+
+    char** lines = malloc(sizeof(char*) * nlines);
+    int li = 0;
+    while (!feof(f_in) &amp;&amp; li &lt; nlines) {
+        char* buf = malloc(longest_line + 4);
+        memset(buf, 0, longest_line + 4);
+        fgets(buf, longest_line + 4, f_in);
+        int len = strlen(buf);
+        if (buf[len - 1] == '\n') {
+            buf[len - 1] = '\0';
+            --len;
+        }
+
+        lines[li] = malloc(len + 4);
+        memset(lines[li], 0, len + 4);
+        strcpy(lines[li], buf);
+
+        free(buf);
+
+        //        printf("S_ %s\n", lines[li]);
+        li++;
+
+    }
+
+    fclose(f_in);
+
+//    printf("step 3\n");
+
+    List L = newList();
+    
+    for (int i = 0 ; i &lt; nlines ; i++) {
+        if (length(L) == 0) {
+            append(L, i);
+//            printf("\tappend %d\t\t\t%s\n", i, lines[i]);
+        } else {
+            int last_dir = 1;
+
+//            printf("\tsort %d\t\t\t%s\n", i, lines[i]);
+            moveFront(L);
+            while (index(L) &gt;= 0) {
+                int cmp = strcmp(lines[i], lines[get(L)]);
+                if (cmp &gt; 0) {
+                    //printf("\t\t-&gt;\n");
+                    moveNext(L);
+                } else {
+                    //printf("\t\tI\n");
+                    insertBefore(L, i);
+                    last_dir = 0;
+                    break;
+                }
+            }
+
+            if (last_dir != 0) {
+//                printf("\t\tA\n");
+                append(L, i);
+            }
+        }
+    }
+
+//    printf("step 4\n");
+
+    moveFront(L);
+    while (index(L) &gt;= 0) {
+//        printf("%s\n", lines[get(L)]);
+        fprintf(f_out, "%s\n", lines[get(L)]);
+        moveNext(L);
+    }
+
+    fclose(f_out);
+    
+    freeList(&amp;L);
+
+    for (int i = 0 ; i &lt; nlines ; i++) {
+</font>        free(lines[i]);
+    }
+    free(lines);
+    return 0;
+}
+</pre>
+</body>
+</html>

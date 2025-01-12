@@ -1,0 +1,151 @@
+<html>
+<head>
+<title>/fall24/arkolli/pa1/Lex.c</title>
+</head>
+<body bgcolor="white">
+<hr/>
+/fall24/arkolli/pa1/Lex.c<p></p><pre>
+//------------------------------------------------------------------------------
+// Anshul Kolli
+// arkolli
+// 2024 Fall CSE101 PA1 
+// Lex.c file for CSE 101 Programming Assignment 1
+//------------------------------------------------------------------------------
+// This program reads lines from an input file, sorts them in lexicographical 
+// (alphabetical) order using an insertion sort algorithm on indices of the lines, 
+// and writes the sorted lines to an output file. 
+//
+// Preconditions:
+// 1. The program must be executed with exactly two command line arguments: 
+//    the input file and the output file.
+// 2. The input file should exist and be readable, and the output file should 
+//    be writable.
+// 3. The input file should contain fewer than 160 characters per line.
+// 4. The List ADT, as defined in List.h and List.c, is used for managing the 
+//    indices in sorted order.
+//
+// Usage: 
+// ./Lex &lt;input file&gt; &lt;output file&gt;
+//------------------------------------------------------------------------------
+
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;string.h&gt;
+#include "List.h"
+
+#define MAX_LEN 160
+
+<a name="0"></a><font color="#FF0000"><a href="match136-1.html#0" target="1"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_0_34.gif"/></a>
+
+int main(int argc, char* argv[]) {
+    //--------------------------------------------------------------------------
+    // Check if the number of arguments passed is correct (exactly 3 arguments).
+    // If not, print an error message and terminate the program.
+    //
+    // Preconditions:
+    // 1. argc must be equal to 3 (the program name, input file, and output file).
+    //--------------------------------------------------------------------------
+    if (argc != 3) {
+        fprintf(stderr, "Usage: Lex &lt;input file&gt; &lt;output file&gt;\n");
+        exit(1);
+    }
+
+    //--------------------------------------------------------------------------
+    // Attempt to open the input and output files specified in the command line 
+    // arguments. If any of the files cannot be opened, print an error message 
+    // and terminate the program.
+    //
+    // Preconditions:
+    // 1. argv[1] (input file) must exist and be readable.
+    // 2. argv[2] (output file) must be writable.
+    //--------------------------------------------------------------------------
+    FILE* in = fopen(argv[1], "r");
+    FILE* out = fopen(argv[2], "w");
+    if (in == NULL || out == NULL) {
+        fprintf(stderr, "Error opening files\n");
+        exit(1);
+    }
+
+    //--------------------------------------------------------------------------
+    // Read each line from the input file to count the total number of lines (n).
+    // Store the lines temporarily for future sorting.
+    //
+    // Preconditions:
+    // 1. The input file must be readable and contain valid lines.
+    //--------------------------------------------------------------------------
+    char line[MAX_LEN];
+    int n = 0;
+    while (fgets(line, MAX_LEN, in) != NULL) n++;
+
+    //--------------------------------------------------------------------------
+    // Rewind the input file to the beginning after counting the number of lines.
+    // Allocate memory for storing each line read from the input file.
+    //
+    // Preconditions:
+    // 1. Sufficient memory must be available for allocation using calloc.
+    //--------------------------------------------------------------------------
+    rewind(in);
+    char** lines = calloc(n, sizeof(char*));
+</font><a name="1"></a><font color="#00FF00"><a href="match136-1.html#1" target="1"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_1_20.gif"/></a>
+
+    for (int i = 0; i &lt; n; i++) {
+        fgets(line, MAX_LEN, in);
+        lines[i] = calloc(strlen(line) + 1, sizeof(char));
+        strcpy(lines[i], line);
+    }
+
+    //--------------------------------------------------------------------------
+    // Create a new List to store the indices of the lines. Use an insertion sort
+    // algorithm to insert each line's index into the List in lexicographical order.
+    //
+    // Preconditions:
+    // 1. The List ADT must be implemented in List.h and List.c.
+    // 2. lines[] must contain the lines read from the input file.
+    //--------------------------------------------------------------------------
+    List L = newList();
+    append(L, 0);
+    for (int i = 1; i &lt; n; i++) {
+</font>        moveFront(L);
+        while (index(L) &gt;= 0 &amp;&amp; strcmp(lines[get(L)], lines[i]) &lt; 0) {
+            moveNext(L);
+        }
+        if (index(L) == -1) {
+            append(L, i);
+        } else {
+            insertBefore(L, i);
+        }
+    }
+
+    //--------------------------------------------------------------------------
+    // Write the lines to the output file in lexicographical order, using the 
+    // indices stored in the List to determine the correct order.
+    //
+    // Preconditions:
+    // 1. The List must be correctly sorted by the indices of the lines.
+    // 2. The output file must be writable.
+    //--------------------------------------------------------------------------
+    moveFront(L);
+    while (index(L) &gt;= 0) {
+        fprintf(out, "%s", lines[get(L)]);
+        moveNext(L);
+    }
+
+    //--------------------------------------------------------------------------
+    // Free the dynamically allocated memory for the lines and the List.
+    //
+    // Preconditions:
+    // 1. lines[] and L must be dynamically allocated and not freed yet.
+    //--------------------------------------------------------------------------
+    for (int i = 0; i &lt; n; i++) {
+        free(lines[i]);
+    }
+    free(lines);
+    freeList(&amp;L);
+    fclose(in);
+    fclose(out);
+
+    return 0;
+}
+</pre>
+</body>
+</html>

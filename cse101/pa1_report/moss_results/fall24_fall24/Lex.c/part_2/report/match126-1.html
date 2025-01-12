@@ -1,0 +1,107 @@
+<html>
+<head>
+<title>/fall24/roshukla/pa1/Lex.c</title>
+</head>
+<body bgcolor="white">
+<hr/>
+/fall24/roshukla/pa1/Lex.c<p></p><pre>
+/***
+* Rohan Shukla // 
+* roshukla // 
+* 2024 Fall CSE101 pa1 // 
+* Lex.c //
+* Client module for lexicographical sorting // 
+***/
+
+#include "List.h"
+
+#define MAX_LEN 100
+
+int main(int argc, char* argv[]) {
+    // Check number of command-line arguments
+    if (argc != 3) {
+        fprintf(stderr, "Usage: %s &lt;input file&gt; &lt;output file&gt;\n", argv[0]);
+        exit(EXIT_FAILURE);
+    }
+
+    // Open the input and output files
+    FILE *in = fopen(argv[1], "r");
+    FILE *out = fopen(argv[2], "w");
+
+    if (in == NULL) {
+<a name="0"></a><font color="#FF0000"><a href="match126-0.html#0" target="0"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_0_52.gif"/></a>
+
+        fprintf(stderr, "Unable to open file %s for reading\n", argv[1]);
+        exit(EXIT_FAILURE);
+    }
+    if (out == NULL) {
+        fprintf(stderr, "Unable to open file %s for writing\n", argv[2]);
+        exit(EXIT_FAILURE);
+    }
+
+    // Count the number of lines in the input file
+    char line[MAX_LEN];
+    int n = 0;  // Number of lines
+    while (fgets(line, MAX_LEN, in) != NULL) {
+        n++;
+    }
+
+    // Allocate memory for the array of strings
+    char **lines = (char**)calloc(n, sizeof(char*));
+    if (lines == NULL) {
+        fprintf(stderr, "Memory allocation failed\n");
+        exit(EXIT_FAILURE);
+    }
+    assert(lines != NULL);
+
+    // Reset the file pointer to the beginning and read the lines into the array
+    rewind(in);
+    for (int i = 0; i &lt; n; i++) {
+        fgets(line, MAX_LEN, in);
+        line[strcspn(line, "\n")] = '\0';  // Remove newline character
+
+        lines[i] = (char*)malloc(strlen(line) + 1);  // Allocate memory for the string
+        if (lines[i] == NULL) {
+            fprintf(stderr, "Memory allocation failed\n");
+            exit(EXIT_FAILURE);
+        }
+        strcpy(lines[i], line);  // Copy the line into the array
+    }
+
+    // Create a List of indices that indirectly sorts the lines
+    List L = newList();
+
+    // Sort using List
+    append(L, 0);  // Insert the first element index
+
+    for (int i = 1; i &lt; n; i++) {
+</font>        moveFront(L);
+        while (index(L) &gt;= 0 &amp;&amp; strcmp(lines[i], lines[get(L)]) &gt; 0) {
+            moveNext(L);
+        }
+        if (index(L) &gt;= 0) {
+            insertBefore(L, i);
+        } else {
+            append(L, i);  // Insert at the end if reached the end of the list
+        }
+    }
+
+    // Print the sorted lines based on the List of indices
+    for (moveFront(L); index(L) &gt;= 0; moveNext(L)) {
+        fprintf(out, "%s\n", lines[get(L)]);
+    }
+
+    // Free all allocated memory and close files
+    for (int i = 0; i &lt; n; i++) {
+        free(lines[i]);
+    }
+    free(lines);
+    freeList(&amp;L);
+    fclose(in);
+    fclose(out);
+
+    return 0;
+}
+</pre>
+</body>
+</html>

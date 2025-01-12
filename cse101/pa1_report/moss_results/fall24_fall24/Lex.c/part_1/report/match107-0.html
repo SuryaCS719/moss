@@ -1,0 +1,93 @@
+<html>
+<head>
+<title>/fall24/echen89/pa1/Lex.c</title>
+</head>
+<body bgcolor="white">
+<hr/>
+/fall24/echen89/pa1/Lex.c<p></p><pre>
+//-----------------------------------------------------------------------------
+// Lex.c
+// Illustrates file input-output commands and text processing using the
+// string functions strtok and strcat.
+//
+// compile:
+//
+//     gcc -std=c17 -Wall -o FileIO FileIO.c
+//
+//-----------------------------------------------------------------------------
+#include&lt;stdio.h&gt;
+#include&lt;stdlib.h&gt;
+#include&lt;stdbool.h&gt;
+#include&lt;string.h&gt;
+
+#include "List.c"
+
+// this file has a lot more comments than list.c because i'm having trouble wrapping my head around the index-sorting, and it helps me to be able to write a loop 
+
+//void Lex() {
+
+//}
+
+<a name="0"></a><font color="#FF0000"><a href="match107-1.html#0" target="1"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_0_98.gif"/></a>
+
+void main(FILE *in, FILE *out) {
+    in = fopen("./in.txt", "r");
+    out = fopen("./out.txt", "w");
+    
+    if (in == NULL || out == NULL) { // checks that there are two command line arguments
+        printf("Error while opening file\n");
+        exit(1);
+    }
+
+    List l1 = newList(); // l1 is the unsorted list of indices
+    int lineData = 0;
+    const char *stringArray[50];
+    char gottenString[50];
+    
+    while (fgets(gottenString, 100, in) != NULL) { // reads each line of the input file, and then outputs each line to an array
+        stringArray[lineData] = malloc(strlen(gottenString) + 1); // +1 for the EOF
+        strcpy((char *)stringArray[lineData], gottenString); // copies gottenString into the allocated memory
+        lineData++;
+    }
+    
+    // strcmp(str1, str2)
+    // if str1 closer to a than str2, return negative int. 
+    // if str1 farther from a than str2, return positive int
+        
+    char temp[50];
+    
+    append(l1, 0);  // start the loop with a list of length 1
+
+    for (int i = 1; i &lt; lineData; i++) {    // iterate through the elements of the unsorted array
+        memset(temp, 0, 50);
+        strcpy(temp, stringArray[i]);       // assign the current element to a temporary string                                                           
+        moveFront(l1);
+        int j = 0;
+        for (j; j &lt; i; j++) {  // iterate through the list of sorted indices
+            if (strcmp(temp, stringArray[j]) == 0) {
+                insertAfter(l1, i);
+                break;
+            }
+            if (l1-&gt;cursor == l1-&gt;back) {
+                append(l1, i);
+                break;
+            }
+            else if (strcmp(temp, stringArray[j]) &lt; 0) {
+                insertBefore(l1, i);
+                break;
+            } // I know I'm doing something wrong, but I just can't figure out what it is. 
+            moveNext(l1);
+            
+        }
+    }
+
+    moveFront(l1);
+    for (int i = 0; i &lt; lineData; i++) {
+        fprintf(out, stringArray[get(l1)]);
+        if (l1-&gt;cursor != l1-&gt;back) {
+</font>            moveNext(l1);
+        }
+    }
+}</pre>
+</body>
+</html>

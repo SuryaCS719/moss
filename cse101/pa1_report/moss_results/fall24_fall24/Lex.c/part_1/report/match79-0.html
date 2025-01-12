@@ -1,0 +1,134 @@
+<html>
+<head>
+<title>/fall24/anfomitc/pa1/Lex.c</title>
+</head>
+<body bgcolor="white">
+<hr/>
+/fall24/anfomitc/pa1/Lex.c<p></p><pre>
+/***
+* Anna Fomitchev
+* anfomitc
+* 2024 Fall CSE101 PA1
+* Lex.c
+* Client program that alphabetizes the lines in a file. It takes in a file and produces an output file. 
+***/ 
+
+// ADDITIONAL NOTE: I referenced the FIle IO example from class for the file reading/writing parts of the code 
+
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;string.h&gt;
+#include "List.h"
+
+// main loop 
+<a name="0"></a><font color="#FF0000"><a href="match79-1.html#0" target="1"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_0_61.gif"/></a>
+
+int main(int argc, char *argv[]) {
+    int line_count;
+
+    // if not given enough arguments (the input and output file) we fail program
+    if (argc != 3) {
+        fprintf(stderr,"usage: Lex &lt;input file&gt; &lt;output file&gt;");
+        exit(EXIT_FAILURE);
+    }
+
+    // open files for reading and writing - referenced from FileIO.c from professors example code
+    FILE *in = fopen(argv[1], "r");
+        if( in==NULL ){
+        printf("Unable to open file %s for reading\n", argv[1]);
+        exit(1);
+    }
+
+    // first loop: line counter, tells us how many lines are in the file 
+   line_count = 0;
+   #define MAX_LEN 10000
+   char line[MAX_LEN];
+   
+   while( fgets(line, MAX_LEN, in) != NULL)  {
+      line_count++;
+      }
+    fclose(in);
+    // open files for reading and writing - taken from FileIO.c from professors example code
+    in = fopen(argv[1], "r");
+        if( in==NULL ){
+        printf("Unable to open file %s for reading\n", argv[1]);
+        exit(1);
+    }
+    // allocate memory using the linecount and add to data from file to an array
+    //printf("%d",line_count);
+    char **array = (char**)malloc(line_count * sizeof(char *));
+    line_count = 0;
+    while( fgets(line, MAX_LEN, in) != NULL)  {
+        array[line_count] = (char *)malloc(sizeof(char) * (strlen(line)+1));
+        if (array[line_count]==NULL) {
+            fprintf(stderr,"Memory allocation failed");
+            exit(1);
+        }
+        strcpy(array[line_count], line);
+        //printf("%s",array[line_count]);
+        line_count ++;
+    }
+    List list = newList();
+    // special case: add first element in because we can't moveFront on an empty list 
+    prepend(list,0);
+    //printList(stdout, list);
+    
+    //loop through the array 
+    for (int i = 1; i &lt; line_count; i++){
+        //loop through the list where we move the cursor - cursor is set to the first item in the list and then moves around as we compare to the current item 
+        // strcmp(s1, s2)&lt;0 is true if and only if s1 comes before s2 
+        // strcmp(s1, s2)&gt;0 is true if and only if s1 comes after s2 - append
+        // strcmp(s1, s2)==0 is true if and only if s1 is identical to s2
+       
+        moveFront(list);
+        while(index(list) &gt;= 0) {
+</font>            // if the strcmp results say that the current element is alphabeticaly higher than the second, we insert before
+<a name="1"></a><font color="#00FF00"><a href="match79-1.html#1" target="1"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_1_25.gif"/></a>
+
+            if (strcmp(array[i], array[get(list)]) &lt;= 0) {
+                insertBefore(list,i);
+                break;
+            }
+            // use movenext to move where the cursor is 
+            moveNext(list);
+        }
+        // case for when we get through the entire list and have not found an item that alphabetically less than the current item, we append to the end 
+        if (index(list) == -1) {
+            append(list,i);
+        }
+
+    }
+
+    // open out file for writing - referenced from FileIO.c from professors example code
+    FILE *out = fopen(argv[2], "w");
+    if( out==NULL ){
+      printf("Unable to open file %s for writing\n", argv[2]);
+      exit(1);
+    }
+
+    // for loop for writing the sorted list into the out file 
+    for (moveFront(list); index(list) &gt;= 0; moveNext(list)) {
+        fprintf(out,"%s\n",array[get(list)]);
+    }
+
+    for (int i = 0; i &lt; line_count; i++) {
+</font>        free(array[i]);
+    }
+
+    // free memory 
+    free(array);
+    freeList(&amp;list);
+    
+    // close files 
+    fclose(in);
+    fclose(out);
+
+    return(0);
+}
+
+
+
+
+</pre>
+</body>
+</html>

@@ -1,0 +1,113 @@
+<html>
+<head>
+<title>/fall24/kownbey/pa1/Lex.c</title>
+</head>
+<body bgcolor="white">
+<hr/>
+/fall24/kownbey/pa1/Lex.c<p></p><pre>
+/*
+Kyle Ownbey
+kownbey
+pa1
+*/
+
+#include "List.h"
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;string.h&gt;
+
+<a name="0"></a><font color="#FF0000"><a href="match24-1.html#0" target="1"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_0_98.gif"/></a>
+
+int main(int argc, char *argv[]){
+    if(argc != 3){
+    	fprintf(stderr, "Incorrect number of arguments. Use format Lex &lt;inputFile&gt; &lt;outputFile&gt;\n");
+    	exit(EXIT_FAILURE);
+    }
+    const char *file1 = argv[1];
+    const char *file2 = argv[2];
+
+	FILE *input = fopen(file1, "r");
+
+    if(input == NULL){
+		fprintf(stderr, "File Error: loading input file failed.");
+		exit(EXIT_FAILURE);
+	}
+	
+	char **lines = NULL;
+	char buff[256];
+	int line_count = 0;
+	while (fgets(buff, sizeof(buff), input)) {
+        char *line = malloc(strlen(buff) + 1);
+        strcpy(line, buff);
+        char **temp = realloc(lines, (line_count + 1) * sizeof(char *));
+        lines = temp;
+        lines[line_count] = line;
+        line_count++;
+    }
+    fclose(input);
+
+    if(line_count == 0){
+    	free(lines);
+    	return 0;
+    }
+
+    List L = newList();
+    for (int i = 0; i &lt; line_count; i++) {
+        int currentIndex = i;
+
+        if (length(L) == 0) {
+            append(L, currentIndex);
+        } else {
+            moveFront(L);
+
+            while (index(L) &gt;= 0) {
+                if (strcmp(lines[currentIndex], lines[get(L)]) &lt; 0) {
+                    break;
+                }
+                moveNext(L);
+            }
+            if (index(L) &lt; 0) {
+                append(L, currentIndex);
+            } else {
+                insertBefore(L, currentIndex);
+            }
+        }
+    }
+
+
+
+	FILE *output = fopen(file2, "w");
+	if(output == NULL){
+		fprintf(stderr, "File Error: loading output file failed.");
+		exit(EXIT_FAILURE);
+	}
+
+	moveFront(L);
+	while (index(L) &gt;= 0) {
+	    int sortedIndex = get(L);
+	    size_t len = strlen(lines[sortedIndex]);
+
+	    if(len &gt; 0 &amp;&amp; (lines[sortedIndex])[len - 1] == '\n') {
+	        lines[sortedIndex][len - 1] = '\0';
+	    }
+
+	    fprintf(output, "%s", lines[sortedIndex]);
+	    if (index(L) &lt; length(L) - 1) {
+	        fprintf(output, "\n");
+	    }
+
+	    moveNext(L);
+		}
+	fclose(output);
+
+    for (int i = 0; i &lt; line_count; i++) {
+        free(lines[i]);
+    }
+    free(lines);
+</font>    freeList(&amp;L);
+    return 0;
+}
+
+</pre>
+</body>
+</html>

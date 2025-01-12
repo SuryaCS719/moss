@@ -1,0 +1,91 @@
+<html>
+<head>
+<title>/fall24/ygloria/pa1/Lex.c</title>
+</head>
+<body bgcolor="white">
+<hr/>
+/fall24/ygloria/pa1/Lex.c<p></p><pre>
+// Name: Yanelli Gloria, CruzID: ygloria, Assignment: pa1
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;string.h&gt;
+#include "List.h"
+
+#define MAX_LINE_LENGTH 160  // Define the maximum length for input lines
+
+<a name="0"></a><font color="#FF0000"><a href="match127-1.html#0" target="1"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_0_62.gif"/></a>
+
+int main(int argc, char* argv[]) {
+    // Ensure the correct number of arguments are provided
+    if (argc != 3) {
+        fprintf(stderr, "Usage: %s &lt;input file&gt; &lt;output file&gt;\n", argv[0]);
+        return 1;  // Return error code 
+    }
+
+    // Declare file pointers for input and output
+    FILE *inputFile, *outputFile;
+    inputFile = fopen(argv[1], "r");   // Open the input file in read mode
+    outputFile = fopen(argv[2], "w");  // Open the output file in write mode
+
+    // Check if the input file was successfully opened
+    if (inputFile == NULL) {
+        fprintf(stderr, "Error: Cannot read file %s\n", argv[1]);
+        return 1;  // Exit if input file cannot be opened
+    }
+
+    // Check if the output file was successfully opened
+    if (outputFile == NULL) {
+        fprintf(stderr, "Error: Cannot write to file %s\n", argv[2]);
+        fclose(inputFile);  // Close input file before exiting
+        return 1;  // Exit if output file cannot be opened
+    }
+
+    // Initialize an array to store lines from the input file
+    char buffer[MAX_LINE_LENGTH][MAX_LINE_LENGTH];
+    int numLines = 0;
+
+    // Read each line from the input file and store it in the array
+    while (fgets(buffer[numLines], MAX_LINE_LENGTH, inputFile) != NULL) {
+        numLines++;  // Increment the count of lines read
+    }
+
+    // Create a new list to store the indices of sorted lines
+    List list = newList();
+    append(list, 0);  // Start by appending the index of the first line
+
+    // Loop through the rest of the lines and insert them into the list in sorted order
+    for (int i = 1; i &lt; numLines; i++) {
+</font>        moveFront(list);  // Move cursor to the front of the list
+
+        // Compare the current line to the lines already in the list and find its position
+        while (index(list) &gt;= 0 &amp;&amp; strcmp(buffer[i], buffer[get(list)]) &gt; 0) {
+            moveNext(list);  // Move the cursor forward
+        }
+
+        // Insert the index of the current line into the appropriate position
+        if (index(list) == -1) {
+            append(list, i);  // If cursor is at the end, append the index
+        } else {
+<a name="1"></a><font color="#00FF00"><a href="match127-1.html#1" target="1"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_1_13.gif"/></a>
+
+            insertBefore(list, i);  // Insert before the current cursor position
+        }
+    }
+
+    // Output the sorted lines to the output file
+    moveFront(list);  // Move the cursor to the front
+    while (index(list) &gt;= 0) {
+        fprintf(outputFile, "%s", buffer[get(list)]);  // Print the sorted lines
+        moveNext(list);  // Move to the next line in the list
+    }
+
+    // Clean up by freeing allocated memory and closing files
+    freeList(&amp;list);
+    fclose(inputFile);
+    fclose(outputFile);
+</font>
+    return 0;  // Return success
+}
+</pre>
+</body>
+</html>

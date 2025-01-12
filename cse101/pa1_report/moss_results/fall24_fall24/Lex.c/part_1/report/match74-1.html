@@ -1,0 +1,82 @@
+<html>
+<head>
+<title>/fall24/rocunnin/pa1/Lex.c</title>
+</head>
+<body bgcolor="white">
+<hr/>
+/fall24/rocunnin/pa1/Lex.c<p></p><pre>
+/*
+* Robert Cunningham // First and Last Name
+* rocunnin // UCSC UserID
+* 2024 Fall CSE101 PA1 // Replace ID with assignment number 
+* Lex.c // FileName
+* Main file for assignment 1 // Description
+ */
+ #include &lt;string.h&gt;
+ #include "List.h"
+ #define MAX_LEN 300
+<a name="0"></a><font color="#FF0000"><a href="match74-0.html#0" target="0"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_0_98.gif"/></a>
+
+ int main(int argc, char** argv){
+    FILE *input, *output;
+    int total_lines = 0;
+    char ch;
+    if(argc != 3){
+        fprintf(stderr, "Lex Error: Lex was not provided two (2) command line arguments (input and output file names).\n");
+        exit(EXIT_FAILURE);
+    }
+    input = fopen(argv[1], "r");
+    if(input == NULL){
+        fprintf(stderr, "Lex Error: Unable to open input file %s.\n", argv[1]);
+    }
+    output = fopen(argv[2], "w");
+    if(output == NULL){
+        fprintf(stderr, "Lex Error: Unable to open output file %s.\n", argv[2]);
+    }
+    do{
+        ch = getc(input);
+        if(ch == '\n'){
+            total_lines += 1;
+        }
+    } while(ch != EOF);
+    char** line_array = calloc(total_lines, sizeof(char*));
+    rewind(input);
+    for(int i = 0; i &lt; total_lines; i++){
+        char line[MAX_LEN];
+        assert(fgets(line, MAX_LEN, input));
+        line_array[i] = strdup(line);
+    }
+    List line_list = newList();
+    for(int i = 0; i &lt; total_lines; i++){
+        moveFront(line_list);
+        for(int j = 0; j &lt;= length(line_list); j++){
+            if(index(line_list) == -1){
+                append(line_list, i);
+                break;
+            }
+            if(strcmp(line_array[get(line_list)], line_array[i]) &gt; 0){
+                insertBefore(line_list, i);
+                break;
+            }
+            moveNext(line_list);
+        }
+    }
+    moveFront(line_list);
+    for(int j = 0; j &lt; length(line_list); j++){
+        fprintf(output, "%s", line_array[get(line_list)]);
+        if(get(line_list) == length(line_list) - 1){
+            fprintf(output, "\n");
+        }
+        moveNext(line_list);
+    }
+    for(int i = 0; i &lt; total_lines; i++){
+        free(line_array[i]);
+    }
+    free(line_array);
+    freeList(&amp;line_list);
+    fclose(input);
+    fclose(output);
+</font>    return 0;
+ }</pre>
+</body>
+</html>

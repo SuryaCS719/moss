@@ -1,0 +1,55 @@
+<html>
+<head>
+<title>/fall24/shan69/pa1/Lex.c</title>
+</head>
+<body bgcolor="white">
+<hr/>
+/fall24/shan69/pa1/Lex.c<p></p><pre>
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;string.h&gt;
+ 
+
+<a name="0"></a><font color="#FF0000"><a href="match182-1.html#0" target="1"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_0_95.gif"/></a>
+
+int main(int argc, char *argv[]) 
+{
+    // Ensure proper usage
+    if (argc != 3) {
+        printf("Usage: %s &lt;input file&gt; &lt;output file&gt;\n", argv[0]);
+        return 1;
+    }
+
+    // Open the input file
+    FILE *inputFile = fopen(argv[1], "r");
+    if (inputFile == NULL) {
+        perror("Error opening input file");
+        return 1;
+    }
+
+    // Open the output file
+    FILE *outputFile = fopen(argv[2], "w");
+    if (outputFile == NULL) {
+        perror("Error opening output file");
+        fclose(inputFile);
+        return 1;
+    }
+
+
+    char c;
+    while ((c = fgetc(inputFile)) != EOF) {
+        fputc(c, outputFile);
+    }
+
+    
+
+    // Close the files
+    fclose(inputFile);
+    fclose(outputFile);
+
+    printf("Lexical analysis completed. Output saved to %s.\n", argv[2]);
+</font>    return 0;
+}
+</pre>
+</body>
+</html>

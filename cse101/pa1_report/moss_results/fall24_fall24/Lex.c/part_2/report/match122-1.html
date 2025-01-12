@@ -1,0 +1,106 @@
+<html>
+<head>
+<title>/fall24/arheidar/pa1/Lex.c</title>
+</head>
+<body bgcolor="white">
+<hr/>
+/fall24/arheidar/pa1/Lex.c<p></p><pre>
+/***
+* Arian Heidari
+* arheidar
+* 2024 Fall CSE101 PA1 
+* Lex.c
+* File that take in an input file, alphabetizes it, and outputs it to a new file
+***/ 
+
+#include&lt;stdio.h&gt;
+#include&lt;stdlib.h&gt;
+#include&lt;stdbool.h&gt;
+#include&lt;string.h&gt;
+#include&lt;assert.h&gt;
+#include "List.h"
+
+#define MAX_LEN 300
+
+int main(int argc, char * argv[]){
+    if (argc != 3) {
+        fprintf(stderr, "Usage: %s &lt;input file&gt; &lt;output file&gt;\n", argv[0]);
+        exit(EXIT_FAILURE);
+    }
+
+    FILE *in = fopen(argv[1], "r");
+    if (in == NULL) {
+        fprintf(stderr, "Can't open file %s for reading\n", argv[1]);
+        exit(EXIT_FAILURE);
+    }
+
+<a name="0"></a><font color="#FF0000"><a href="match122-0.html#0" target="0"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_0_63.gif"/></a>
+
+    FILE *out = fopen(argv[2], "w");
+    if (out == NULL) {
+        fprintf(stderr, "Can't open file %s for writing\n", argv[2]);
+        fclose(in);
+        exit(EXIT_FAILURE);
+    }
+
+    int line_tot = 0;
+    char buffer[MAX_LEN];
+
+    while (fgets(buffer, MAX_LEN, in) != NULL) {
+        line_tot++;
+    }
+
+    rewind(in);
+
+    char **lines = calloc(line_tot, sizeof(char *));
+    assert(lines != NULL);
+
+    if (lines == NULL) {
+        fprintf(stderr, "Memory allocation failed\n");
+        fclose(in);
+        fclose(out);
+        exit(EXIT_FAILURE);
+    }
+
+    for (int i = 0; i &lt; line_tot; i++) {
+        lines[i] = calloc(MAX_LEN, sizeof(char)); 
+        assert(lines[i] != NULL);
+
+        fgets(lines[i], MAX_LEN, in); 
+    }
+    
+    List L = newList();
+    //append(L, 0);
+
+    for (int i = 0; i &lt; line_tot; i++) {
+        moveFront(L);
+
+        while (index(L) &gt;= 0 &amp;&amp; strcmp(lines[i], lines[get(L)]) &gt; 0) {
+            moveNext(L); 
+        }
+
+        if (index(L) == -1) {
+            append(L, i); 
+        } else {
+           insertBefore(L, i); 
+        }
+    }
+
+    for (moveFront(L); index(L) &gt;= 0; moveNext(L)) {
+        fprintf(out, "%s", lines[get(L)]);
+</font>    }
+
+
+    for (int i = 0; i &lt; line_tot; i++) {
+        free(lines[i]);
+    }
+    
+    free(lines);
+    freeList(&amp;L);
+    fclose(in);
+    fclose(out);
+
+    return 0;
+}</pre>
+</body>
+</html>

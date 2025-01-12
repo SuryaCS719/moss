@@ -1,0 +1,124 @@
+<html>
+<head>
+<title>/fall24/sdas24/pa1/Lex.c</title>
+</head>
+<body bgcolor="white">
+<hr/>
+/fall24/sdas24/pa1/Lex.c<p></p><pre>
+/***
+* Shayna Das
+* sdas24
+* 2024 Fall CSE101 PA1
+* Lex.c
+* Implementation of List ADT to complete Lex program
+***/
+
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;string.h&gt;
+
+#include "List.h"
+
+<a name="0"></a><font color="#FF0000"><a href="match2-1.html#0" target="1"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_0_98.gif"/></a>
+
+char *strdup(const char *s) {
+    size_t len = strlen(s) + 1; 
+    char *copy = malloc(len); 
+
+    if (copy != NULL) {
+        memcpy(copy, s, len); 
+    }
+
+    return copy; 
+}
+
+int main(int argc, char **argv) {
+
+    int line_count = 0, max_lines = 100;
+    FILE *in, *out;
+    char line[300];
+    
+    //arguments
+    if (argc != 3) {
+        fprintf(stderr, "Incorrect number of arguments\n");
+        exit(EXIT_FAILURE);
+    }
+    
+    // open files
+    in = fopen(argv[1], "r");
+    if (in == NULL) {
+        printf("Unable to open file %s for reading\n", argv[1]);
+        exit(EXIT_FAILURE);
+    }
+
+    out = fopen(argv[2], "w");
+    if (out == NULL) {
+        printf("Unable to open file %s for writing\n", argv[2]);
+        exit(EXIT_FAILURE);
+    }
+
+    // store lines
+    char** lines = (char**)malloc(max_lines * sizeof(char*));
+
+    // read each line from the input file and store it in the array
+    while (fgets(line, sizeof(line), in) != NULL) {
+        if (line_count &gt;= max_lines) {
+            max_lines *= 2;
+            lines = realloc(lines, max_lines * sizeof(char*));
+        }
+        lines[line_count] = strdup(line);
+        int len = strlen(lines[line_count]);
+        if (lines[line_count][len - 1 ] == '\n') {
+            lines[line_count][len - 1] = '\0';
+        }
+        line_count++;
+    }
+
+    int j;
+    List B = newList();
+    append(B,0);
+    for (int i = 1; i &lt; line_count; i++) {
+        moveBack(B); 
+        j = get(B);
+
+        while (index(B) &gt;= 0 &amp;&amp; strcmp(lines[i], lines[j]) &lt; 0) {
+            movePrev(B);
+            if (index(B) &gt;= 0) {
+                j = get(B);
+            }
+        }
+
+        if (index(B) == -1) {
+            prepend(B, i);
+        } 
+        else {
+            insertAfter(B, i);
+        }
+    }
+
+    int temp;
+    moveFront(B);
+    for (int i = 0; i &lt; line_count; i++) {
+        temp = get(B);
+  
+        fprintf(out, "%s\n", lines[temp]);
+        moveNext(B);
+    }
+    
+    // write the sorted lines to the out
+    for (int i = 0; i &lt; line_count; i++) {
+        free(lines[i]);  // free
+    }
+
+    // free lines
+    free(lines);
+    freeList(&amp;B);
+
+    fclose(in);
+</font>    fclose(out);
+
+    return 0;
+}
+</pre>
+</body>
+</html>

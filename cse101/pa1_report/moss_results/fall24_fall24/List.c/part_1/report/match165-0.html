@@ -1,0 +1,567 @@
+<html>
+<head>
+<title>/fall24/caetcole/pa1/List.c</title>
+</head>
+<body bgcolor="white">
+<hr/>
+/fall24/caetcole/pa1/List.c<p></p><pre>
+// Cameron Coleman
+// List Functions
+// PA1
+
+#include "List.h"
+#include &lt;stdbool.h&gt;
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+
+
+
+typedef struct NodeObj* Node;
+
+typedef struct NodeObj{
+    int data;
+    Node next;
+    Node prev;
+} NodeObj;
+
+typedef struct ListObj{
+	Node head;
+	Node tail;
+    Node cursor;
+    int length;
+    int index;
+} ListObj;
+
+void deleteNode(Node *n){
+    free(*n);
+    *n = NULL;
+}
+
+List newList(void) {
+    List l = (List)malloc(sizeof(ListObj));
+    if (l == NULL) {
+        fprintf(stderr, "List Error: list initialization List() failing due to NULL malloc\n");
+        return NULL;
+    }
+    l-&gt;head = NULL;
+    l-&gt;tail = NULL;
+    l-&gt;cursor = NULL;
+    l-&gt;length = 0;
+    l-&gt;index = -1;
+    return l;
+}
+
+void freeList(List *pL) {
+    if (pL != NULL &amp;&amp; *pL != NULL) {
+
+        clear(*pL);
+        free(*pL);
+        *pL = NULL;
+    }
+    return;
+}
+
+int length(List L){
+    if( L == NULL ){
+      fprintf(stderr, "List Error: calling length() on NULL List reference\n");
+      exit(EXIT_FAILURE);
+    }
+    return L-&gt;length;
+}
+
+int index(List L){
+    if( L == NULL ){
+      fprintf(stderr, "List Error: calling index() on NULL List reference\n");
+      exit(EXIT_FAILURE);
+    }
+    
+    return L-&gt;index;
+}
+
+int front(List L){
+    if( L == NULL ){
+      fprintf(stderr, "List Error: calling front() on NULL List reference\n");
+      exit(EXIT_FAILURE);
+    }
+    if(length(L) == 0){
+      fprintf(stderr, "List Error: calling front() on an empty List\n");
+      exit(EXIT_FAILURE);
+    }
+    return (L-&gt;head)-&gt;data;
+}
+
+int back(List L){
+    if( L == NULL ){
+      fprintf(stderr, "List Error: calling back() on NULL List reference\n");
+      exit(EXIT_FAILURE);
+    }
+    if(length(L) &lt;= 0){
+        fprintf(stderr, "List Error: calling back() on an empty List\n");
+        exit(1);
+    }
+    return (L-&gt;tail)-&gt;data;
+}
+
+int get(List L){
+    if( L == NULL ){
+<a name="1"></a><font color="#00FF00"><a href="match165-1.html#1" target="1"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_1_2.gif"/></a>
+
+      fprintf(stderr, "List Error: calling get() on NULL List reference\n");
+      exit(EXIT_FAILURE);
+    }
+    return (L-&gt;cursor)-&gt;data;
+}
+
+bool equals(List A, List B){
+    if( A == NULL ){
+      fprintf(stderr, "List Error: calling equals() on NULL List reference \"A\"\n");
+      exit(EXIT_FAILURE);
+    }
+    if( B == NULL ){
+      fprintf(stderr, "List Error: calling equals() on NULL List reference \"B\"\n");
+      exit(EXIT_FAILURE);
+</font>    }
+
+
+    if (A-&gt;length != B-&gt;length){
+        return false;
+    }
+    if(A-&gt;length == 0 &amp;&amp; B-&gt;length == 0){
+        return true;
+    }
+    
+    moveFront(A);
+    moveFront(B);
+    while(1){
+        if(A-&gt;cursor == NULL &amp;&amp; B-&gt;cursor == NULL){
+            return true;
+        }
+        if((A-&gt;cursor)-&gt;data != (B-&gt;cursor)-&gt;data){
+            return false;
+        }
+        moveNext(A);
+        moveNext(B);
+    }
+}
+
+void clear(List L){
+    if( L == NULL ){
+      fprintf(stderr, "List Error: calling set() on NULL List reference\n");
+      exit(EXIT_FAILURE);
+    }
+    while(length(L) &gt; 0){
+        deleteBack(L);
+    }
+
+    return;
+}
+
+void set(List L, int x){
+    if( L == NULL ){
+      fprintf(stderr, "List Error: calling set() on NULL List reference\n");
+      exit(EXIT_FAILURE);
+    }
+    if(length(L) &lt;= 0){
+        fprintf(stderr, "List Error: calling set() on an empty List\n");
+        exit(1);
+    }
+    
+    (L-&gt;cursor)-&gt;data = x;
+
+}
+
+void moveFront(List L){
+    if( L == NULL ){
+      fprintf(stderr, "List Error: calling moveFront() on NULL List reference\n");
+      exit(EXIT_FAILURE);
+    }
+    if(length(L) &lt;= 0){
+        fprintf(stderr, "List Error: calling moveFront() on an empty List\n");
+        exit(1);
+    }
+
+    L-&gt;cursor = L-&gt;head; 
+    L-&gt;index = 0;
+}
+
+void moveBack(List L){
+    if( L == NULL ){
+      fprintf(stderr, "List Error: calling moveBack() on NULL List reference\n");
+      exit(EXIT_FAILURE);
+    }
+    if(length(L) &lt;= 0){
+        fprintf(stderr, "List Error: calling moveBack() on an empty List\n");
+        exit(1);
+    }
+
+    L-&gt;cursor = L-&gt;tail;
+<a name="0"></a><font color="#FF0000"><a href="match165-1.html#0" target="1"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_0_8.gif"/></a>
+
+    L-&gt;index = L-&gt;length-1;
+}
+
+void movePrev(List L){
+    if( L == NULL ){
+      fprintf(stderr, "List Error: calling movePrev() on NULL List reference\n");
+      exit(EXIT_FAILURE);
+    }
+    
+    if(L-&gt;cursor == NULL){
+        return;
+    }
+
+    if((L-&gt;cursor)-&gt;prev == NULL){
+        L-&gt;cursor = NULL;
+        L-&gt;index = -1;
+        return;
+    }
+    
+    L-&gt;cursor = (L-&gt;cursor)-&gt;prev;
+    L-&gt;index -= 1;
+}
+
+void moveNext(List L){
+    if( L == NULL ){
+      fprintf(stderr, "List Error: calling movePrev() on NULL List reference\n");
+      exit(EXIT_FAILURE);
+    }
+    
+    if(L-&gt;cursor == NULL){
+        return;
+    }
+
+    if((L-&gt;cursor)-&gt;next == NULL){
+        L-&gt;cursor = NULL;
+        L-&gt;index = -1;
+        return;
+    }
+    
+    L-&gt;cursor = (L-&gt;cursor)-&gt;next;
+    L-&gt;index += 1;
+}
+
+void prepend(List L, int x){
+    if( L == NULL ){
+      fprintf(stderr, "List Error: calling prepend() on NULL List reference\n");
+      exit(EXIT_FAILURE);
+</font>    }
+
+    Node rep = (Node) malloc(sizeof(NodeObj));
+
+    if (rep == NULL) {
+        fprintf(stderr, "List Error: malloc failed in prepend()\n");
+        exit(EXIT_FAILURE);
+    }
+
+    rep-&gt;prev = NULL;
+    rep-&gt;data = x;
+
+    if(L-&gt;head == NULL){
+        rep-&gt;next = NULL;
+        L-&gt;head = rep;
+        L-&gt;tail = rep;
+        L-&gt;length +=1;
+        L-&gt;index +=1;
+        return;
+    }
+    else {
+        rep-&gt;next = L-&gt;head;
+        (L-&gt;head)-&gt;prev = rep;
+        L-&gt;head = rep;
+        L-&gt;length +=1;
+        L-&gt;index +=1;
+    }
+
+    return;
+}
+
+void append(List L, int x){
+    if( L == NULL ){
+      fprintf(stderr, "List Error: calling append() on NULL List reference\n");
+      exit(EXIT_FAILURE);
+    }
+
+    Node rep = (Node) malloc(sizeof(NodeObj));
+
+    if (rep == NULL) {
+        fprintf(stderr, "List Error: malloc failed in append()\n");
+        exit(EXIT_FAILURE);
+    }
+
+    rep-&gt;next = NULL;
+    rep-&gt;data = x;
+
+    if(L-&gt;tail == NULL){
+        rep-&gt;prev = NULL;
+        L-&gt;head = rep;
+        L-&gt;tail = rep;
+        L-&gt;length +=1;
+        return;
+    }
+    else {
+        rep-&gt;prev = L-&gt;tail;
+        (L-&gt;tail)-&gt;next = rep;
+        L-&gt;tail = rep;
+        L-&gt;length +=1;
+    }
+    return;
+}
+
+void insertBefore(List L, int x){
+    if( L == NULL ){
+      fprintf(stderr, "List Error: calling insertBefore() on NULL List reference\n");
+      exit(EXIT_FAILURE);
+    }
+    if(length(L) &lt;= 0){
+        fprintf(stderr, "List Error: calling insertBefore() on an empty List\n");
+        exit(1);
+    }
+    if(L-&gt;cursor == NULL){
+        fprintf(stderr, "List Error: calling insertBefore() with a NULL cursor Node\n");
+        exit(1);
+    }
+
+    //if at start, prepend
+    if(L-&gt;index == 0){
+        prepend(L, x);
+        return;
+    }
+
+    Node rep = (Node) malloc(sizeof(NodeObj));
+
+    if (rep == NULL) {
+        fprintf(stderr, "List Error: malloc failed in insertBefore()\n");
+        exit(EXIT_FAILURE);
+    }
+
+    rep-&gt;data = x;
+    rep-&gt;next = L-&gt;cursor;
+    rep-&gt;prev = (L-&gt;cursor)-&gt;prev;
+
+    ((L-&gt;cursor)-&gt;prev)-&gt;next = rep;
+    (L-&gt;cursor)-&gt;prev = rep;
+
+<a name="6"></a><font color="#00FF00"><a href="match165-1.html#6" target="1"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_1_1.gif"/></a>
+
+    L-&gt;index +=1;
+    L-&gt;length +=1;
+}
+
+void insertAfter(List L, int x){
+
+    if( L == NULL ){
+      fprintf(stderr, "List Error: calling insertAfter() on NULL List reference\n");
+      exit(EXIT_FAILURE);
+    }
+    if(length(L) &lt;= 0){
+</font>        fprintf(stderr, "List Error: calling insertAfter() on an empty List\n");
+        exit(1);
+    }
+    if(L-&gt;cursor == NULL){
+        fprintf(stderr, "List Error: calling insertAfter() with a NULL cursor Node\n");
+        exit(1);
+    }
+
+    //if at start, append
+    if(L-&gt;index == length(L)-1){
+        append(L, x);
+        return;
+    }
+
+    Node rep = (Node) malloc(sizeof(NodeObj));
+
+    if (rep == NULL) {
+        fprintf(stderr, "List Error: malloc failed in insertAfter()\n");
+        exit(EXIT_FAILURE);
+    }
+
+    rep-&gt;data = x;
+    rep-&gt;prev = L-&gt;cursor;
+    rep-&gt;next = (L-&gt;cursor)-&gt;next;
+
+    ((L-&gt;cursor)-&gt;next)-&gt;prev = rep;
+<a name="3"></a><font color="#00FFFF"><a href="match165-1.html#3" target="1"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_3_2.gif"/></a>
+
+    (L-&gt;cursor)-&gt;next = rep;
+
+    L-&gt;length +=1;
+   
+}
+
+void deleteFront(List L){
+if( L == NULL ){
+      fprintf(stderr, "List Error: calling deleteBack() on NULL List reference\n");
+      exit(EXIT_FAILURE);
+    }
+    if(length(L) &lt;= 0){
+        fprintf(stderr, "List Error: calling deleteBAck() on an empty List\n");
+</font>        exit(1);
+    }
+    
+    Node delete = L-&gt;head;
+    
+    // if cursor is in the front
+    if(L-&gt;cursor == L-&gt;head){
+        L-&gt;cursor = NULL;
+        L-&gt;index = -1;
+    }
+    else{
+        L-&gt;index -=1;
+    }
+
+
+    if(length(L) &gt; 1){
+        L-&gt;head = (L-&gt;head)-&gt;next;
+        (L-&gt;head)-&gt;prev = NULL;
+    } else{
+        L-&gt;head = NULL;
+<a name="2"></a><font color="#0000FF"><a href="match165-1.html#2" target="1"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_2_2.gif"/></a>
+
+        L-&gt;tail = NULL;
+    }
+    // remove old back node
+    deleteNode(&amp;delete);
+    L-&gt;length -= 1;
+
+    
+}
+
+void deleteBack(List L){
+    if( L == NULL ){
+      fprintf(stderr, "List Error: calling deleteBack() on NULL List reference\n");
+      exit(EXIT_FAILURE);
+    }
+    if(length(L) &lt;= 0){
+        fprintf(stderr, "List Error: calling deleteBAck() on an empty List\n");
+</font>        exit(1);
+    }
+    
+    Node delete = L-&gt;tail;
+    
+    // if cursor is in the back
+    if(L-&gt;cursor == L-&gt;tail){
+        L-&gt;cursor = NULL;
+        L-&gt;index = -1;
+    }
+
+    if(length(L) &gt; 1){
+        L-&gt;tail = (L-&gt;tail)-&gt;prev;
+        (L-&gt;tail)-&gt;next = NULL;
+    } else{
+        L-&gt;head = NULL;
+<a name="5"></a><font color="#FF0000"><a href="match165-1.html#5" target="1"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_0_1.gif"/></a>
+
+        L-&gt;tail = NULL;
+    }
+
+    // remove old back node
+    deleteNode(&amp;delete);
+    L-&gt;length -= 1;
+}
+
+void delete(List L){
+    if( L == NULL ){
+      fprintf(stderr, "List Error: calling delete() on NULL List reference\n");
+      exit(EXIT_FAILURE);
+    }
+
+    if (length(L) &lt;= 0 || index(L) &lt; 0) {
+</font><a name="4"></a><font color="#FF00FF"><a href="match165-1.html#4" target="1"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_4_1.gif"/></a>
+
+        fprintf(stderr, "List Error: calling delete() on an empty List or with undefined cursor\n");
+        exit(EXIT_FAILURE);
+    }
+
+    Node delete = L-&gt;cursor;
+
+    
+    if (L-&gt;cursor == L-&gt;head) {
+        deleteFront(L);
+    }
+   
+    else if (L-&gt;cursor == L-&gt;tail) {
+</font>        deleteBack(L);
+    }
+    
+    else {
+        ((L-&gt;cursor)-&gt;prev)-&gt;next = (L-&gt;cursor)-&gt;next;  
+        ((L-&gt;cursor)-&gt;next)-&gt;prev = (L-&gt;cursor)-&gt;prev;  
+        free(delete);  
+        L-&gt;length -= 1; 
+    }
+
+    // Reset the cursor and index
+    L-&gt;cursor = NULL;
+    L-&gt;index = -1;
+
+
+}
+
+// Other Operations
+void printList(FILE* out, List L){
+    if(L == NULL){
+        fprintf(stderr, "List Error: calling printList() on a NULL List\n");
+        exit(EXIT_FAILURE);
+    }
+
+    if(length(L) == 0){
+        fprintf(out, "\n");
+        return;
+    }
+    
+    //save spot of cursor
+    int save = index(L);
+
+    //start printing
+    moveFront(L);
+    while (index(L)&gt;=0){
+        int x = get(L);
+        if(index(L) == length(L)-1){
+            fprintf(out, "%d\n", x);
+        }
+        else{        
+            fprintf(out, "%d ", x);
+        }
+        moveNext(L);
+    }
+
+    //go back to saved cursor spot
+    if(save != -1){
+        moveFront(L);
+        while(index(L) != save){
+            moveNext(L);
+        }
+    }
+}
+
+List copyList(List L){
+
+    List two = newList();
+
+    //save spot of cursor
+    int save = index(L);
+
+    if(length(L)== 0){
+        return two;
+    }
+
+    moveFront(L);
+    while(index(L)&gt;=0){
+        append(two, get(L));
+        moveNext(L);
+    }
+
+    if(save != -1){
+        moveFront(L);
+        while(index(L) != save){
+            moveNext(L);
+        }
+    }
+
+    return two;
+}
+
+
+</pre>
+</body>
+</html>

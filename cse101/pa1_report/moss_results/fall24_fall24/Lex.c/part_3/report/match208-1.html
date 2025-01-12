@@ -1,0 +1,108 @@
+<html>
+<head>
+<title>/fall24/sorugant/pa1/Lex.c</title>
+</head>
+<body bgcolor="white">
+<hr/>
+/fall24/wwu107/pa1/Lex.c<p></p><pre>
+/***
+ * Mandy Wu
+ * wwu107
+ * 2024 Fall CSE101 PA1 
+ * Lex.c 
+ * indirectly sorts lines of text from an input file using the List ADT
+***/
+
+
+#include&lt;stdio.h&gt;
+#include&lt;stdlib.h&gt;
+#include&lt;stdbool.h&gt;
+#include&lt;string.h&gt;
+#include"List.h"
+
+#define MAX_LEN 300
+
+int main(int argc, char *argv[]){
+   //FILE *in, *out;
+   char line[MAX_LEN];
+   //char tokenBuffer[MAX_LEN];
+   //char* token;
+
+   //checks for num of arguments
+   if (argc != 3) {
+      fprintf(stderr,"Usage: %s &lt;input file&gt; &lt;output file&gt;\n", argv[0]);
+      exit(EXIT_FAILURE);
+   }
+
+   // opening the files 
+   FILE* input = fopen(argv[1], "r");
+   if (input == NULL){
+     fprintf(stderr, "Unable to open file %s for reading\n", argv[1]);
+     exit(EXIT_FAILURE);
+   }
+
+   FILE* output = fopen(argv[2], "w");
+   if (output == NULL){
+      fprintf(stderr, "Unable to open file %s for writing\n", argv[2]);
+      fclose(input);
+      exit(EXIT_FAILURE);
+   }
+
+   //counting the number of lines
+<a name="0"></a><font color="#FF0000"><a href="match208-0.html#0" target="0"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_0_22.gif"/></a>
+
+   int line_count = 0;
+   while (fgets(line, MAX_LEN, input) != NULL){
+      line_count++;
+   }
+
+   char** lines = malloc(line_count*sizeof(char*));
+   rewind(input);
+
+   for (int i = 0; i &lt; line_count; i++){
+      fgets(line, MAX_LEN, input);
+      lines[i] = malloc(strlen(line)+1);
+      if(lines[i] == NULL){
+</font>	 fprintf(stderr, "memory allocation failed for reading line %d\n",i);
+	 exit(EXIT_FAILURE);
+      }
+      strcpy(lines[i], line);
+   }
+
+   //creating a new list and sorting 
+   List indexList = newList();
+   append(indexList, 0);
+
+   for (int i = 1; i &lt; line_count; i++){
+      moveFront(indexList);
+      
+      while (index(indexList) &gt;= 0 &amp;&amp; strcmp(lines[get(indexList)], lines[i]) &lt; 0){
+        moveNext(indexList);
+      }
+      if (index(indexList) &gt;= 0){
+	insertBefore(indexList, i);
+      } else {
+	append(indexList, i);
+      }
+  }
+
+  moveFront(indexList);
+  while (index(indexList) &gt;= 0){
+     fprintf(output, "%s", lines[get(indexList)]);
+     moveNext(indexList);
+  }
+
+  //freeing memory
+  for (int i = 0; i &lt; line_count; i++){
+     free(lines[i]);
+  }
+
+  free(lines);
+  freeList(&amp;indexList);
+  fclose(input);
+  fclose(output);
+}
+
+</pre>
+</body>
+</html>

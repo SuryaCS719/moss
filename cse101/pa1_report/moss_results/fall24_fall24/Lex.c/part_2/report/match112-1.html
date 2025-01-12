@@ -1,0 +1,92 @@
+<html>
+<head>
+<title>/fall24/asrikris/pa1/Lex.c</title>
+</head>
+<body bgcolor="white">
+<hr/>
+/fall24/asrikris/pa1/Lex.c<p></p><pre>
+//-----------------------------------------------------------------------------
+// Archita Srikrishnan, ID 2021831, pa1
+// Lex.c
+//-----------------------------------------------------------------------------
+#include "List.h"
+#include &lt;string.h&gt;
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;assert.h&gt;
+#include &lt;stdbool.h&gt;
+<a name="0"></a><font color="#FF0000"><a href="match112-0.html#0" target="0"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_0_75.gif"/></a>
+
+char *strdup(const char *s);
+
+int main(int argc, char *argv[]) {
+    FILE *in, *out;
+
+    if (argc != 3) {
+        fprintf(stderr, "Usage: %s &lt;input file&gt; &lt;output file&gt;\n", argv[0]);
+        exit(1);
+    }
+
+    in = fopen(argv[1], "r");
+    out = fopen(argv[2], "w");
+    if (in == NULL) {
+        fprintf(stderr, "Error: Can't open file %s for reading \n", argv[1]);
+        exit(1);
+    }  
+    if (out == NULL) {
+        fprintf(stderr, "Error: Can't open file %s for writing \n", argv[2]);
+        fclose(in);
+        exit(1);
+    }
+
+    char line[256];
+    int n = 0;
+
+    while (fgets(line, 256, in) != NULL) {
+        n++;
+    } 
+
+    char **array = malloc(n * sizeof(char *));
+
+    rewind(in);
+    for (int i = 0; i &lt; n; i ++) {
+        fgets(line, 256, in);
+        array[i] = strdup(line);
+    }
+
+    List indices = newList();
+
+    for (int i = 0; i &lt; n; i ++) {
+        if (length(indices) == 0) {
+            append(indices, i);
+        } else {
+            moveFront(indices);
+            while (index(indices)&gt;= 0 &amp;&amp; strcmp(array[i], array[get(indices)]) &gt; 0) {
+                moveNext(indices);
+</font>            }
+            if (index(indices) == -1) {
+                append(indices, i);
+            } else {
+                insertBefore(indices, i);
+            }
+        }
+    }
+
+    moveFront(indices);
+    while (index(indices) &gt;= 0) {
+        fprintf(out, "%s", array[get(indices)]);
+        moveNext(indices);
+    }
+
+    for (int i = 0; i &lt; n; i ++) {
+        free(array[i]);
+    }
+    free(array);
+    freeList(&amp;indices);
+
+    fclose(in);
+    fclose(out);
+    return 0;
+}</pre>
+</body>
+</html>

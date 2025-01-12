@@ -1,0 +1,158 @@
+<html>
+<head>
+<title>/fall24/nyu16/pa1/Lex.c</title>
+</head>
+<body bgcolor="white">
+<hr/>
+/fall24/jodacost/pa1/Lex.c<p></p><pre>
+/************************************************
+ * PROGRAMMER:	Joshua Acosta			*
+ * CRUZ ID:	jodacost			*
+ * ASSIGNMENT:	pa1				*
+ * FILE NAME:	Lex.c				*
+ * PURPOSE:	main program			*
+ * CREATED ON:	10/ 2/24			*
+ * LAST UPDATE:	10/11/24			*
+ ************************************************/
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;assert.h&gt;
+#include &lt;errno.h&gt;
+#include &lt;stdbool.h&gt;
+#include &lt;string.h&gt;
+#include "List.h"
+
+#define MAX_LINE_LENGTH 1024
+
+int main(int argc, char* argv[]){
+    FILE* in;
+    FILE* out;
+    int c;		// NOTE: c is of type int to properly handle EOF
+    int n = 0;			// # of lines in input file
+    char** strings = NULL;	// array of strings from file
+    char buffer[MAX_LINE_LENGTH]; 
+    int k = 0;			// size of target string
+
+    // Check for proper usage
+    if(argc != 3){
+        fprintf(stderr ,"Usage: %s &lt;input file&gt; &lt;output file&gt;\n", argv[0]);
+	exit(EXIT_FAILURE);
+    }
+//    printf("InFile: %s\n", argv[1]);
+//    printf("OutFile: %s\n", argv[2]);
+
+    /****************************
+     *		GET N		*
+     ****************************/
+    // Open the input file
+    in = fopen(argv[1], "r");		// open file, read only
+    if(in == NULL){
+        perror("Error opening file");
+	exit(EXIT_FAILURE);
+    }
+    // Count the number of lines in the file
+    while((c = getc(in)) != EOF){
+        if(c == '\n'){
+	    n++;
+	}
+    }
+    // Return to start of file
+//    printf("# of lines in file: %d\n", n);
+    rewind(in);
+
+    /****************************
+     * CREATE THE STRING ARRAY  *
+     ****************************/
+    // allocate memory for the array of strings
+    strings = (char**)malloc(n * sizeof(char*));
+    if(strings == NULL){
+        perror("Memory allocation failed\n");
+	exit(EXIT_FAILURE);
+    }
+    // allocate memory for each string and assign values
+    // NOTE: This is the part that TA Mike helped with.
+    for(int i = 0; i &lt; n; i++){
+	fgets(buffer, MAX_LINE_LENGTH, in);	// Store in buffer
+	k = strlen(buffer);
+	while((buffer[k-1] == '\n') || (buffer[k-1] == '\r')){	// strip newline
+	    buffer[k-1] = '\0';
+	    k--;
+	}
+	strings[i] = (char*)malloc((k+1) * sizeof(char));
+        if(strings[i] == NULL){
+            perror("Memory allocation failed\n");
+            exit(EXIT_FAILURE);
+        }
+<a name="0"></a><font color="#FF0000"><a href="match230-0.html#0" target="0"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_0_18.gif"/></a>
+
+	strcpy(strings[i], buffer);	// copy from buffer into string array
+    }
+    // Close the input file
+    fclose(in);
+
+    /****************************
+     *  CREATE THE SORTED LIST  *
+     ****************************/
+    List L = newList();
+    append(L, 0);
+    for(int i = 1; i &lt; n; i++){
+	moveFront(L);
+        while(index(L) != -1 &amp;&amp; strcmp(strings[i], strings[get(L)]) &gt; 0){
+	    moveNext(L);
+	}
+	if(index(L) == -1){
+	    append(L, i);
+</font>	}else{
+	    insertBefore(L, i);
+	}
+    }
+
+    /****************************
+     *   PRINT TO OUTPUT FILE   *
+     ****************************/
+    out = fopen(argv[2], "w");	// open file, write only
+    if(out == NULL){
+        perror("Error opening file");
+        exit(EXIT_FAILURE);
+    }
+    moveFront(L);
+    while(index(L) != -1){
+        fprintf(out, "%s\n", strings[get(L)]);
+	moveNext(L);
+    }
+    fclose(out);
+
+    /****************************
+     *	  CLOSE THE PROGRAM	*
+     ****************************/
+    freeList(&amp;L);			// free memory for the List
+    for(int i = 0; i &lt; n; i++){		// free memory for each string
+        free(strings[i]);
+    }
+    free(strings);			// free memory for the array
+    return EXIT_SUCCESS;		// exit the program
+}
+
+/* LEX PROCESS:
+ * 1. Check for proper input, which follows the pattern below
+ * 	Lex &lt;input file&gt; &lt;output file&gt;
+ *    Quit with stderr if improper number of arguments
+ * 2. Count the number of lines (n) in the input file.
+ *    Create a string array (length n) and read in each line as a string,
+ *    placing them in the array.
+ * 3. Create a List. Elements are the indices of the string array. Arrange the
+ *    indices in an order that indirectly sorts the array.
+ *	a) Start with an empty List
+ *	b) insert indices of the array one by one into proper positions
+ *		(Insertion Sort may be a helpful guide)
+ *		Remember to use strcmp to compare strings.
+ *			strcmp(s1, s2) &lt; 0 iff s1 comes before s2
+ *			strcmp(s1, s2) &gt; 0 iff s1 comes after s2
+ *			strcmp(s1, s2) == 0 iff s1 is identical to s2
+ * 4. Use the List from (3) to print the array in alphabetical order
+ *    to output file.
+ *    NOTE: The initial array from the input file is never itself sorted.
+ */
+</pre>
+</body>
+</html>

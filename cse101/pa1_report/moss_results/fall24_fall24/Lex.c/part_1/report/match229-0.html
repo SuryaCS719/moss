@@ -1,0 +1,117 @@
+<html>
+<head>
+<title>/fall24/xliang41/pa1/Lex.c</title>
+</head>
+<body bgcolor="white">
+<hr/>
+/fall24/xliang41/pa1/Lex.c<p></p><pre>
+/***
+* Peter Liang
+* xliang41
+* 2024 Fall CSE 101 PA1
+* Lex.c
+* Client module for List ADT.
+***/
+
+
+#include&lt;stdio.h&gt;
+#include&lt;stdlib.h&gt;
+#include&lt;string.h&gt;
+#include "List.h"
+
+
+#define MAX_LEN 1000
+
+
+int main(int argc, char* argv[]){
+    int line_count = 0;
+    FILE *in, *out;
+    char line[MAX_LEN];
+
+    // Check command line for correct number of arguments
+    if( argc!=3 ){
+        fprintf(stderr, "Usage: %s &lt;input file&gt; &lt;output file&gt;.\n", argv[0]);
+        exit(1);
+    }
+
+   // Open files for reading and writing
+    in = fopen(argv[1], "r");
+    if( in==NULL ){
+         fprintf(stderr, "Unable to open file %s for reading.\n", argv[1]);
+        exit(1);
+    }
+
+    out = fopen(argv[2], "w");
+    if( out==NULL ){
+        fprintf(stderr, "Unable to open file %s for writing.\n", argv[2]);
+        exit(1);
+    }
+
+<a name="1"></a><font color="#00FF00"><a href="match229-1.html#1" target="1"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_1_8.gif"/></a>
+
+    while( fgets(line, MAX_LEN, in)!=NULL ){
+        line_count += 1;
+    }
+
+    char** strArray = malloc(line_count* sizeof(char*));
+    if ( strArray==NULL ){
+        fprintf(stderr, "Memory allocation failed.\n");
+        exit(EXIT_FAILURE);
+</font>    }
+    rewind(in);
+
+    int temp_str = 0;
+<a name="0"></a><font color="#FF0000"><a href="match229-1.html#0" target="1"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_0_13.gif"/></a>
+
+    while ( fgets(line, MAX_LEN, in)!=NULL &amp;&amp; temp_str&lt;line_count ){            strArray[temp_str] = malloc((strlen(line)+1)* sizeof(char));
+
+    if ( strArray[temp_str]==NULL ){
+        fprintf(stderr, "Memory allocation failed.\n");
+        exit(EXIT_FAILURE);
+        }
+    strcpy(strArray[temp_str], line);
+    temp_str += 1;
+    }
+
+    fclose(in);
+</font>
+    int current;
+    List L = newList();
+    for( int i=0;i&lt;line_count;i++ ){
+        append(L,-2);
+    }
+    for( int i=0;i&lt;line_count;i++ ){
+        current=0;
+        for( int j=0;j&lt;line_count;++j ){
+            if( strcmp(strArray[j],strArray[i])&lt;0 ){
+                current++;
+            }
+
+        }
+        moveFront(L);
+
+        while( index(L)!=current ) {
+            moveNext(L);
+        }
+        set(L,i);
+    }
+
+    moveFront(L);
+    for(int i=0;i&lt;length(L);++i){
+        fprintf(out, "%s", strArray[get(L)]);
+        moveNext(L);
+    }
+
+     fclose(out);
+
+    freeList(&amp;L);
+    for (int i = 0; i &lt; line_count; i++) {
+        free(strArray[i]);
+    }
+    free(strArray);
+
+    return 0;
+}
+</pre>
+</body>
+</html>

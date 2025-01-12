@@ -1,0 +1,102 @@
+<html>
+<head>
+<title>/fall24/shminguy/pa1/Lex.c</title>
+</head>
+<body bgcolor="white">
+<hr/>
+/fall24/shminguy/pa1/Lex.c<p></p><pre>
+/***
+ * Shanley Nguyen
+ * shminguy
+ * Fall 2024 CSE101 PA1
+ * Lex.c
+ * Reads input file and outputs sorted line
+ */
+
+#include&lt;stdio.h&gt;
+#include&lt;stdlib.h&gt;
+#include&lt;stdbool.h&gt;
+#include&lt;string.h&gt;
+#include"List.h"
+
+<a name="0"></a><font color="#FF0000"><a href="match47-1.html#0" target="1"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_0_95.gif"/></a>
+
+char *strdup(const char *s) {
+  size_t size = strlen(s) + 1;
+  char *p = malloc(size);
+
+  if (p != NULL) {
+    memcpy(p, s, size);
+  }
+
+  return p;
+}
+
+char **load_input(char *filename, size_t *num_lines) {
+  char **out = NULL;
+  FILE *infile;
+  char buf[50];
+  out = (char**)malloc(sizeof(buf));
+  infile = fopen(filename, "r");
+  int realloc_num = 0;
+  while (fgets(buf, sizeof(buf), infile) != NULL) {
+    buf[strlen(buf)-1] = '\0';
+    char *target = strdup(buf);
+    out[realloc_num] = target;
+    realloc_num++;
+    out = realloc(out, realloc_num * sizeof(buf));
+    *num_lines = realloc_num;
+  }
+  fclose(infile);
+  return out;
+}
+
+int main(int argc, char **argv) {
+  if (argc != 3) {
+    fprintf(stderr, "Must be exactly two command line arguements, excluding Lex\n");
+    exit(0);
+  }
+  char *input_file = argv[1];
+  char *output_file = argv[2];
+
+  char **lex;
+  size_t number_of_lines;
+
+  List path = newList();
+
+  lex = load_input(input_file, &amp;number_of_lines);
+
+  append(path, 0);
+  for (int i = 1; i &lt; number_of_lines; i++) {
+    moveFront(path); 
+    while (index(path) != -1) {
+      if (strcmp(lex[get(path)], lex[i]) &gt; 0) {
+        insertBefore(path, i);
+        break;
+      }
+      moveNext(path);
+      }
+    if (index(path) &lt; 0) {
+      append(path,i);
+    }
+    }
+  moveFront(path);
+  
+  FILE *outfile;
+  outfile = fopen(output_file, "w");
+  for (int i = 0; i &lt; number_of_lines; i++) {
+    fprintf(outfile, "%s\n", lex[get(path)]);
+    moveNext(path);
+  }
+  fclose(outfile);
+  freeList(&amp;path);
+  
+  for (int i = 0; i &lt; number_of_lines; i++) {
+</font>    free(lex[i]);
+  }
+  free(lex);
+  return 0;
+}
+</pre>
+</body>
+</html>

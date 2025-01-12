@@ -1,0 +1,145 @@
+<html>
+<head>
+<title>/fall24/mkestelo/pa1/Lex.c</title>
+</head>
+<body bgcolor="white">
+<hr/>
+/fall24/mkestelo/pa1/Lex.c<p></p><pre>
+/****************************************************************************************
+*  Name: Milo Kesteloot
+*  CruzID: 2051985
+*  Assignment Name: pa1
+*****************************************************************************************/
+
+#include "List.h"
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;string.h&gt;
+
+
+<a name="0"></a><font color="#FF0000"><a href="match1-0.html#0" target="0"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_0_99.gif"/></a>
+
+char** readTextFile(FILE* file, char breakChar, int* wordCount) {
+
+    char** ret = calloc(1, sizeof(char*));
+
+    int words = 1;
+    int wordLength = 0;
+    char c = -1;
+    int saftey = 0;
+    while (saftey &lt; 100000000) {
+        saftey += 1;
+        c = fgetc(file);
+
+        if (c == EOF) {
+            break;
+        }
+        if (c == breakChar) {
+            words += 1;
+
+            ret = realloc(ret, words*sizeof(char*));
+            wordLength = 0;
+            continue;
+        }
+
+        if (wordLength == 0) {
+            ret[words-1] = calloc(1, sizeof(char));
+        }
+        wordLength += 1;
+        ret[words-1] = realloc(ret[words-1], (wordLength+1)*sizeof(char));
+        ret[words-1][wordLength-1] = c;
+        ret[words-1][wordLength] = 0;
+    }
+
+
+    if (wordLength == 0) {
+        // if (ret != NULL &amp;&amp; ret[words-1] != NULL) {
+        //     free(ret[words-1]);
+        // }
+        words -= 1;
+        ret = realloc(ret, words*sizeof(char*));
+    }
+
+    if (wordCount != NULL) {
+        *wordCount = words;
+    }
+
+    return ret;
+}
+
+void freeFoundTextFile(char** words, int wordCount) {
+    for (int i = 0; i &lt; wordCount; i++) {
+        free(words[i]);
+    }
+    free(words);
+}
+
+void sortWords(char** inputWords, int wordCount, FILE* outputFile) {
+    List sorted = newList();
+
+    append(sorted, 0);
+
+    for (int i = 1; i &lt; wordCount; i++) {
+        char* word = inputWords[i];
+
+        moveFront(sorted);
+        while (index(sorted) != -1) {
+            if (strcmp(word, inputWords[get(sorted)]) &gt; 0) {
+                moveNext(sorted);
+                if (index(sorted) == -1) {
+                    append(sorted, i);
+                    break;
+                }
+            } else {
+                insertBefore(sorted, i);
+                break;
+            }
+        }
+    }
+
+    moveFront(sorted);
+    for (int i = 0; i &lt; length(sorted); i++) {
+        fprintf(outputFile, "%s\n", inputWords[get(sorted)]);
+        moveNext(sorted);
+    }
+    
+    freeFoundTextFile(inputWords, wordCount);
+    freeList(&amp;sorted);
+}
+
+int main(int argc, char **argv) {
+    if (argc != 3) {
+        printf("Lex requires exactly 2 peramiters (Lex input_file output_file). Lex was given %d arguments.\n", argc-1);
+        return 0;
+    }
+    char* inputFilePath = argv[1];
+    char* outputFilePath = argv[2];
+    FILE* inputFile = fopen(inputFilePath, "r");
+    FILE* outputFile = fopen(outputFilePath, "w");
+    if (inputFile == NULL) {
+        printf("Input file '%s' not found.\n", inputFilePath);
+        fclose(inputFile);
+        fclose(outputFile);
+        return 0;
+    }
+    if (outputFile == NULL) {
+        printf("Output file '%s' not found or could not be created.\n", outputFilePath);
+        fclose(inputFile);
+        fclose(outputFile);
+        return 0;
+    }
+    int wordCount = -1;
+    char** inputWords = readTextFile(inputFile, '\n', &amp;wordCount);
+
+    if (wordCount != 0) {
+        sortWords(inputWords, wordCount, outputFile);
+    }
+
+    fclose(inputFile);
+    fclose(outputFile);
+</font>
+    return 0;
+}
+</pre>
+</body>
+</html>

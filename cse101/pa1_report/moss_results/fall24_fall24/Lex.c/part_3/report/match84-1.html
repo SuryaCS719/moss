@@ -1,0 +1,127 @@
+<html>
+<head>
+<title>/fall24/utewari/pa1/Lex.c</title>
+</head>
+<body bgcolor="white">
+<hr/>
+/fall24/jggao/pa1/Lex.c<p></p><pre>
+//-----------------------------------------------------------------------------
+// Lex.c
+// Implementation file for Lex sorting program using List ADT
+//-----------------------------------------------------------------------------
+
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;string.h&gt;
+#include "List.h"  // Include the List header file to use List ADT
+
+#define MAX_LEN 160
+
+// Function to read the lines of the input file and store them in an array
+char** readFile(char* filename, int* numLines) {
+    FILE* in = fopen(filename, "r");
+    if (in == NULL) {
+        fprintf(stderr, "Unable to open file %s for reading\n", filename);
+        exit(EXIT_FAILURE);
+    }
+
+    char** lines = NULL;
+    char line[MAX_LEN];
+    *numLines = 0;
+
+    // Count number of lines first
+    while (fgets(line, MAX_LEN, in) != NULL) {
+        (*numLines)++;
+    }
+
+    // Allocate memory for storing lines
+    lines = calloc(*numLines, sizeof(char*));
+
+    // Rewind file and read lines into array
+    rewind(in);
+    int i = 0;
+    while (fgets(line, MAX_LEN, in) != NULL) {
+        lines[i] = calloc(strlen(line) + 1, sizeof(char));
+        strcpy(lines[i], line);
+        i++;
+    }
+
+    fclose(in);
+    return lines;
+}
+
+// Function to write the sorted lines to the output file
+void writeFile(char* filename, char** lines, List L) {
+    FILE* out = fopen(filename, "w");
+    if (out == NULL) {
+        fprintf(stderr, "Unable to open file %s for writing\n", filename);
+        exit(EXIT_FAILURE);
+    }
+
+    // Iterate through the list to print lines in order
+    moveFront(L);
+    while (index(L) &gt;= 0) {
+        fprintf(out, "%s", lines[get(L)]);
+        moveNext(L);
+    }
+
+    fclose(out);
+}
+
+// Function to free all memory associated with the lines array
+<a name="0"></a><font color="#FF0000"><a href="match84-0.html#0" target="0"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_0_14.gif"/></a>
+
+void freeLines(char** lines, int numLines) {
+    for (int i = 0; i &lt; numLines; i++) {
+        free(lines[i]);
+    }
+    free(lines);
+}
+
+// Main function
+int main(int argc, char* argv[]) {
+    // Check command line arguments
+    if (argc != 3) {
+        fprintf(stderr, "Usage: %s &lt;input file&gt; &lt;output file&gt;\n", argv[0]);
+</font>        exit(EXIT_FAILURE);
+    }
+
+    // Read input file and store lines
+    int numLines;
+    char** lines = readFile(argv[1], &amp;numLines);
+
+    // Create a new list to store indices of lines
+    List L = newList();
+
+    // Insert the indices of the lines into the List in sorted order
+    for (int i = 0; i &lt; numLines; i++) {
+<a name="1"></a><font color="#00FF00"><a href="match84-0.html#1" target="0"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_1_10.gif"/></a>
+
+        if (length(L) == 0) {
+            append(L, i);
+        } else {
+            moveFront(L);
+            while (index(L) &gt;= 0 &amp;&amp; strcmp(lines[get(L)], lines[i]) &lt;= 0) {
+                moveNext(L);
+            }
+            if (index(L) &gt;= 0) {
+</font>                insertBefore(L, i);
+            } else {
+                append(L, i);
+            }
+        }
+    }
+
+    // Write sorted lines to output file
+    writeFile(argv[2], lines, L);
+
+    // Free memory and clean up
+    freeLines(lines, numLines);
+    freeList(&amp;L);
+
+    return 0;
+}
+
+</pre>
+</body>
+</html>

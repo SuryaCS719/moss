@@ -1,0 +1,158 @@
+<html>
+<head>
+<title>/fall24/flee14/pa1/Lex.c</title>
+</head>
+<body bgcolor="white">
+<hr/>
+/fall24/nashwin/pa1/Lex.c<p></p><pre>
+// Lex.c Client Module
+//
+// Lex &lt;input file&gt; &lt;output file&gt;
+//
+// Input File:		Output File:
+// one			   five
+// two			   four
+// three		      one
+// four			   three
+// five			   two
+//
+// --------------------------------------
+
+#include&lt;stdio.h&gt;
+#include&lt;stdlib.h&gt;
+#include&lt;stdbool.h&gt;
+#include&lt;string.h&gt;
+#include "List.h"
+
+#define ERROR_INVALID_ARGUMENT 1
+#define MAX_LEN 300
+
+int main(int argc, char **argv) {
+
+	int token_count, line_count;
+   FILE *in, *out;
+   char line[MAX_LEN];
+   char tokenBuffer[MAX_LEN];
+   char* token;
+
+   if(argc != 3) {
+      fprintf(stderr, "Usage %s &lt;input file&gt; &lt;output file&gt;\n", argv[0]);
+	  exit(1);
+   }
+
+   // open files for reading and writing 
+   in = fopen(argv[1], "r");
+      if( in==NULL ){
+      printf("Unable to open file %s for reading\n", argv[1]);
+      exit(1);
+   }
+
+   out = fopen(argv[2], "w");
+   if( out==NULL ){
+<a name="0"></a><font color="#FF0000"><a href="match183-0.html#0" target="0"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_0_9.gif"/></a>
+
+      printf("Unable to open file %s for writing\n", argv[2]);
+      exit(1);
+   }
+
+   // count number of lines in input file
+   line_count = 0;
+
+   while( fgets(line, MAX_LEN, in) != NULL)  {
+      line_count++;
+   }
+
+   rewind(in);
+   char **A = (char **)calloc(line_count, sizeof(*A));
+</font>
+   if(!A){
+	fprintf(stderr, "Memory allocation failed\n");
+    return 1;
+   }
+
+   // read each line of input file, then count and print tokens
+   line_count = 0;
+   while( fgets(line, MAX_LEN, in) != NULL)  {
+      line_count++;
+
+      // get tokens in this line
+      token_count = 0;
+      tokenBuffer[0] = '\0';
+
+      // get first token
+      token = strtok(line, " \n");
+      
+      while( token!=NULL ){ // we have a token
+         // update token buffer
+         strcat(tokenBuffer, token);
+         strcat(tokenBuffer, " ");
+         token_count++;
+
+         // get next token
+         token = strtok(NULL, " \n");
+      }
+
+      // Format the output string for the current line
+      char *line = (char *)malloc(MAX_LEN * sizeof(char));
+      if (!line) {
+        fprintf(stderr, "Memory allocation for line failed\n");
+        return 1;
+      }
+	  sprintf(line, tokenBuffer);
+	  A[line_count - 1] = line;
+   }
+
+   // close files 
+   fclose(in);
+
+   List L = newList();
+//    append(L, 0);
+//    moveFront(L);
+
+
+   for (int i = 0; i &lt; line_count; i++) {
+      if(length(L) == 0){
+		append(L, i);
+	  }
+	  else{
+		moveFront(L);
+		while(index(L)&gt;=0){
+			ListElement x = get(L);
+			if(strcmp(A[x], A[i]) &lt; 0){
+				if(index(L) == length(L)-1){
+					append(L, i);
+					moveNext(L);
+				}
+			}
+			else{
+				insertBefore(L, i);
+				break;
+			}
+         moveNext(L);
+		}
+	  }
+   }
+   
+   moveFront(L);
+   while(index(L) &gt;= 0){
+	ListElement x = get(L);
+<a name="1"></a><font color="#00FF00"><a href="match183-0.html#1" target="0"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_1_8.gif"/></a>
+
+	fprintf(out, "%s\n", A[x]);
+	moveNext(L);
+   }
+
+   freeList(&amp;L);
+
+   for (int i = 0; i &lt; line_count; i++){
+	free(A[i]);
+</font>   }
+   free(A);
+   
+   fclose(out);
+   return 0;
+}
+
+</pre>
+</body>
+</html>

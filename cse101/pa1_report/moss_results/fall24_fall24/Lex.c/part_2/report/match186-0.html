@@ -1,0 +1,113 @@
+<html>
+<head>
+<title>/fall24/jhgorton/pa1/Lex.c</title>
+</head>
+<body bgcolor="white">
+<hr/>
+/fall24/jhgorton/pa1/Lex.c<p></p><pre>
+/*
+Jenna Gorton
+jhgorton@ucsc.edu
+pa1
+*/
+
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;string.h&gt;
+#include "List.h"
+
+
+#define MAX_LEN 300
+
+int main(int argc, char *argv[]) {
+
+    FILE *in, *out;
+    char line[MAX_LEN];
+    int line_count = 0;
+
+    // check command line for correct number of arguments
+    if( argc != 3 ){
+        printf("Usage: %s &lt;input file&gt; &lt;output file&gt;\n", argv[0]);
+        exit(1);
+    }
+
+    //Opening input file
+    in = fopen(argv[1], "r");
+        if( in==NULL ){
+        printf("Unable to open file %s for reading\n", argv[1]);
+<a name="0"></a><font color="#FF0000"><a href="match186-1.html#0" target="1"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_0_31.gif"/></a>
+
+        exit(1);
+    }
+    
+
+    //Counting lines in the in file
+    while (fgets(line, MAX_LEN, in) != NULL) {
+        line_count++;
+    }
+
+    //Allocating memory for lines
+    char **lines = calloc(line_count, sizeof(char*));
+    if (lines == NULL) {
+        fprintf(stderr, "Error: Memory allocation failed\n");
+        exit(EXIT_FAILURE);
+    }
+
+    
+    rewind(in); //sets the file position indicator to the beginning of file
+
+
+    List L = newList(); //new list
+
+    
+    for (int i = 0; i &lt; line_count; i++) {
+        //reading each line
+        fgets(line, MAX_LEN, in);
+        lines[i] = calloc(strlen(line) + 1, sizeof(char));
+        if (lines[i] == NULL) {
+            fprintf(stderr, "Error: Memory allocation failed\n");
+</font>            exit(EXIT_FAILURE);
+        }
+        strcpy(lines[i], line); //puts the value just read into the array
+
+        //inserting into correct position in L
+        moveFront(L);
+        while (index(L) &gt;= 0 &amp;&amp; strcmp(lines[i], lines[get(L)]) &gt; 0) { //checking to see if lines[i] should be inserted before or after lines[get(L)]
+            moveNext(L);
+        }
+        if (index(L) &gt;= 0) {
+            insertBefore(L, i);
+        } else {
+            append(L, i);
+        }
+    }
+
+    fclose(in); //closing in file 
+
+    //opening out file
+    out = fopen(argv[2], "w");
+    if( out==NULL ){
+        printf("Unable to open file %s for writing\n", argv[2]);
+        exit(1);
+    }
+
+    // Write sorted lines to the output file using the indices in List L
+    moveFront(L);
+    while (index(L) &gt;= 0) {
+        fprintf(out, "%s", lines[get(L)]);
+        moveNext(L);
+    }
+    fclose(out); // Close the output file
+
+    // Free allocated memory
+    for (int i = 0; i &lt; line_count; i++) {
+        free(lines[i]);
+    }
+    free(lines);
+    freeList(&amp;L);
+
+    return EXIT_SUCCESS;
+}
+</pre>
+</body>
+</html>

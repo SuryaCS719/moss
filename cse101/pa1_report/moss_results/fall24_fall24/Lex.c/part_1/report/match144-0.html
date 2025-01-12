@@ -1,0 +1,98 @@
+<html>
+<head>
+<title>/fall24/cceerla/pa1/Lex.c</title>
+</head>
+<body bgcolor="white">
+<hr/>
+/fall24/cceerla/pa1/Lex.c<p></p><pre>
+/* pa1
+ * Clara Ceerla
+ * cceerla
+ * 1890948
+ */
+
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;assert.h&gt;
+#include &lt;stdbool.h&gt;
+#include "List.h"
+#define BUFFER_LENGTH 4096
+#define MAX_LEN 512
+
+// i think this is the worst code i have ever written
+
+<a name="0"></a><font color="#FF0000"><a href="match144-1.html#0" target="1"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_0_95.gif"/></a>
+
+int main(int argc, char **argv){
+    // PRECONDS
+    if (argc != 3){
+	printf("Usage: %s &lt;input file&gt; &lt;output file&gt;\n", argv[0]);
+	exit(1);
+    }
+
+    // SETUP
+    FILE * input;
+    FILE * output;
+    FILE * listPrint;
+    size_t bytesRead;
+    char line[MAX_LEN]; 
+    int lineCount; 
+
+    // open input and output files
+    input = fopen(argv[1], "r");
+    output = fopen(argv[2], "w");
+    listPrint = fopen("output.txt", "w");
+
+    if(input == NULL){
+         printf("Unable to open file %s for reading\n", argv[1]);
+         exit(1);
+    }
+    if(output == NULL){
+        printf("Unable to open file %s for writing\n", argv[2]);
+        exit(1);
+    }
+    
+    // initialize list
+//    List sorted = newList();
+   // the evil method: two loops
+   // (im so tired)
+    while (fgets(line, MAX_LEN, input) != NULL){
+	lineCount++;
+    }
+    //char **allLines = calloc(lineCount, char * MAX_LEN);
+
+    for(;;) {
+	//char line[MAX_LEN];
+	if (fgets(line, MAX_LEN, input) == NULL) {
+	    printf("error getting line.\n");    
+	    break;
+	}
+	//printf("%s\n", line);
+	// BUSINESS LOGIC
+	//moveFront(sorted);
+	//while (index(sorted) &gt;= 0){
+//	    append(sorted, (int) line);
+	    //printf("%d\n", strcmp(line, (char *) get(sorted)));
+	    //if (strcmp(line, *( (char *) get(sorted)) &lt; 0)){
+	    //	insertBefore(sorted, line);
+	    //}
+//	    moveNext(sorted);
+	//} 
+    }
+    //printList(listPrint, sorted);
+    
+    // CLEANUP
+    // close files
+    fclose(input);
+    fclose(output);
+</font>    fclose(listPrint);
+    // free all string memory
+    // free list
+//    freeList(sorted);
+    
+
+    return 0;
+}
+</pre>
+</body>
+</html>

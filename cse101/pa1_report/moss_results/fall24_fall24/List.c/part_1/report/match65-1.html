@@ -1,0 +1,359 @@
+<html>
+<head>
+<title>/fall24/smadhur/pa1/List.c</title>
+</head>
+<body bgcolor="white">
+<hr/>
+/fall24/smadhur/pa1/List.c<p></p><pre>
+/**
+ * Siddhant Madhur &lt;smadhur@ucsc.edu&gt;
+ * For PA1 (CSE 101)
+ */
+
+#include &lt;stdbool.h&gt;
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+
+// private
+<a name="0"></a><font color="#FF0000"><a href="match65-0.html#0" target="0"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_0_99.gif"/></a>
+
+typedef struct NodeObj
+{
+	int value;
+	struct NodeObj *next;
+} NodeObj;
+
+typedef struct ListObj
+{
+	NodeObj *root;
+	int cursor;
+	int length;
+} ListObj;
+
+typedef ListObj *List;
+
+List newList(void)
+{
+	List list = malloc(sizeof(ListObj));
+	list-&gt;cursor = -1;
+	list-&gt;length = 0;
+	list-&gt;root = NULL;
+	return list;
+}
+
+void freeList(List *pL)
+{
+	NodeObj *cur = (*pL)-&gt;root;
+
+	// Free list objects
+	while (cur != NULL)
+	{
+		NodeObj *temp = cur-&gt;next;
+		free(cur);
+		cur = temp;
+	}
+
+	free(*pL);
+
+	*pL = NULL;
+}
+
+// Access functions
+int length(List L)
+{
+	return L-&gt;length;
+}
+
+int index(List L)
+{
+	return L-&gt;cursor;
+}
+
+int front(List L)
+{
+	return L-&gt;root-&gt;value;
+}
+
+int back(List L) {
+	
+	if (L-&gt;length &gt; 0) {
+		NodeObj* cur = L-&gt;root;
+		while (cur-&gt;next != NULL) {
+			cur = cur-&gt;next;
+		}
+		return cur-&gt;value;
+	}
+}
+
+int get(List L) {
+	
+	NodeObj* cur = L-&gt;root;
+	for (int i = 0; i &lt; L-&gt;cursor; i++) {
+		cur = cur-&gt;next;
+	}
+	return cur-&gt;value;
+}
+
+bool equals(List A, List B) {
+	
+	if (A-&gt;length != B-&gt;length) {
+		return false;
+	}
+
+	NodeObj* curA = A-&gt;root;
+	NodeObj* curB = B-&gt;root;
+	
+	while (curA != NULL &amp;&amp; curB != NULL) {
+		if (curA-&gt;value != curB-&gt;value) {
+			return false;
+		}
+		curA = curA-&gt;next;
+		curB = curB-&gt;next;
+	}
+	return true;
+}
+
+// Manipulation procedures
+
+void set(List L, int x) 
+{
+	
+	NodeObj* cursor = L-&gt;root;
+	for (int i = 0; i &lt; L-&gt;cursor; i++ ) 
+	{
+		cursor = cursor-&gt;next;
+	}
+	cursor-&gt;value = x;
+}
+
+
+void moveFront(List L)
+{
+	if (L-&gt;length &gt; 0) {
+		L-&gt;cursor = 0;
+	}
+}
+
+void moveBack(List L)
+{
+	
+	if (L-&gt;length &gt; 0)
+	{
+		L-&gt;cursor = L-&gt;length - 1;
+	}
+}
+
+void movePrev(List L)
+{
+	
+	if (L-&gt;cursor != -1)
+	{
+		L-&gt;cursor -= 1;
+	}
+}
+
+void moveNext(List L)
+{
+	
+	if (L-&gt;cursor != -1)
+	{
+
+		if (L-&gt;cursor &lt; (L-&gt;length - 1))
+		{
+			L-&gt;cursor += 1;
+		}
+		else
+		{
+			L-&gt;cursor = -1;
+		}
+	}
+}
+void prepend(List L, int x)
+{
+	
+	NodeObj* newObj = malloc(sizeof(NodeObj));
+	newObj-&gt;value = x;
+	if (L-&gt;length == 0) {
+		newObj-&gt;next = NULL;
+	} else {
+		newObj-&gt;next = L-&gt;root;
+		L-&gt;root = newObj;
+	}
+	L-&gt;root = newObj;
+	L-&gt;length += 1;
+	L-&gt;cursor += 1;
+}
+
+
+void append(List L, int x)
+{
+	
+	NodeObj *newObj = malloc(sizeof(NodeObj));
+	newObj-&gt;value = x;
+	newObj-&gt;next = NULL;
+	if (L-&gt;length == 0)
+	{
+		L-&gt;root = newObj;
+	}
+	else
+	{
+		NodeObj* cursor = L-&gt;root;
+		while (cursor-&gt;next != NULL) 
+		{
+			cursor = cursor-&gt;next;
+		}
+		cursor-&gt;next = newObj;
+	}
+	L-&gt;length += 1;
+}
+
+void insertBefore(List L, int x)
+{
+	
+	NodeObj* cursor = L-&gt;root;
+	NodeObj* prev = NULL;
+	for (int i = 0; i &lt; (L-&gt;cursor); i++) 
+	{
+		prev = cursor;
+		cursor = cursor-&gt;next;
+	}
+	NodeObj* newNode = malloc(sizeof(NodeObj));
+	newNode-&gt;value = x;
+
+	newNode-&gt;next = cursor;
+	if (prev != NULL) {
+		prev-&gt;next = newNode;
+	} else {
+		L-&gt;root = newNode;
+	}
+
+	L-&gt;length += 1;
+	L-&gt;cursor += 1;	
+}
+
+void insertAfter(List L, int x)
+{
+	
+	NodeObj* cursor = L-&gt;root;
+	for (int i = 0; i &lt; L-&gt;cursor; i++) 
+	{
+		cursor = cursor-&gt;next;
+	}
+	NodeObj* newNode = malloc(sizeof(NodeObj));
+	newNode-&gt;value = x;
+
+
+	newNode-&gt;next = cursor-&gt;next;
+	cursor-&gt;next = newNode;
+
+	L-&gt;length += 1;
+}
+
+void deleteFront(List L)
+{
+	
+	NodeObj* root = L-&gt;root;
+	L-&gt;root = L-&gt;root-&gt;next;
+	free(root);	
+	L-&gt;length -= 1;
+	if (L-&gt;cursor == 0)
+	{
+		L-&gt;cursor = -1;
+	} else {
+		L-&gt;cursor -= 1;
+	}
+}
+
+void deleteBack(List L)
+{
+	
+	NodeObj* cur = L-&gt;root;
+	while (cur-&gt;next != NULL &amp;&amp; cur-&gt;next-&gt;next != NULL) 
+	{
+		cur = cur-&gt;next;
+	}
+	free(cur-&gt;next);
+	cur-&gt;next = NULL;
+	if (L-&gt;cursor == (L-&gt;length - 1)) {
+		L-&gt;cursor = -1; 
+	}
+	L-&gt;length -= 1;
+}
+void delete(List L)
+{
+	if (L-&gt;cursor != -1) {
+		if (L-&gt;length == 1) {
+			free(L-&gt;root);
+			L-&gt;root = NULL;
+			L-&gt;length = 0;
+			L-&gt;cursor = -1;
+		} else {
+			NodeObj *cur = L-&gt;root;
+			NodeObj *prev = NULL;
+			for (int i = 0; i &lt; (L-&gt;cursor); i++)
+			{
+				prev = cur;
+				cur = cur-&gt;next;
+			}
+			if (prev == NULL)
+			{
+				L-&gt;root = cur-&gt;next;
+				free(cur);
+			} else {
+				prev-&gt;next = cur-&gt;next;
+				free(cur);
+			}
+			L-&gt;length -= 1;
+			L-&gt;cursor = -1;
+		}
+	}
+}
+
+// Other operations
+void printList(FILE *out, List L)
+{
+	
+	int old_index = L-&gt;cursor;
+	moveFront(L);
+	for (int i = 0; i &lt; L-&gt;length; i++)
+	{
+		fprintf(out, "%d", get(L));
+		if (i != (L-&gt;length - 1)) {
+			fprintf(out, " ");
+		}
+		moveNext(L);
+	}
+
+	L-&gt;cursor = old_index;
+	
+}
+
+List copyList(List L)
+{
+	
+	List new_list = newList();
+	int old_index = L-&gt;cursor;
+	moveFront(L);
+	for (int i = 0; i &lt; L-&gt;length; i++) {
+		append(new_list, get(L));
+		moveNext(L);
+	}
+
+	L-&gt;cursor = old_index;
+	return new_list;
+}
+
+void clear(List L) {
+	NodeObj* cur = L-&gt;root;
+	while (cur != NULL) {
+		NodeObj* rem = cur;
+		cur = cur-&gt;next;
+		free(rem);
+	}
+	L-&gt;length = 0;
+	L-&gt;cursor = -1;
+	L-&gt;root = NULL;
+</font>}
+</pre>
+</body>
+</html>

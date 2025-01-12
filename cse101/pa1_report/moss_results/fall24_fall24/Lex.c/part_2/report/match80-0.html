@@ -1,0 +1,128 @@
+<html>
+<head>
+<title>/fall24/bdwatkin/pa1/Lex.c</title>
+</head>
+<body bgcolor="white">
+<hr/>
+/fall24/bdwatkin/pa1/Lex.c<p></p><pre>
+//-----------------------------------------------------------------------------
+// Lex.c
+// programmer: Benjamin Watkins
+// cruzid: bdwatkin
+// assignment: pa1
+//
+// based on code from
+// https://people.ucsc.edu/~ptantalo/cse101/Fall24/Examples/C/FileIO/FileIO.c
+//-----------------------------------------------------------------------------
+
+#include "List.h"
+#include &lt;stdbool.h&gt;
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;string.h&gt;
+#include &lt;unistd.h&gt;
+
+#define MAXLEN 200
+
+<a name="0"></a><font color="#FF0000"><a href="match80-1.html#0" target="1"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_0_99.gif"/></a>
+
+int main(int argc, char **argv) {
+  // Check correct number of command line arguments ---------------------------
+  if (argc != 3) {
+    // invalid number of arguments
+    fprintf(stderr, "Invalid number of arguments\n");
+    return 1;
+  }
+  // Open files from command line arguments
+  FILE *infile = fopen(argv[1], "r");
+  if (infile == NULL) {
+    fprintf(stdout, "Unable to open infile");
+    return 1;
+  }
+  FILE *outfile = fopen(argv[2], "w");
+  if (outfile == NULL) {
+    fprintf(stdout, "Unable to open outfile");
+    return 1;
+  }
+
+  // Figure out number of lines -----------------------------------------------
+  int numLines = 0; // number of lines in the file
+
+  char c = fgetc(infile);
+  while (c != EOF) { // iterates through each character in the file
+    if (c == '\n') { // counts newlines
+      numLines++;
+    }
+    c = fgetc(infile);
+  }
+  printf("There are %i lines\n", numLines);
+
+  rewind(infile); // rewind to allow re-read to actuall get strings
+
+  // Read infile into array of strings, each string is a line -----------------
+  char line[MAXLEN];
+  int lineIndex = 0;
+
+  // allocate string array
+  char **stringArray = calloc(numLines, MAXLEN * sizeof(char));
+
+  // read infile into string array
+  while (fgets(line, MAXLEN, infile) != NULL) {
+    char *temp = calloc(MAXLEN, sizeof(char));
+    temp = strcpy(temp, line);
+    stringArray[lineIndex] = temp;
+    // fprintf(outfile, "%s", line);
+    lineIndex++;
+  }
+
+  // Make a linked list with those line numbers, sorted alphabetically --------
+  // create new List
+  List L = newList();
+
+  // sort into List
+  prepend(L, 0);
+  for (int i = 1; i &lt; numLines; i++) { // insertion sort loop
+    moveFront(L);
+    while (index(L) &gt; -1) {
+      if (strcmp(stringArray[i], stringArray[get(L)]) &lt; 0) {
+        insertBefore(L, i);
+        break;
+      }
+      moveNext(L);
+    }
+    if (index(L) == -1) {
+      append(L, i);
+    }
+    // compare i to cursor
+    // if strcmp(s1, s2)&lt;0, insertBefore
+    // else, moveNext
+    // if index(L) -1, append
+    // else, compare again
+  }
+
+  // printList(outfile, L);
+
+  // Print lines in alphabetical order in outfile -----------------------------
+  moveFront(L);
+  while (index(L) != -1) {
+    fprintf(outfile, "%s", stringArray[get(L)]);
+    moveNext(L);
+  }
+
+  // free and close ------------------------------------------------------------
+  for (int i = 0; i &lt; numLines; i++) {
+    if (stringArray[i] != NULL) {
+      free(stringArray[i]);
+    }
+    stringArray[i] = NULL;
+  }
+  free(stringArray);
+  fclose(infile);
+  fclose(outfile);
+  freeList(&amp;L);
+
+  return 0;
+</font>}
+</pre>
+</body>
+</html>

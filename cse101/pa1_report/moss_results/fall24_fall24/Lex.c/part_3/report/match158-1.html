@@ -1,0 +1,117 @@
+<html>
+<head>
+<title>/fall24/amanocha/pa1/Lex.c</title>
+</head>
+<body bgcolor="white">
+<hr/>
+/fall24/arochell/pa1/Lex.c<p></p><pre>
+/**
+ * Alexander Rochelle
+ * arochell
+ * 2024 Fall CSE101 pa1
+ * Lex.c
+ * reads in a file of strings and prints out a sorted version of the file
+ */
+
+#include &lt;stdbool.h&gt;
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;string.h&gt;
+
+#include "List.h"
+
+#define MAX_LEN 300
+
+<a name="1"></a><font color="#00FF00"><a href="match158-0.html#1" target="0"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_1_9.gif"/></a>
+
+int main(int argc, char* argv[]) {
+  int n;
+  FILE *in, *out;
+  char line[MAX_LEN];
+
+  char** strings = NULL;
+
+  // check command line for correct number of arguments
+  if (argc != 3) {
+</font>    printf("Usage: %s &lt;input file&gt; &lt;output file&gt;\n", argv[0]);
+    exit(1);
+  }
+
+  // open files for reading and writing
+  in = fopen(argv[1], "r");
+  if (in == NULL) {
+    printf("Unable to open file %s for reading\n", argv[1]);
+    exit(1);
+  }
+
+  out = fopen(argv[2], "w");
+  if (out == NULL) {
+    printf("Unable to open file %s for writing\n", argv[2]);
+    exit(1);
+  }
+
+  n = 0;
+  while (fgets(line, MAX_LEN, in) != NULL) {
+    n++;
+  }
+
+  rewind(in);
+
+  strings = (char**)malloc(n * sizeof(char*));
+
+  int i = 0;
+<a name="0"></a><font color="#FF0000"><a href="match158-0.html#0" target="0"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_0_10.gif"/></a>
+
+  while (fgets(line, MAX_LEN, in) != NULL) {
+    strings[i] = (char*)malloc((strlen(line) + 1) * sizeof(char));
+    strcpy(strings[i], line);
+    i++;
+  }
+
+  List numbers = newList();
+</font>
+  if (n &gt; 0) {
+    append(numbers, 0);
+  }
+
+  for (int i = 1; i &lt; n; i++) {
+    moveFront(numbers);
+    char* str1 = strings[front(numbers)];
+    char* str2 = strings[i];
+
+    if (strcmp(str1, str2) &gt;= 0) {
+      prepend(numbers, i);
+    } else if (strcmp(str1, str2) &lt; 0) {
+      for (str1 = strings[get(numbers)];
+           strcmp(str1, str2) &lt; 0 &amp;&amp; index(numbers) &lt; length(numbers) - 1;
+           moveNext(numbers), str1 = strings[get(numbers)]) {
+      }
+
+      if (index(numbers) == 0 || strcmp(str1, str2) &lt; 0) {
+        insertAfter(numbers, i);
+      } else {
+        insertBefore(numbers, i);
+      }
+    }
+  }
+
+  for (moveFront(numbers); index(numbers) &gt;= 0; moveNext(numbers)) {
+    fprintf(out, "%s", strings[get(numbers)]);
+  }
+
+  // free up allocated memory
+  freeList(&amp;numbers);
+  for (int i = 0; i &lt; n; i++) {
+    free(strings[i]);
+  }
+  free(strings);
+
+  // close files
+  fclose(in);
+  fclose(out);
+
+  return (0);
+}
+</pre>
+</body>
+</html>

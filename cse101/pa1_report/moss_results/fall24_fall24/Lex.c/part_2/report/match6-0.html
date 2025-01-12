@@ -1,0 +1,153 @@
+<html>
+<head>
+<title>/fall24/jltaft/pa1/Lex.c</title>
+</head>
+<body bgcolor="white">
+<hr/>
+/fall24/jltaft/pa1/Lex.c<p></p><pre>
+/*
+------------------------------------
+Jennifer Taft
+jltaft
+2024 Fall CSE101 PA1
+Lex.c
+C file for indirectly sorting a file's contents in lexicographic order
+------------------------------------
+*/
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include "List.h"
+#include &lt;stdbool.h&gt;
+#include &lt;assert.h&gt;
+#include &lt;string.h&gt;
+
+
+#define MAX_LEN 300
+
+<a name="0"></a><font color="#FF0000"><a href="match6-1.html#0" target="1"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_0_98.gif"/></a>
+
+int line_count = 0;
+
+char** createArray(int argc, char *argv[]);
+List insertionSort(char** arr);
+void printSortedList(char** arr, List L, int argc, char *argv[]);
+
+
+int main (int argc, char *argv[]){
+	//for testing createArray
+	int i;
+	
+	if(argc != 3){
+		printf("Invalid number of arguments\n");
+		exit(1);
+	}
+	char** arr;
+	arr = createArray(argc, argv);
+	
+	
+	List L = insertionSort(arr);
+
+	printSortedList(arr,L,argc,argv);
+	
+	for(i = 0; i &lt; line_count; i++){
+		free(arr[i]);
+	}
+	free(arr);
+	freeList(&amp;L);
+	
+	return 0;
+}
+
+
+char** createArray(int argc, char *argv[]){
+	FILE *in;
+	char line[MAX_LEN];
+	
+	in = fopen(argv[1], "r");
+	//checks if file was opened
+	if(in == NULL){
+		printf("Unable to open file %s for reading\n", argv[1]);
+      	exit(1);
+	}
+	//---------------counting number of lines
+	while(fgets(line, MAX_LEN, in) != NULL){
+		line_count++;
+	}
+	
+	//resets file pointer to start of file
+	fseek(in, 0, SEEK_SET);
+
+	//---------------creates an array based on the total number of lines 
+	//---------------and allocates memory for string elements
+	char** arrayOfLines = calloc(line_count, sizeof(char*));
+	if(arrayOfLines == NULL){
+		printf("Array memory allocation failed\n");
+		exit(1);
+	}
+	
+	for(int i =0; i &lt; line_count; i++){
+		if(fgets(line, MAX_LEN, in) != NULL){
+			
+			//line to remove newline character with null
+			//added to fix formatting
+			line[strcspn(line, "\n")] = '\0';
+		
+			//allocates memory for lines to place in array 
+			arrayOfLines[i] = malloc(strlen(line)+1);
+			if(arrayOfLines[i] == NULL){
+				printf("arrayOfLines memory allocation failed\n");
+				exit(1);
+			}	
+			//Copies string and places into the array	
+			strcpy(arrayOfLines[i], line);	
+		}
+	}
+	fclose(in);
+	return arrayOfLines;
+}
+
+List insertionSort(char** arr){
+	int i;
+	//creates new empty list
+	List L = newList();
+	//adds first element of array to list
+	append(L,0);
+	
+	for(i = 1; i &lt; line_count; i++){
+		//moves cursor to the front
+		moveFront(L);
+		
+		
+		//while the cursor is greater than arr[i]
+		//and cursor is defined
+		while(index(L) &gt;= 0 &amp;&amp; strcmp(arr[get(L)], arr[i]) &lt;=0 ){
+			moveNext(L);
+		}
+		
+		if(index(L) == -1){
+			append(L, i);
+		} else{
+			insertBefore(L, i);
+		}
+	
+	} //end of for loop
+	return L;
+}
+
+void printSortedList(char** arr, List L, int argc, char *argv[]){
+	FILE *out;
+	out = fopen(argv[2],"w");
+	if(out == NULL){
+		printf("Unable to open output file\n");
+		exit(1);
+	}
+	
+	for(moveFront(L); index(L)&gt;=0; moveNext(L)){
+		fprintf(out, "%s\n", arr[get(L)]);
+</font>	}
+	fclose(out);
+}
+
+</pre>
+</body>
+</html>

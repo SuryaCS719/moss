@@ -1,0 +1,118 @@
+<html>
+<head>
+<title>/fall24/swang387/pa1/Lex.c</title>
+</head>
+<body bgcolor="white">
+<hr/>
+/fall24/swang387/pa1/Lex.c<p></p><pre>
+/***
+* Shaoan Wang
+* swang387
+* 2024 Winter CSE101 PA1
+* List.h
+* Lexicographic the lines in a file with List ADT.
+***/ 
+
+#include&lt;stdio.h&gt;
+#include&lt;stdlib.h&gt;
+#include&lt;stdbool.h&gt;
+#include&lt;string.h&gt;
+#include"List.h"
+
+#define BUFF_SIZE 1024
+
+<a name="0"></a><font color="#FF0000"><a href="match8-1.html#0" target="1"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_0_57.gif"/></a>
+
+bool contain(List list, char **str, int target) {
+    moveFront(list);
+    for (int j = 0; j &lt; length(list); j += 1) {
+        if (strcmp(str[target], str[get(list)]) &lt;= 0) {
+            insertBefore(list, target);
+            return true;
+        }
+        moveNext(list);
+    }
+    return false;
+}
+
+char* myStrdup(const char* s) {
+    char* out = malloc(sizeof(char) * (strlen(s) + 1));
+    const char* p = s;
+    char* q = out;
+    while(*p != '\0') {*q = *p; p++; q++;}
+    *q = '\0';
+    return out;
+}
+
+char **readLines(FILE *in) {
+    char line[BUFF_SIZE];
+    int lineNo = 0;
+    while (fgets(line, BUFF_SIZE, in) != NULL) {
+        lineNo += 1;
+    }
+
+    char **str = malloc((1 + lineNo) * sizeof(char *));
+
+    rewind(in);
+    int k = 0;
+    while (fgets(line, BUFF_SIZE, in) != NULL) {
+        size_t newlinePos = strcspn(line, "\n");
+        if (line[newlinePos] == '\n') {
+            line[newlinePos] = '\0';
+        }
+        str[k++] = myStrdup(line);
+    }
+
+    str[lineNo] = NULL;
+    return str;
+}
+
+int main(int argc, char *argv[]) {
+    if (argc != 3) {
+        fprintf(stderr, "Usage: %s in-file out-file\n", argv[0]);
+</font>        exit(EXIT_FAILURE);
+    }
+
+    FILE *in = fopen(argv[1], "r");
+    if (in == NULL) {
+<a name="1"></a><font color="#00FF00"><a href="match8-1.html#1" target="1"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_1_33.gif"/></a>
+
+        fprintf(stderr, "Error opening %s\n", argv[1]);
+        exit(EXIT_FAILURE);
+    }
+
+    FILE *out = fopen(argv[2], "w+");
+    if (out == NULL) {
+        fclose(in);
+        fprintf(stderr, "Error opening %s\n", argv[2]);
+        exit(EXIT_FAILURE);
+    }
+
+    char **str = readLines(in);
+
+    List list = newList();
+    for (int i = 0; str[i] != NULL; i += 1) {
+        if (contain(list, str, i)) {
+            continue;
+        }
+        append(list, i);
+    }
+
+    moveFront(list);
+    for (int i = 0; str[i] != NULL; i += 1) {
+        fprintf(out, "%s\n", str[get(list)]);
+        moveNext(list);
+    }
+
+    for (int j = 0; str[j] != NULL; j += 1) {
+        free(str[j]);
+    }
+    free(str);
+
+    freeList(&amp;list);
+    fclose(in);
+</font>    fclose(out);
+    return 0;
+}</pre>
+</body>
+</html>

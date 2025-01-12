@@ -1,0 +1,107 @@
+<html>
+<head>
+<title>/fall24/aykareem/pa1/Lex.c</title>
+</head>
+<body bgcolor="white">
+<hr/>
+/fall24/aykareem/pa1/Lex.c<p></p><pre>
+#include&lt;stdlib.h&gt;
+#include&lt;stdio.h&gt;
+#include&lt;string.h&gt;
+#include "List.h"
+
+<a name="0"></a><font color="#FF0000"><a href="match22-0.html#0" target="0"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_0_98.gif"/></a>
+
+int main(int argc, char *argv[]) {
+    char buffer[256];
+    if (argc != 3) {
+        printf("Error: Invalid number of arguments passed\n");
+        return 1;
+    }
+
+    FILE *inputFile = fopen(argv[1], "r");
+    if (inputFile == NULL) {
+        printf("Error: Cannot access input file\n");
+        return 1;
+    }
+
+    int arraySize = 10;
+    int lineCount = 0;
+    char **stringArray = malloc(arraySize * sizeof(char*));
+
+    while (fgets(buffer, sizeof(buffer), inputFile) != NULL) {
+        buffer[strcspn(buffer, "\n")] = 0;  // Remove the trailing newline character
+        stringArray[lineCount] = malloc(strlen(buffer) + 1);
+        strcpy(stringArray[lineCount], buffer);
+        lineCount++;
+        if (lineCount &gt;= arraySize) {
+            arraySize *= 2;
+            stringArray = realloc(stringArray, arraySize * sizeof(char*));
+        }
+    }
+
+    fclose(inputFile); // Close the input file after use
+    List myList = newList();
+    
+    for (int i = 0; i &lt; lineCount; i++) {
+        // Append first element as the single element in the list is always sorted
+        if (length(myList) == 0) {
+            append(myList, i);
+            moveFront(myList);  // Move the cursor to the front to make it defined
+        }
+
+        else if (index(myList) &gt;= 0 &amp;&amp; strcmp(stringArray[get(myList)], stringArray[i]) &lt;= 0) {
+            while (index(myList) &gt;= 0 &amp;&amp; strcmp(stringArray[get(myList)], stringArray[i]) &lt;= 0) {
+                moveNext(myList);
+            }
+            if (index(myList) &gt;= 0) {
+                insertBefore(myList, i);
+            } else {
+                append(myList, i);
+                moveBack(myList);
+            }
+        }
+
+        else {
+            while (index(myList) &gt;= 0 &amp;&amp; strcmp(stringArray[get(myList)], stringArray[i]) &gt; 0) {
+                movePrev(myList);
+            }
+            if (index(myList) &gt;= 0) {
+                insertAfter(myList, i);
+            } else {
+                prepend(myList, i);
+            }
+            moveFront(myList);
+        }
+    }
+
+    FILE *outputFile = fopen(argv[2], "w");
+    if (outputFile == NULL) {
+        printf("Error: Cannot open output file\n");
+        return 1;
+    }
+
+    // Move cursor to the front of the list and write each string to the output file
+    moveFront(myList);
+    while (index(myList) &gt;= 0) {
+        fprintf(outputFile, "%s\n", stringArray[get(myList)]);  // Write to output file
+        moveNext(myList);
+    }
+
+    // Close the output file after writing
+    fclose(outputFile);
+    
+    clear(myList);
+    freeList(&amp;myList);
+
+    for (int i = 0; lineCount &gt; i; i++) {
+        free(stringArray[i]);
+    }
+    free(stringArray);
+</font>
+    return 0;
+}
+
+</pre>
+</body>
+</html>

@@ -1,0 +1,550 @@
+<html>
+<head>
+<title>/fall24/nlafredo/pa1/List.c</title>
+</head>
+<body bgcolor="white">
+<hr/>
+/fall24/nlafredo/pa1/List.c<p></p><pre>
+//Nick Lafredo
+//1961880  nlafredo
+//11 October 2024
+//pa1
+#include &lt;stdlib.h&gt;
+#include &lt;stdio.h&gt;
+
+#include "List.h"
+
+//Create and Return New Empty List
+<a name="1"></a><font color="#00FF00"><a href="match14-1.html#1" target="1"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_1_16.gif"/></a>
+
+List newList(void) {
+	List NewList = calloc(1, sizeof(ListObj));
+	if (NewList == NULL) {
+		fprintf(stderr, "ERROR: ListADT, NewList() function, Memory allocation failed\n");
+		return NULL;
+	}
+	NewList-&gt;front = NULL;
+	NewList-&gt;back = NULL;
+	NewList-&gt;cursor = NULL;
+	NewList-&gt;listindex = -1;
+	NewList-&gt;length = 0;
+	return NewList;
+}
+
+
+void freeList(List* pL) {
+	//Check if passed pointer is NULL
+	if (NULL == pL) {
+		fprintf(stderr, "ERROR: FreeList was passed a NULL parameter\n");
+		return;
+	}
+
+	while ((*pL)-&gt;length &gt; 0) {
+		deleteBack(*pL);
+	}
+	free(*pL);
+	*pL = NULL;
+
+	return;
+}
+
+
+
+int length(List L) {
+	return L-&gt;length;
+}
+
+
+int index(List L) {
+	if (L-&gt;listindex &lt; 0) {
+		return -1;
+	}
+	return L-&gt;listindex;
+}
+
+
+// Returns front element of L. Pre: length()&gt;0
+int front(List L) {
+	if (length(L) &lt;= 0) {
+		fprintf(stderr, "ERROR: ListADT, front() function, failed length &gt; 0 precondition");
+		return -1;
+	}
+	List tempList = L;
+	return tempList-&gt;front-&gt;data;
+}
+
+
+// Returns back element of L. Pre: length()&gt;0
+int back(List L) {
+	if (length(L) &lt;= 0) {
+		fprintf(stderr, "ERROR: ListADT, back() function, failed length &gt; 0 precondition");
+		return -1;
+	}
+	List tempList = L;
+	return tempList-&gt;back-&gt;data;
+}
+
+
+// Returns cursor element of L. Pre: length()&gt;0, index()&gt;=0
+int get(List L) {
+	if (length(L) &lt;= 0) {
+		fprintf(stderr, "ERROR: ListADT, get() function, failed length &gt; 0 precondition");
+		return -1;
+	}
+	if (L-&gt;listindex &lt; 0) {
+		fprintf(stderr, "ERROR: ListADT, get() function, failed index &gt;= 0 precondition");
+		return -1;
+	}
+	List tempList = L;
+	return tempList-&gt;cursor-&gt;data;
+}
+
+
+// Returns true iff Lists A and B contain the same 
+// sequence of elements, returns false otherwise.
+bool equals(List A, List B) {
+	if (A-&gt;length != B-&gt;length) {
+		return false;
+	}
+
+	Node nA = A-&gt;front;
+</font>	Node nB = B-&gt;front;
+
+	while ((nA != NULL) &amp;&amp; (nB != NULL)) {
+		if (nA-&gt;data != nB-&gt;data) {
+			return false;
+		}
+		nA = nA-&gt;next;
+		nB = nB-&gt;next;
+	}
+<a name="0"></a><font color="#FF0000"><a href="match14-1.html#0" target="1"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_0_79.gif"/></a>
+
+	return true;
+}
+
+
+// Resets L to its original empty state.
+void clear(List L) {
+
+	while (L-&gt;length &gt; 0) {
+		deleteBack(L);
+	}
+
+	L-&gt;cursor = NULL;
+	L-&gt;listindex = -1;
+	L-&gt;length = 0;
+
+	return;
+}
+
+// Overwrites the cursor element�s data with x.
+// Pre: length()&gt;0, index()&gt;=0
+void set(List L, int x) {
+	if (length(L) &lt;= 0) {
+		fprintf(stderr, "ERROR: ListADT, set() function, failed length &gt; 0 precondition");
+		return;
+	}
+	if (L-&gt;listindex &lt; 0) {
+		fprintf(stderr, "ERROR: ListADT, set() function, failed index &gt;= 0 precondition");
+		return;
+	}
+	L-&gt;cursor-&gt;data = x;
+	return;
+}
+
+
+// If L is non-empty, sets cursor under the front element
+// otherwise does nothing.
+void moveFront(List L) {
+	if (NULL == L) {
+		fprintf(stderr, "ERROR: ListADT, moveFront() function, passed NULL list\n");
+		return;
+	}
+
+	if (L != NULL &amp;&amp; L-&gt;length &gt; 0) {
+		L-&gt;cursor = L-&gt;front;
+		L-&gt;listindex = 0;
+	} else {
+		// If the list is empty, clear cursor and index
+		L-&gt;cursor = NULL;       
+		L-&gt;listindex = -1;      
+	}
+	return;
+}
+
+
+// If L is non-empty, sets cursor under the back element
+// otherwise does nothing
+void moveBack(List L) {
+	if (NULL == L) {
+		fprintf(stderr, "ERROR: ListADT, moveBack() function, passed NULL list\n");
+		return;
+	}
+	if (L-&gt;length &gt; 0) {
+		L-&gt;cursor = L-&gt;back;
+		L-&gt;listindex = L-&gt;length - 1;
+	}
+	return;
+}
+
+
+// If cursor is defined and not at front, move cursor one
+// step toward the front of L; if cursor is defined and at
+// front, cursor becomes undefined; if cursor is undefined
+// do nothing 
+void movePrev(List L) {
+	if (L-&gt;cursor != NULL) { // Ensure the cursor is defined
+		if (L-&gt;cursor != L-&gt;front) { // Check if cursor is not at the front
+			L-&gt;cursor = L-&gt;cursor-&gt;prev; // Move cursor to previous node
+			L-&gt;listindex--; // Decrement index
+		} else {
+			// Cursor is at front, set cursor to NULL and index to -1
+			L-&gt;cursor = NULL;
+			L-&gt;listindex = -1;
+		}
+	}
+
+	return;
+}
+
+
+// If cursor is defined and not at back, move cursor one
+// step toward the back of L; if cursor is defined and at
+// back, cursor becomes undefined; if cursor is undefined
+// do nothing 
+void moveNext(List L) {
+	if (L-&gt;cursor != NULL) { // Ensure the cursor is defined
+		if (L-&gt;cursor != L-&gt;back) { // Check if cursor is not at the back
+			L-&gt;cursor = L-&gt;cursor-&gt;next; // Move cursor to next node
+			L-&gt;listindex++; // Increment index
+		} else {
+			// Cursor is at back, set cursor to NULL and index to -1
+			L-&gt;cursor = NULL;
+			L-&gt;listindex = -1;
+		}
+	}
+	return;
+}
+
+
+// Insert new element into L.  If L is non-empty,
+// insertion takes place before front element.
+void prepend(List L, int x) {
+
+	Node newNode = calloc(1, sizeof(NodeObj));
+	if (NULL == newNode) {
+		fprintf(stderr, "ERROR: ListADT, prepend() function, failed memory allocation");
+		exit(-1);
+	}
+
+	newNode-&gt;data = x;
+	newNode-&gt;next = L-&gt;front; // Set the new node's next to current front
+	newNode-&gt;prev = NULL; // New node will be the front, so previous is NULL
+
+	// If the list is empty, update back as well
+	if (L-&gt;length == 0) {
+		L-&gt;back = newNode;
+	} else {
+		L-&gt;front-&gt;prev = newNode; // Update the current front's previous to new node
+	}
+
+	L-&gt;front = newNode; // Update the front to the new node
+	L-&gt;length++; // Increment the length
+
+	// If cursor was defined, update its index since the new element is now at the front
+	if (L-&gt;cursor != NULL) {
+		L-&gt;listindex++; // Increase the index as we added a new element at the front
+	}
+}
+
+
+// Insert new element into L.  If L is non-empty,
+// insertion takes place after back element.
+void append(List L, int x) {
+
+	Node newNode = calloc(1, sizeof(NodeObj));
+	if (NULL == newNode) {
+		fprintf(stderr, "ERROR: ListADT, append() function, failed memory allocation");
+		exit(-1);
+	}
+
+	newNode-&gt;data = x;
+
+	//If list is empty
+	if (L-&gt;length &lt;= 0) {
+		newNode-&gt;next = NULL;
+		newNode-&gt;prev = NULL;
+		L-&gt;front = newNode;
+		L-&gt;back = newNode;
+		L-&gt;length++;
+		return;
+	}
+
+	newNode-&gt;prev = L-&gt;back;
+	L-&gt;back-&gt;next = newNode;
+	L-&gt;back = newNode;
+	newNode-&gt;next = NULL;
+	L-&gt;length++;
+	return;
+}
+
+
+// Insert new element before cursor.
+// Pre: length()&gt;0, index()&gt;=0
+void insertBefore(List L, int x) {
+
+	if (length(L) &lt;= 0) {
+		fprintf(stderr, "ERROR: ListADT, insertBefore() function, failed length &gt; 0 precondition");
+		return;
+	}
+	if (L-&gt;listindex &lt; 0) {
+		fprintf(stderr, "ERROR: ListADT, insertBefore() function, failed index &gt;= 0 precondition");
+		return;
+	}
+
+	Node newNode = calloc(1, sizeof(NodeObj));
+	if (NULL == newNode) {
+		fprintf(stderr, "ERROR: ListADT, insertBefore() function, failed memory allocation");
+		exit(-1);
+	}
+
+	newNode-&gt;data = x;
+
+	//If cursor at front of list
+	if (L-&gt;cursor == L-&gt;front) {
+		newNode-&gt;next = L-&gt;front;
+		L-&gt;front-&gt;prev = newNode;
+		L-&gt;front = newNode;
+		newNode-&gt;prev = NULL;
+		L-&gt;length++;
+		L-&gt;listindex++;
+		return;
+	}
+
+	Node before = L-&gt;cursor-&gt;prev;
+	Node after = L-&gt;cursor;
+
+	newNode-&gt;prev = before;
+	newNode-&gt;next = after;
+
+	before-&gt;next = newNode;
+	after-&gt;prev = newNode;
+
+	L-&gt;length++;
+	L-&gt;listindex++;
+
+}
+
+
+// Insert new element after cursor.
+// Pre: length()&gt;0, index()&gt;=0
+void insertAfter(List L, int x) {
+
+	if (length(L) &lt;= 0) {
+		fprintf(stderr, "ERROR: ListADT, insertAfter() function, failed length &gt; 0 precondition\n");
+		return;
+	}
+	if (L-&gt;listindex &lt; 0) {
+		fprintf(stderr, "ERROR: ListADT, insertAfter() function, failed index &gt;= 0 precondition\n");
+		return;
+	}
+
+	Node newNode = calloc(1, sizeof(NodeObj));
+	if (NULL == newNode) {
+		fprintf(stderr, "ERROR: ListADT, insertAfter() function, failed memory allocation\n");
+		exit(-1);
+	}
+
+	newNode-&gt;data = x;
+
+	// If cursor is at the back, add the new node there
+	if (L-&gt;cursor == L-&gt;back) {
+		newNode-&gt;prev = L-&gt;back; // Set previous to current back
+		L-&gt;back-&gt;next = newNode;  // Link current back's next to new node
+		L-&gt;back = newNode;        // Update back to new node
+		newNode-&gt;next = NULL;     // New node is now the last node
+	} else {
+		// Insert in the middle of the list
+		Node after = L-&gt;cursor-&gt;next; // Node after cursor
+
+		newNode-&gt;next = after;       // Set new node's next to after
+		newNode-&gt;prev = L-&gt;cursor;   // Set new node's previous to cursor
+
+		L-&gt;cursor-&gt;next = newNode;   // Link cursor's next to new node
+
+		if (after != NULL) {
+			after-&gt;prev = newNode;    // Link after's previous to new node
+		} else {
+			// If after is NULL, we're inserting at the end
+			L-&gt;back = newNode;        // Update back to new node
+		}
+	}
+
+	L-&gt;length++;                      // Increment length
+	//L-&gt;listindex++;
+
+}
+
+
+// Delete the front element. Pre: length()&gt;0
+void deleteFront(List L) {
+
+	if (NULL == L) {
+		fprintf(stderr, "ERROR: ListADT, deleteFront() function, passed NULL list\n");
+		return;
+	}
+	
+	if (length(L) &lt;= 0) {
+		fprintf(stderr, "ERROR: ListADT, deleteFront() function, failed length &gt; 0 precondition");
+		return;
+	}
+
+	Node fNode = L-&gt;front; // Node to be deleted
+
+	if (length(L) == 1) {
+		// If there's only one element, clear the list
+		L-&gt;front = L-&gt;back = NULL; // Set both front and back to NULL
+		L-&gt;cursor = NULL; // Clear cursor since the list is now empty
+		L-&gt;listindex = -1; // Reset index
+	} else {
+		// More than one element in the list
+		L-&gt;front = L-&gt;front-&gt;next; // Move front pointer to the next node
+		L-&gt;front-&gt;prev = NULL; // Set the new front's previous pointer to NULL
+
+		// If the cursor was at the front, clear it
+		if (L-&gt;cursor == fNode) {
+			L-&gt;cursor = NULL;
+			L-&gt;listindex = -1; // Reset index as cursor is undefined
+		}
+		// If the cursor was at the back, decrement the index
+		if (L-&gt;cursor == L-&gt;back) {
+			L-&gt;listindex--; // Reset index as cursor is undefined
+		}
+	}
+
+	L-&gt;length--; // Decrement the length of the list
+	free(fNode); // Free the memory of the deleted node
+}
+
+
+// Delete the back element. Pre: length()&gt;0
+void deleteBack(List L) {
+	if (length(L) &lt;= 0) {
+		fprintf(stderr, "ERROR: ListADT, deleteBack() function, failed length &gt; 0 precondition");
+		return;
+	}
+	Node bNode = L-&gt;back;
+
+	if (length(L) == 1) {
+		L-&gt;length--;
+		free(bNode);
+		L-&gt;front = L-&gt;back = NULL;
+		return;
+	}
+	
+	if (L-&gt;cursor == L-&gt;back) {
+		L-&gt;cursor = NULL;
+		L-&gt;listindex = -1;
+	}
+
+	L-&gt;back = L-&gt;back-&gt;prev;
+	L-&gt;back-&gt;next = NULL;
+
+	L-&gt;length--;
+
+	free(bNode);
+
+	return;
+}
+
+// Delete cursor element, making cursor undefined.
+// Pre: length()&gt;0, index()&gt;=0
+void delete(List L) {
+
+    if (NULL == L) {
+        fprintf(stderr, "ERROR: ListADT, delete() function, passed NULL list\n");
+        return;
+    }
+	
+	if (length(L) &lt;= 0) {
+		fprintf(stderr, "ERROR: ListADT, delete() function, failed length &gt; 0 precondition");
+		return;
+	}
+	
+	if (L-&gt;listindex &lt; 0) {
+		fprintf(stderr, "ERROR: ListADT, delete() function, failed index &gt;= 0 precondition");
+		return;
+	}
+
+	Node dNode = L-&gt;cursor; // Node to be deleted
+    if (NULL == L-&gt;cursor) {
+        fprintf(stderr, "ERROR: ListADT, delete() cursor is NULL list\n");
+        return;
+    }
+
+	Node before = dNode-&gt;prev; // Previous node
+	Node after = dNode-&gt;next; // Next node
+
+	// Adjust pointers to remove the node
+	if (before != NULL) {
+		before-&gt;next = after; // Link previous node to the next node
+	} else {
+		L-&gt;front = after; // Update front if deleting the first node
+	}
+
+	if (after != NULL) {
+		after-&gt;prev = before; // Link next node to the previous node
+	} else {
+		L-&gt;back = before; // Update back if deleting the last node
+	}
+
+	// Clear cursor if it was at the deleted node
+	L-&gt;cursor = NULL;
+	L-&gt;listindex = -1; // Reset index as cursor is undefined
+	L-&gt;length--; // Decrement length of the list
+
+	free(dNode); // Free the memory of the deleted node
+}
+
+
+// Prints to the file pointed to by out, a
+// string representation of L consisting
+// of a space separated sequence of integers,
+// with front on left.
+void printList(FILE* out, List L) {
+
+	if (NULL == out) {
+		fprintf(stderr, "ERROR: ListADT, printList() function, passed file is NULL");
+		return;
+	}
+
+	Node pNode = L-&gt;front;
+	while (pNode != NULL) {
+		fprintf(out, "%d ", pNode-&gt;data);
+		pNode = pNode-&gt;next;
+	}
+	
+	return;
+}
+
+
+// Returns a new List representing the same integer
+// sequence as L. The cursor in the new list is undefined,
+// regardless of the state of the cursor in L. The state
+// of L is unchanged. 
+List copyList(List L) {
+	List cList = newList();
+
+	Node cNode = L-&gt;front;
+
+	while (cNode != NULL) {
+		append(cList, cNode-&gt;data);
+</font>		cNode = cNode-&gt;next;
+	}
+
+	return cList;
+}
+
+</pre>
+</body>
+</html>

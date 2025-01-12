@@ -1,0 +1,84 @@
+<html>
+<head>
+<title>/fall24/eforster/pa1/Lex.c</title>
+</head>
+<body bgcolor="white">
+<hr/>
+/fall24/mbmishra/pa1/Lex.c<p></p><pre>
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;string.h&gt;
+#include "List.h"
+
+#define MAX_LEN 200
+
+int main(int argc, char* argv[]) {
+    if (argc != 3) {
+        printf("Usage: %s &lt;input file&gt; &lt;output file&gt;\n", argv[0]);
+        exit(1);
+    }
+
+    FILE* inFile = fopen(argv[1], "r");
+    FILE* outFile = fopen(argv[2], "w");
+    if (inFile == NULL || outFile == NULL) {
+        printf("Error: Unable to open file(s)\n");
+        exit(1);
+    }
+
+    int lineCount = 0;
+    char line[MAX_LEN];
+    while (fgets(line, MAX_LEN, inFile) != NULL) {
+        lineCount++;
+    }
+    rewind(inFile);
+
+    char** lines = calloc(lineCount, sizeof(char*));
+<a name="0"></a><font color="#FF0000"><a href="match65-0.html#0" target="0"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_0_21.gif"/></a>
+
+    for (int i = 0; i &lt; lineCount; i++) {
+        fgets(line, MAX_LEN, inFile);
+	lines[i] = malloc(strlen(line) + 1);
+	strcpy(lines[i], line);
+    }
+
+    List indexList = newList();
+    append(indexList, 0);
+
+    for (int i = 1; i &lt; lineCount; i++) {
+</font>        moveFront(indexList);
+        while (index(indexList) &gt;= 0) {
+<a name="1"></a><font color="#00FF00"><a href="match65-0.html#1" target="0"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_1_14.gif"/></a>
+
+            if (strcmp(lines[i], lines[get(indexList)]) &lt; 0) {
+                insertBefore(indexList, i);
+                break;
+            }
+            moveNext(indexList);
+        }
+        if (index(indexList) &lt; 0) {
+            append(indexList, i);
+        }
+    }
+
+    moveFront(indexList);
+    while (index(indexList) &gt;= 0) {
+        fprintf(outFile, "%s", lines[get(indexList)]);  
+</font>	moveNext(indexList);
+    }
+
+    // Free the memory
+    for (int i = 0; i &lt; lineCount; i++) {
+        free(lines[i]);
+    }
+    free(lines);  
+    freeList(&amp;indexList);
+
+    fclose(inFile);
+    fclose(outFile);
+
+    return 0;
+}
+
+</pre>
+</body>
+</html>

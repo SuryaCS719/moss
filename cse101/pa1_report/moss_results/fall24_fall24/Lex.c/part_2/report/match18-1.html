@@ -1,0 +1,166 @@
+<html>
+<head>
+<title>/fall24/ewang68/pa1/Lex.c</title>
+</head>
+<body bgcolor="white">
+<hr/>
+/fall24/ewang68/pa1/Lex.c<p></p><pre>
+/*
+ * FILE: Lex.c
+ * ASSIGNMENT: pa1
+ * AUTHOR: THOMAS WANG
+ * CruzID: ewang68
+ */
+
+#include "List.h"
+#include &lt;stdbool.h&gt;
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;string.h&gt;
+
+#define BUFFER_MAX 256
+
+<a name="0"></a><font color="#FF0000"><a href="match18-0.html#0" target="0"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_0_99.gif"/></a>
+
+int countLines(FILE* file) {
+	char current;
+	bool noNewLine = false;
+	int lines = 0;
+	while ((current = fgetc(file)) != EOF) {
+		if (current == '\n') {
+			noNewLine = false;
+			lines++;
+		} else {
+			noNewLine = true;
+		}
+	} 
+	if (noNewLine) {
+		// corrects for files that end on a string with no newline '\n'
+		lines++;
+	}
+	rewind(file);
+	return lines;
+}
+
+int main(int argc, char* argv[]) {
+
+	FILE *inputFile, *outputFile;
+	char buffer[BUFFER_MAX];
+	char** lineArr;
+	int numLines;
+	
+	/*
+	 * Check that there are two command line arguments (other than the program name Lex). Quit with a usage
+	 * message to stderr if more than or less than two command line arguments are given.
+	 */
+
+	if (argc != 3) {
+      		fprintf(stderr, "Usage: %s &lt;input file&gt; &lt;output file&gt;\n", argv[0]);
+      		exit(1);
+	}	
+
+	inputFile = fopen(argv[1], "r");
+	if (inputFile == NULL) {
+		fprintf(stderr, "Lex Error: unable to open input file\n");
+		exit(1);
+		//exit(EXIT_FAILURE);
+	}
+
+	outputFile = fopen(argv[2], "w");
+	if (outputFile == NULL) {
+		fprintf(stderr, "Lex Error: unable to open output file\n");
+		fclose(inputFile);
+		exit(1);
+	}
+
+	// ----- POPULATE CHAR* ARRAY -----
+
+	/*
+	 * Count the number of lines n in the input file. Create a string array of length n and read in the lines of the
+	 * file as strings, placing them into the array. (Allocate this array from heap memory using functions
+	 * calloc() or malloc() defined in the header file stdlib.h. Do not use a variable length array. See
+	 * the comments here for more on this topic.
+	 */
+
+	// Array is unsorted
+	numLines = countLines(inputFile);
+	lineArr = (char**) malloc((numLines) * sizeof(char*));
+	int count = 0;
+	while(fgets(buffer, sizeof(buffer), inputFile) != NULL) {
+		lineArr[count] = (char*) malloc((strlen(buffer) + 1) * sizeof(char));
+		strcpy(lineArr[count], buffer);
+		count++;
+	}	
+
+	// ----- INSERTION SORTED LIST ADT -----
+
+	/* 
+	 * Create a List whose elements are the indices of the above string array. These indices should be arranged
+	 * in an order that indirectly sorts the array. Using the above input file as an example we would have.
+	 *
+	 * ... You are not being asked to sort the input array using Insertion Sort.) You may use only the List ADT
+	 * operations defined below to manipulate the List.
+	 *
+	 * Use the List constructed in (3) to print the array in alphabetical order to the output file. Note that at no
+	 * time is the array ever sorted. Instead you are indirectly sorting the array by building a List of indices in a
+	 * certain order.
+	 */
+
+	// List is sorted
+	List insertSorted = newList();	
+	for (int arrIndex=0; arrIndex&lt;numLines; ++arrIndex) {
+
+		if (length(insertSorted) == 0) {
+			append(insertSorted, arrIndex);
+		} else {
+			moveFront(insertSorted);
+			while(index(insertSorted) &gt;= 0){
+
+				if (strcmp(lineArr[arrIndex], lineArr[get(insertSorted)])&lt;0) {
+					insertBefore(insertSorted, arrIndex);	
+					break;
+				} else if (strcmp(lineArr[arrIndex], lineArr[get(insertSorted)])==0) {
+					// this is my assumption (that two equal strings will go one after another
+					// or is it that only one of the equal strings need to appear?
+					insertAfter(insertSorted, arrIndex);
+					break;
+				}
+				moveNext(insertSorted);
+			}
+
+			if (index(insertSorted) == -1) {
+				append(insertSorted, arrIndex);
+			}
+		
+		}	
+	}
+
+	//printList(stdout, insertSorted);
+
+	// ----- WRITE TO OUT USING LIST ADT SORTED ORDER  -----
+
+	moveFront(insertSorted);	
+	while (index(insertSorted) &gt;= 0) {
+		fprintf(outputFile, "%s", lineArr[get(insertSorted)]);	
+		moveNext(insertSorted);
+	}
+
+	// ----- FREE HEAP MEMORY &amp; CLOSE FILES -----
+	
+	freeList(&amp;insertSorted);
+
+	for (int i=0; i&lt;numLines; ++i) {
+		free(lineArr[i]);
+		lineArr[i] = NULL;
+	}
+	free(lineArr);
+	lineArr = NULL;
+	
+	fclose(inputFile);
+	fclose(outputFile);
+</font>
+	return 0;
+}
+</pre>
+</body>
+</html>

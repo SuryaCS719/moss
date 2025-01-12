@@ -1,0 +1,127 @@
+<html>
+<head>
+<title>/fall24/movongna/pa1/Lex.c</title>
+</head>
+<body bgcolor="white">
+<hr/>
+/fall24/movongna/pa1/Lex.c<p></p><pre>
+// Maxwell Vongnakhone, movongna
+// Assignment: pa1
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;string.h&gt;
+#include "List.h"
+
+// Function prototypes
+void checkArgs(int argc);
+char** readFileAndCountLines(FILE* inputFile, int* numLines);
+void sortLinesUsingList(char** lines, int numLines, List sortedList);
+void writeSortedLines(FILE* outputFile, char** lines, List sortedList);
+void freeStringArray(char** array, int size);
+
+int main(int argc, char* argv[]) {
+    // Check that there are exactly 2 command line arguments
+    checkArgs(argc);
+
+    // Open input and output files
+    FILE* inputFile = fopen(argv[1], "r");
+    if (inputFile == NULL) {
+        fprintf(stderr, "Error: Unable to open input file %s\n", argv[1]);
+        exit(EXIT_FAILURE);
+    }
+    FILE* outputFile = fopen(argv[2], "w");
+    if (outputFile == NULL) {
+        fprintf(stderr, "Error: Unable to open output file %s\n", argv[2]);
+        exit(EXIT_FAILURE);
+    }
+
+    // Read input file and count the number of lines
+    int numLines = 0;
+    char** lines = readFileAndCountLines(inputFile, &amp;numLines);
+
+    // Create a List of indices and sort the lines indirectly
+    List sortedList = newList();
+    sortLinesUsingList(lines, numLines, sortedList);
+
+    // Write the sorted lines to the output file
+    writeSortedLines(outputFile, lines, sortedList);
+
+    //Free memory and close files
+    freeStringArray(lines, numLines);
+    freeList(&amp;sortedList);
+    fclose(inputFile);
+    fclose(outputFile);
+
+    return EXIT_SUCCESS;
+}
+
+// Function to check for the correct number of command line arguments
+void checkArgs(int argc) {
+    if (argc != 3) {
+        fprintf(stderr, "Usage: Lex &lt;input file&gt; &lt;output file&gt;\n");
+        exit(EXIT_FAILURE);
+    }
+}
+
+// Function to read the input file, count the lines, and return an array of strings
+char** readFileAndCountLines(FILE* inputFile, int* numLines) {
+    char buffer[1024];
+    int lineCapacity = 10;
+    char** lines = malloc(lineCapacity * sizeof(char*));
+    
+    while (fgets(buffer, sizeof(buffer), inputFile)) {
+        if (*numLines &gt;= lineCapacity) {
+            lineCapacity *= 2;
+            lines = realloc(lines, lineCapacity * sizeof(char*));
+        }
+        lines[*numLines] = malloc(strlen(buffer) + 1);
+        strcpy(lines[*numLines], buffer);
+        (*numLines)++;
+    }
+    return lines;
+}
+
+// Function to indirectly sort the lines using a List of indices
+void sortLinesUsingList(char** lines, int numLines, List sortedList) {
+    if (numLines &gt; 0) {
+        append(sortedList, 0);  // Add first index
+
+<a name="0"></a><font color="#FF0000"><a href="match113-1.html#0" target="1"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_0_10.gif"/></a>
+
+        for (int i = 1; i &lt; numLines; i++) {
+            char* currentLine = lines[i];
+            moveFront(sortedList);
+            while (index(sortedList) &gt;= 0 &amp;&amp; strcmp(currentLine, lines[get(sortedList)]) &gt; 0) {
+                moveNext(sortedList);
+            }
+
+            if (index(sortedList) &gt;= 0) {
+</font>                insertBefore(sortedList, i);
+            } else {
+                append(sortedList, i);
+            }
+        }
+    }
+}
+
+// Function to write the sorted lines to the output file
+<a name="1"></a><font color="#00FF00"><a href="match113-1.html#1" target="1"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_1_7.gif"/></a>
+
+void writeSortedLines(FILE* outputFile, char** lines, List sortedList) {
+    moveFront(sortedList);
+    while (index(sortedList) &gt;= 0) {
+        fprintf(outputFile, "%s", lines[get(sortedList)]);
+        moveNext(sortedList);
+    }
+}
+
+// Function to free the dynamically allocated string array
+void freeStringArray(char** array, int size) {
+</font>    for (int i = 0; i &lt; size; i++) {
+        free(array[i]);
+    }
+    free(array);
+}
+</pre>
+</body>
+</html>

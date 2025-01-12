@@ -1,0 +1,131 @@
+<html>
+<head>
+<title>/fall24/jkaur81/pa1/Lex.c</title>
+</head>
+<body bgcolor="white">
+<hr/>
+/fall24/jkaur81/pa1/Lex.c<p></p><pre>
+/***
+* Jasmeen Kaur 
+* jkaur81
+* 2024 Fall CSE101 PA{1} 
+* Lex.c 
+***/ 
+
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;string.h&gt;
+#include "List.h"
+
+#define MAX_LINE_LENGTH 256 //1024??
+
+int main(int argc, char* argv[]) {
+    // command line checker (needs to be 3)
+    if (argc != 3) {
+        fprintf(stderr, "Usage: %s &lt;input file&gt; &lt;output file&gt;\n", argv[0]);
+        exit(EXIT_FAILURE);
+    }
+
+    //read file 
+    FILE* inFile = fopen(argv[1], "r");
+    if (inFile == NULL) {
+        fprintf(stderr, "ERROR: the input file %s could not be opened", argv[1]);
+        exit(EXIT_FAILURE);
+    }
+
+    //open to write
+<a name="0"></a><font color="#FF0000"><a href="match142-1.html#0" target="1"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_0_19.gif"/></a>
+
+    FILE* outFile = fopen(argv[2], "w");
+    if (outFile == NULL) {
+        fprintf(stderr, "ERROR: the output file %s could not be opened\n", argv[2]);
+        fclose(inFile);
+        exit(EXIT_FAILURE);
+    }
+
+    //counts the number of lines n in input file
+    int n = 0;
+    char line[MAX_LINE_LENGTH];
+    while (fgets(line, MAX_LINE_LENGTH, inFile) != NULL) {
+        n++;
+    }
+
+    // allocating memory using calloc
+    char** lines = calloc(n, sizeof(char*));
+    if (lines == NULL) {
+        fprintf(stderr, "ERROR: memory allocation failed\n");
+        fclose(inFile);
+        fclose(outFile);
+        exit(EXIT_FAILURE);
+</font>    }
+
+&lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD
+    // Rewind the file pointer to read lines again
+=======
+// rewind() : returns the file position indicator to the beginning of the file
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; 230bd57b50c2e06c26fecd7220ef993a592da376
+    rewind(inFile);
+    for (int i = 0; i &lt; n; i++) {
+        fgets(line, MAX_LINE_LENGTH, inFile);
+        lines[i] = calloc(strlen(line) + 1, sizeof(char));
+        if (lines[i] == NULL) {
+            fprintf(stderr, "ERROR: memory allocation failed on line %d\n", i);
+&lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD
+            // Free previously allocated memory before exiting
+=======
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; 230bd57b50c2e06c26fecd7220ef993a592da376
+            for (int j = 0; j &lt; i; j++) {
+                free(lines[j]);
+            }
+            free(lines);
+            fclose(inFile);
+            fclose(outFile);
+            exit(EXIT_FAILURE);
+        }
+        strcpy(lines[i], line);
+    }
+
+    // list to store indicees
+    List indexList = newList();
+
+    //sort indices
+    for (int i = 0; i &lt; n; i++) {
+        moveFront(indexList);
+        while (index(indexList) &gt;= 0) {
+            if (strcmp(lines[i], lines[get(indexList)]) &lt;= 0) {
+                insertBefore(indexList, i);
+                break;
+            }
+            moveNext(indexList);
+        }
+        if (index(indexList) == -1) {
+            append(indexList, i);
+        }
+    }
+
+    moveFront(indexList);
+    while (index(indexList) &gt;= 0) {
+        fprintf(outFile, "%s", lines[get(indexList)]);
+        moveNext(indexList);
+    }
+
+    // FREEING MEMORY
+    for (int i = 0; i &lt; n; i++) {
+        free(lines[i]);
+    }
+    free(lines);
+    freeList(&amp;indexList);
+
+    //closes files
+    fclose(inFile);
+    fclose(outFile);
+
+    return 0;
+&lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD
+}
+=======
+}
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; 230bd57b50c2e06c26fecd7220ef993a592da376
+</pre>
+</body>
+</html>

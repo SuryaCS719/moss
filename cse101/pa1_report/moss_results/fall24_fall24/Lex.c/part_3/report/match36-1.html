@@ -1,0 +1,132 @@
+<html>
+<head>
+<title>/fall24/skatredd/pa1/Lex.c</title>
+</head>
+<body bgcolor="white">
+<hr/>
+/fall24/tpolu/pa1/Lex.c<p></p><pre>
+/***
+* Tejas Polu
+* tpolu
+* 2024 Fall CSE101 PA1
+* Lex.c
+* Serves as the main program that reads lines from an input file, sorts them lexicographically using the List ADT, and writes the sorted lines to an output file.
+***/
+
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;string.h&gt;
+#include "List.h"
+
+#define MAX_LINE_LENGTH 1024
+
+int main(int argc, char* argv[]) {
+    if (argc != 3) {
+        fprintf(stderr, "Usage: Lex &lt;input file&gt; &lt;output file&gt;\n");
+        return EXIT_FAILURE;
+    }
+
+    char* inputFile = argv[1];
+    char* outputFile = argv[2];
+
+    FILE* in = fopen(inputFile, "r");
+    if (in == NULL) {
+        fprintf(stderr, "Error: Cannot open input file %s\n", inputFile);
+        return EXIT_FAILURE;
+    }
+
+    int n = 0;
+    char buffer[MAX_LINE_LENGTH];
+    while (fgets(buffer, MAX_LINE_LENGTH, in) != NULL) {
+        n++;
+    }
+
+    char** lines = calloc(n, sizeof(char*));
+    if (lines == NULL) {
+        fprintf(stderr, "Error: Memory allocation failed\n");
+        fclose(in);
+        return EXIT_FAILURE;
+    }
+
+    rewind(in);
+    int i = 0;
+    while (fgets(buffer, MAX_LINE_LENGTH, in) != NULL) {
+        size_t len = strlen(buffer);
+        if (len &gt; 0 &amp;&amp; buffer[len - 1] == '\n') {
+            buffer[len - 1] = '\0';
+        }
+        lines[i] = malloc((strlen(buffer) + 1) * sizeof(char));
+<a name="1"></a><font color="#00FF00"><a href="match36-0.html#1" target="0"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_1_7.gif"/></a>
+
+        if (lines[i] == NULL) {
+            fprintf(stderr, "Error: Memory allocation failed\n");
+            for (int j = 0; j &lt; i; j++) {
+                free(lines[j]);
+            }
+            free(lines);
+            fclose(in);
+            return EXIT_FAILURE;
+        }
+        strcpy(lines[i], buffer);
+</font>        i++;
+    }
+    fclose(in);
+
+    List indexList = newList();
+    for (int current = 0; current &lt; n; current++) {
+        if (length(indexList) == 0) {
+            append(indexList, current);
+            continue;
+        }
+<a name="0"></a><font color="#FF0000"><a href="match36-0.html#0" target="0"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_0_14.gif"/></a>
+
+        moveFront(indexList);
+        bool inserted = false;
+        while (index(indexList) &gt;= 0) {
+            int listIndexValue = get(indexList);
+            if (strcmp(lines[current], lines[listIndexValue]) &lt; 0) {
+                insertBefore(indexList, current);
+                inserted = true;
+                break;
+            }
+            moveNext(indexList);
+        }
+        if (!inserted) {
+            append(indexList, current);
+        }
+    }
+
+    FILE* out = fopen(outputFile, "w");
+</font>    if (out == NULL) {
+        fprintf(stderr, "Error: Cannot open output file %s\n", outputFile);
+        for (int j = 0; j &lt; n; j++) {
+            free(lines[j]);
+        }
+        free(lines);
+        freeList(&amp;indexList);
+<a name="2"></a><font color="#0000FF"><a href="match36-0.html#2" target="0"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_2_6.gif"/></a>
+
+        return EXIT_FAILURE;
+    }
+
+    moveFront(indexList);
+    while (index(indexList) &gt;= 0) {
+        int sortedIndex = get(indexList);
+        fprintf(out, "%s\n", lines[sortedIndex]);
+        moveNext(indexList);
+    }
+    fclose(out);
+</font>
+    for (int j = 0; j &lt; n; j++) {
+        free(lines[j]);
+    }
+    free(lines);
+    freeList(&amp;indexList);
+
+    printf("Sorting completed. Sorted lines written to %s\n", outputFile);
+
+    return EXIT_SUCCESS;
+}
+</pre>
+</body>
+</html>

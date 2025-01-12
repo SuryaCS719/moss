@@ -1,0 +1,179 @@
+<html>
+<head>
+<title>/fall24/abell3/pa1/Lex.c</title>
+</head>
+<body bgcolor="white">
+<hr/>
+/fall24/abell3/pa1/Lex.c<p></p><pre>
+/*
+Written by Andrew Bell
+abell3@ucsc.edu
+Programming Assignment 1 - CSE 101
+Lex.c module that indirectly sorts the lines of a text file via a list ADT
+*/
+
+#include&lt;stdio.h&gt;
+#include&lt;stdlib.h&gt;
+#include&lt;stdbool.h&gt;
+#include&lt;string.h&gt;
+#include"List.h"
+
+#define MAX 300
+
+<a name="0"></a><font color="#FF0000"><a href="match0-1.html#0" target="1"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_0_99.gif"/></a>
+
+int countLines(FILE* f) {
+    // Using this function WILL reset the given file stream to the start of the file if the file is not NULL
+
+    if (f == NULL) {
+        fprintf(stderr,"Read Error: File pointer is null\n");
+        exit(1);
+    }
+
+    rewind(f);
+
+    int num_lines = 0;
+    char buffer[MAX]; // This is unused and only exists to ensure fgets() works properly
+    while (fgets(buffer,MAX,f) != NULL) {
+        num_lines++;
+    }
+
+    rewind(f);
+    return num_lines;
+}
+
+int str_len(char* s) { // A custom function is used so that the string doesn't contain the newline
+    if (s == NULL) {
+        fprintf(stderr,"String Error: String pointer is null\n");
+        exit(1);
+    }
+
+    int i = 0;
+    bool end_found = false;
+    while (!end_found) {
+        char s_char = s[i];
+        if (s_char == '\n') {
+            end_found = true;
+        }
+        i++;
+    }
+    return i;
+}
+
+void copy_str(char* source, char* dest, int len) { // Another custom function to ensure the string is copied exactly right
+    if (source == NULL) {
+        fprintf(stderr,"String Error: Source string is null\n");
+        exit(1);
+    }
+    if (dest == NULL) {
+        fprintf(stderr,"String Error: Destination string is null\n");
+        exit(1);
+    }
+    if (len &lt;= 0) {
+        fprintf(stderr,"String length is invalid\n");
+        exit(1);
+    }
+
+    for (int i = 0; i &lt; len - 1; ++i) {
+        dest[i] = source[i];
+    }
+
+    dest[len-1] = '\0';
+}
+
+int main(int argc, char* argv[]) {
+    // Check that the program was called correctly
+    if (argc != 3) {
+        fprintf(stderr,"Incorrect usage.\n");
+        fprintf(stderr,"Usage: Lex &lt;input file&gt; &lt;output file&gt;\n");
+        exit(1);
+    }
+
+    // Open files
+    FILE *in, *out;
+
+    in = fopen(argv[1],"r");
+    if (in == NULL) {
+        fprintf(stderr,"Unable to read file %s\n",argv[1]);
+        exit(1);
+    }
+
+    out = fopen(argv[2],"w");
+    if (out == NULL) {
+        fprintf(stderr,"Unable to write to file %s\n",argv[2]);
+        exit(1);
+    }
+    
+    // Create array of strings from file
+    int num_lines = countLines(in);
+    char ** line_array = calloc(num_lines, sizeof(char*));
+    if (line_array == NULL) {
+        fprintf(stderr,"Failed to allocate memory for array of strings\n");
+        exit(1);
+    }
+
+    for (int i = 0; i &lt; num_lines; ++i) {
+        // Load the line into a buffer
+        char buffer[MAX];
+        fgets(buffer,MAX,in);
+
+        // Find the length of the line
+        int line_len = str_len(buffer);
+
+        // Create a new permanent string
+        char * line = calloc(line_len, sizeof(char));
+        if (line == NULL) {
+            fprintf(stderr,"Failed to allocate memory for string\n");
+            exit(1);
+        }
+        copy_str(buffer,line,line_len);
+
+        // Store the new string
+        line_array[i] = line;
+    }
+
+    // Create and sort indices list
+    List indices = newList();
+    if (indices == NULL) {
+        fprintf(stderr,"List Error: Failed to initialize list\n");
+        exit(1);
+    }
+
+    prepend(indices,0); // Initial condition
+    for (int i = 1; i &lt; num_lines; ++i) { // Main loop body
+        moveFront(indices);
+        bool sorted = false;
+        while (index(indices) != -1 &amp;&amp; !sorted) {
+            if (strcmp(line_array[i],line_array[get(indices)]) &lt;= 0) {
+                insertBefore(indices,i);
+                sorted = true;
+            }
+            moveNext(indices);
+        }
+        if (!sorted) {
+            append(indices,i);
+        }
+    }
+
+    // Loop through indices list and print the cooresponding line element
+    moveFront(indices);
+    while (index(indices) != -1) {
+        fprintf(out,"%s\n",line_array[get(indices)]);
+        moveNext(indices);
+    }
+
+    // Free allocated memory
+    freeList(&amp;indices);
+    for (int i = 0; i &lt; num_lines; ++i) {
+        free(line_array[i]);
+    }
+    free(line_array);
+
+    // Close files
+    fclose(in);
+    fclose(out);
+</font>
+    return 0;
+}</pre>
+</body>
+</html>

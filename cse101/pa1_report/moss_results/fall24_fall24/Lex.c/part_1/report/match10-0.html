@@ -1,0 +1,107 @@
+<html>
+<head>
+<title>/fall24/ndistefa/pa1/Lex.c</title>
+</head>
+<body bgcolor="white">
+<hr/>
+/fall24/ndistefa/pa1/Lex.c<p></p><pre>
+// Niko DiStefano
+// 2019667
+// PA1
+
+#include "List.h"
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;string.h&gt;
+
+#define RED "\033[0;31m"
+#define GREEN "\033[0;32m"
+
+<a name="0"></a><font color="#FF0000"><a href="match10-1.html#0" target="1"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_0_99.gif"/></a>
+
+unsigned long min(unsigned long n1, unsigned long n2) {
+    return (n1 &lt;= n2) ? n1 : n2;
+}
+
+char* newString() {
+    return calloc(2, sizeof(char));
+}
+
+int main(int argc, char* argv[]) {
+    if (argc != 3) {
+        fprintf(stderr, "%sError: Lex requires exactly 2 arguments\n", RED);
+        return 1;
+    }
+    const char* inPath = argv[1];
+    const char* outPath = argv[2];
+    FILE* in = fopen(inPath, "r");
+    FILE* out = fopen(outPath, "w");
+    if (in == NULL) {
+        fprintf(stderr, "%sError: Could not find file at path %s\n", RED, inPath);
+        return 1;
+    }
+
+    unsigned long linec = 0;
+    char** lines = calloc(1, sizeof(char*));
+    char* line = newString();
+    for (char c = fgetc(in); c != EOF; c = fgetc(in)) {
+        if (c != '\n') {
+            line = realloc(line, (strlen(line) + 2) * sizeof(char));
+            strcat(line, (char[]){c, '\0'});
+            continue;
+        }
+        lines[linec] = line;
+        line = newString();
+        // printf("Stored line: %s\n", lines[linec]);
+        linec++;
+        lines = realloc(lines, sizeof(char*) * (linec + 1));
+        lines[linec] = NULL;
+    }
+    fclose(in);
+
+    // Create list of indices determining the order to output the lines
+    List order = newList();
+    for (unsigned long i = 0; i &lt; linec; i++) {
+        moveFront(order);
+        // printf("Cursor moved to front: %i\n", index(order));
+        for (unsigned long j = 0; j &lt; length(order); j++) {
+            if (strcmp(lines[i], lines[get(order)]) &lt; 0) break;
+            moveNext(order);
+            // printf("Cursor moved to next: %i\n", index(order));
+        }
+        if (index(order) == -1) {
+            append(order, i);
+        } else {
+            insertBefore(order, i);
+            // printf("Inserted before cursor at: %i\n", index(order));
+        }
+    }
+
+    // Write the lines in-order into an output string
+    char* outStr = newString();
+    for (int i = 0; length(order) &gt; 0; deleteFront(order)) {
+        i = front(order);
+        outStr = realloc(outStr, (strlen(outStr) + strlen(lines[i]) + 2) * sizeof(char));
+        strcat(outStr, lines[i]);
+        strcat(outStr, "\n");
+    }
+    // printf("Sorted:\n%s\n", outStr);
+
+    // Print to output file
+    fprintf(out, "%s", outStr);
+    fclose(out);
+
+    // Free up all memory
+    for (unsigned long i = 0; i &lt; linec+1; i++) {
+        free(lines[i]);
+    }
+    free(lines);
+    free(line);
+    free(outStr);
+    freeList(&amp;order);
+
+    fprintf(stdout, "%sLex ran succesfully!\n", GREEN);
+</font>}
+</pre>
+</body>
+</html>

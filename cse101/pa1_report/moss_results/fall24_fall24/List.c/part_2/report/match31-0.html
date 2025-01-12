@@ -1,0 +1,398 @@
+<html>
+<head>
+<title>/fall24/jdsachs/pa1/List.c</title>
+</head>
+<body bgcolor="white">
+<hr/>
+/fall24/jdsachs/pa1/List.c<p></p><pre>
+/*
+ * Josh Sachs
+ * jdsachs
+ * 2024 Fall CSE 101 - PA1
+ * List.c
+ * This file implements the List ADT, which is a doubly linked list with a cursor
+ * for traversing the list. It supports standard list operations such as prepend,
+ * append, insert, delete, and cursor-based manipulations.
+ */
+
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;stdbool.h&gt;
+#include "List.h"
+
+typedef struct NodeObj {
+   int data;
+   struct NodeObj* next;
+   struct NodeObj* prev;
+} NodeObj;
+
+typedef NodeObj* Node;
+
+typedef struct ListObj {
+<a name="0"></a><font color="#FF0000"><a href="match31-1.html#0" target="1"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_0_97.gif"/></a>
+
+   Node front;
+   Node back;
+   Node cursor;
+   int length;
+   int index;
+}ListObj;
+
+typedef ListObj* List;
+
+List newList(void){
+   List L = malloc(sizeof(ListObj));
+   L-&gt;front = NULL;
+   L-&gt;back = NULL;
+   L-&gt;cursor = NULL;
+   L-&gt;length = 0;
+   L-&gt;index = -1;
+   return L;
+}
+
+Node newNode(int x){
+   Node N = malloc(sizeof(NodeObj));
+   N-&gt;data = x;
+   N-&gt;next = NULL;
+   N-&gt;prev = NULL;
+   return N;
+}
+
+void freeList(List* pL){
+   if(pL != NULL &amp;&amp; *pL != NULL){
+      while((*pL)-&gt;length&gt;0){
+         deleteFront(*pL);
+      }
+      free(*pL);
+      *pL = NULL;
+   }
+}
+
+int length(List L){
+   if(L != NULL){
+      return L-&gt;length;
+   }
+   return 0;
+}
+
+
+int index(List L){
+   if(L != NULL){
+      return L-&gt;index;
+   }
+   return -1;
+}
+
+int front(List L){
+   if(L != NULL &amp;&amp; length(L)&gt;0){
+      return L-&gt;front-&gt;data;
+   }
+   fprintf(stderr, "Error calling front() on empty list\n");
+   exit(1);
+}
+
+int back(List L){
+   if(L != NULL &amp;&amp; length(L)&gt;0){
+      return L-&gt;back-&gt;data;
+   }
+   fprintf(stderr, "Error calling back() on empty list\n");
+   exit(1);
+}
+
+int get(List L) {
+    if (L == NULL) {
+        fprintf(stderr, "List Error: calling get() on NULL List reference\n");
+        exit(1);
+    }
+    if (length(L) &lt;= 0) {
+        fprintf(stderr, "List Error: calling get() on an empty List\n");
+        exit(1);
+    }
+    if (index(L) &lt; 0) {
+        fprintf(stderr, "List Error: calling get() on undefined cursor\n");
+        exit(1);
+    }
+    if (L-&gt;cursor == NULL) {  // Check if cursor itself is NULL
+        fprintf(stderr, "List Error: cursor is NULL\n");
+        exit(1);
+    }
+    return L-&gt;cursor-&gt;data;
+}
+
+
+bool equals(List A, List B){
+   if (A == NULL || B == NULL) {
+       fprintf(stderr, "List Error: calling equals() on NULL List\n");
+       exit(1);
+   }
+   //Check if lists have same length
+   if(A-&gt;length != B-&gt;length){
+      return false;
+   }
+   //Move cursors to front of lists
+   moveFront(A);
+   moveFront(B);
+
+   //Iterate through lists and compare
+   while(index(A) &gt;= 0 &amp;&amp; index(B) &gt;=0){
+      if(get(A) != get(B)){
+         return false;
+      }
+      moveNext(A);
+      moveNext(B);
+   }
+   return true;
+}
+
+void clear(List L){
+   if(L == NULL || L-&gt;front == NULL){
+      return;
+   }
+
+   Node curr = L-&gt;front;
+   while(curr != NULL){
+      Node tmp = curr-&gt;next;
+      free(curr);
+      curr = tmp;
+   }
+
+   L-&gt;front = NULL;
+   L-&gt;back = NULL;
+   L-&gt;cursor = NULL;
+   L-&gt;length = 0;
+   L-&gt;index = -1;
+}
+
+void set(List L, int x){
+   if(L != NULL &amp;&amp; L-&gt;cursor != NULL &amp;&amp; length(L) &gt; 0 &amp;&amp; index(L) &gt;= 0){
+      L-&gt;cursor-&gt;data = x;
+   }
+}
+
+void moveFront(List L){
+   if(L != NULL &amp;&amp; length(L) &gt; 0){
+      L-&gt;cursor = L-&gt;front;
+      L-&gt;index = 0;
+   }
+}
+
+void moveBack(List L){
+   if(L != NULL &amp;&amp; length(L) &gt; 0){
+      L-&gt;cursor = L-&gt;back;
+      L-&gt;index = length(L)-1;
+   }
+}
+
+void movePrev(List L) {
+    if (L == NULL || L-&gt;cursor == NULL) {
+        return;  // Do nothing if the List or cursor is NULL
+    }
+
+    if (L-&gt;cursor-&gt;prev != NULL) {  // Move to the previous node if possible
+        L-&gt;cursor = L-&gt;cursor-&gt;prev;
+        L-&gt;index--;
+    } else {  // If at the start of the list, invalidate the cursor
+        L-&gt;cursor = NULL;
+        L-&gt;index = -1;
+    }
+}
+
+void moveNext(List L) {
+    if (L != NULL &amp;&amp; L-&gt;cursor != NULL) {
+        if (L-&gt;cursor-&gt;next != NULL) {  // Move cursor if there is a next element
+            L-&gt;cursor = L-&gt;cursor-&gt;next;
+            L-&gt;index++;
+        } else {  // If cursor moves past the end, invalidate it
+            L-&gt;cursor = NULL;
+            L-&gt;index = -1;
+        }
+    }
+}
+
+void prepend(List L, int x){
+   if(L == NULL){
+      printf("List not found");
+      return;
+   }
+   Node n = newNode(x);
+   if(L-&gt;length == 0){
+      L-&gt;back = n;
+   }else{
+      L-&gt;front-&gt;prev = n;
+   }
+   n-&gt;next = L-&gt;front;
+   L-&gt;front = n;
+   L-&gt;length++;
+}
+
+void append(List L, int x){
+   if(L == NULL){
+      printf("List not found");
+      return;
+   }
+   Node n = newNode(x);
+   if(L-&gt;length == 0){
+      L-&gt;front = n;
+   }else{
+      L-&gt;back-&gt;next = n;
+   }
+   n-&gt;prev = L-&gt;back;
+   L-&gt;back = n;
+   L-&gt;length++;
+}
+
+void insertBefore(List L, int x) {
+    if (L == NULL) {
+        printf("List not found\n");
+        return;
+    }
+
+    if (L-&gt;length &lt;= 0 || L-&gt;index &lt; 0) {
+        printf("Error: Cannot insert before an undefined cursor or in an empty list\n");
+        return;
+    }
+
+    // Case 1: Cursor is at the front, so use prepend
+    if (L-&gt;index == 0) {
+        prepend(L, x);
+        // Cursor stays at index 0 after prepend, no need to increment index
+    }
+    // Case 2: Insert before the cursor in the general case
+    else {
+        Node n = newNode(x);
+        Node b = L-&gt;cursor-&gt;prev;
+
+        b-&gt;next = n;
+        n-&gt;prev = b;
+        n-&gt;next = L-&gt;cursor;
+        L-&gt;cursor-&gt;prev = n;
+
+        L-&gt;length++;
+        L-&gt;index++;
+    }
+}
+
+
+void insertAfter(List L, int x) {
+    if (L == NULL) {
+        printf("List not found\n");
+        return;
+    }
+
+    if (L-&gt;length &lt;= 0 || L-&gt;index &lt; 0) {
+        printf("Error: Cannot insert after an undefined cursor or in an empty list\n");
+        return;
+    }
+
+    if (L-&gt;index == L-&gt;length-1) {
+        append(L, x);
+    }
+
+    else {
+        Node n = newNode(x);
+        Node b = L-&gt;cursor-&gt;next;
+
+        n-&gt;next = b;
+        n-&gt;prev = L-&gt;cursor;
+        L-&gt;cursor-&gt;next = n;
+        if(b != NULL){
+           b-&gt;prev = n;
+        }
+
+        L-&gt;length++;
+    }
+}
+
+void deleteFront(List L){
+   if(L != NULL &amp;&amp; L-&gt;length &gt; 0){
+      Node tmp = L-&gt;front;
+      if(L-&gt;length == 1){
+         L-&gt;back = NULL;
+         L-&gt;front = NULL;
+      }else{
+         L-&gt;front = L-&gt;front-&gt;next;
+         L-&gt;front-&gt;prev = NULL;
+      }
+      free(tmp);
+      L-&gt;length--;
+
+      if(L-&gt;index == 0){
+         L-&gt;cursor = NULL;
+         L-&gt;index = -1;
+      }else if(L-&gt;index &gt; 0){
+         L-&gt;index--;
+      }
+   }
+}
+
+void deleteBack(List L){
+   if(L != NULL &amp;&amp; L-&gt;length &gt; 0){
+      Node tmp = L-&gt;back;
+      if(L-&gt;length == 1){
+         L-&gt;back = NULL;
+         L-&gt;front = NULL;
+      }else{
+         L-&gt;back = L-&gt;back-&gt;prev;
+         L-&gt;back-&gt;next = NULL;
+      }
+      free(tmp);
+      L-&gt;length--;
+
+      if(L-&gt;index == L-&gt;length){
+         L-&gt;cursor = NULL;
+         L-&gt;index = -1;
+      }
+   }
+}
+
+void delete(List L) {
+    if (L != NULL &amp;&amp; L-&gt;length &gt; 0 &amp;&amp; L-&gt;cursor != NULL) {
+        Node c = L-&gt;cursor;
+
+        if (L-&gt;cursor == L-&gt;front) {  // Deleting the front element
+            deleteFront(L);
+        } else if (L-&gt;cursor == L-&gt;back) {  // Deleting the back element
+            deleteBack(L);
+        } else {  // Deleting an element in the middle
+            Node before = L-&gt;cursor-&gt;prev;
+            Node after = L-&gt;cursor-&gt;next;
+            before-&gt;next = after;
+            after-&gt;prev = before;
+            free(c);
+            L-&gt;length--;
+        }
+
+        L-&gt;cursor = NULL;  // Invalidate cursor after deletion
+        L-&gt;index = -1;
+    }
+}
+
+
+void printList(FILE* out, List L){
+   if(L != NULL){
+      Node n = L-&gt;front;
+      while(n != NULL){
+         fprintf(out, "%d", n-&gt;data);
+         if(n-&gt;next != NULL){
+            printf(" ");
+         }
+         n = n-&gt;next;
+      }
+   }
+}
+
+List copyList(List L){
+   if(L != NULL){
+      List nL = newList();
+      Node n = L-&gt;front;
+      while(n != NULL){
+         append(nL, n-&gt;data);
+         n = n-&gt;next;
+      }
+      return nL;
+</font>   }
+   return NULL;
+}
+</pre>
+</body>
+</html>

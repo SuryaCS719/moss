@@ -1,0 +1,116 @@
+<html>
+<head>
+<title>/fall24/vperla/pa1/Lex.c</title>
+</head>
+<body bgcolor="white">
+<hr/>
+/fall24/vperla/pa1/Lex.c<p></p><pre>
+//-----------------------------------------------------------------------------
+// Name : Vishal Perla
+// Cruz id : vperla
+// Assignment : pa1
+//----------------------------------------------------------------------------- 
+
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;string.h&gt;
+#include "List.h"
+
+#define MAX_LEN 300
+
+<a name="0"></a><font color="#FF0000"><a href="match76-0.html#0" target="0"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_0_92.gif"/></a>
+
+int main(int argc, char *argv[]) {
+    FILE *in, *out;
+    char line[MAX_LEN];
+    int n = 0;
+
+    // Step 1: Check that there are exactly two arguments (input and output file names)
+    if (argc != 3) {
+        fprintf(stderr, "Usage: %s &lt;input file&gt; &lt;output file&gt;\n", argv[0]);
+        exit(1);
+    }
+
+    // Step 2: Open input file and count the number of lines
+    in = fopen(argv[1], "r");
+    if (in == NULL) {
+        fprintf(stderr, "Unable to open file %s for reading\n", argv[1]);
+        exit(1);
+    }
+
+    // First pass: Count number of lines in the input file
+    while (fgets(line, MAX_LEN, in) != NULL) {
+        n++;
+    }
+
+    // Allocate memory for an array of strings to hold each line
+    char **lines = (char **)malloc(n * sizeof(char *));
+    if (lines == NULL) {
+        fprintf(stderr, "Memory allocation failed\n");
+        exit(1);
+    }
+
+    // Rewind the file to read the lines again
+    rewind(in);
+
+    // Second pass: Read lines and store them in the array
+    for (int i = 0; i &lt; n; i++) {
+        fgets(line, MAX_LEN, in);
+        lines[i] = (char *)malloc((strlen(line) + 1) * sizeof(char));  // Allocate memory for each line
+        if (lines[i] == NULL) {
+            fprintf(stderr, "Memory allocation failed\n");
+            exit(1);
+        }
+        strcpy(lines[i], line);
+    }
+
+    fclose(in);
+
+    // Step 3: Create a List of indices and perform insertion sort
+    List list = newList();
+
+    for (int i = 0; i &lt; n; i++) {
+        if (length(list) == 0) {
+            append(list, i);  // First index gets appended
+        } else {
+            // Move cursor to the front and compare each element
+            moveFront(list);
+            while (index(list) &gt;= 0 &amp;&amp; strcmp(lines[i], lines[get(list)]) &gt; 0) {
+                moveNext(list);
+            }
+            if (index(list) &gt;= 0) {
+                insertBefore(list, i);  // Insert in sorted position
+            } else {
+                append(list, i);  // Append if at the end of the list
+            }
+        }
+    }
+
+    // Step 4: Open the output file for writing
+    out = fopen(argv[2], "w");
+    if (out == NULL) {
+        fprintf(stderr, "Unable to open file %s for writing\n", argv[2]);
+        exit(1);
+    }
+
+    // Print the strings in sorted order using the indices in the List
+    for (moveFront(list); index(list) &gt;= 0; moveNext(list)) {
+        fprintf(out, "%s", lines[get(list)]);
+    }
+
+    // Free all allocated memory and close files
+    for (int i = 0; i &lt; n; i++) {
+</font>        free(lines[i]);  // Free each line's memory
+    }
+    free(lines);  // Free the lines array
+
+    freeList(&amp;list);  // Free the List
+
+    fclose(out);
+
+    return 0;
+}
+
+</pre>
+</body>
+</html>

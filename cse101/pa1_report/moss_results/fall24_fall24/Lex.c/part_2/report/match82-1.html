@@ -1,0 +1,91 @@
+<html>
+<head>
+<title>/fall24/nnakamot/pa1/Lex.c</title>
+</head>
+<body bgcolor="white">
+<hr/>
+/fall24/nnakamot/pa1/Lex.c<p></p><pre>
+/***
+* Nathan Nakamoto
+* nnakamot
+* 2024 Fall CSE101 PA1 
+* Lex.c
+* Description: Main program file implementing the application requirements for this assignment. Interacts with the List ADT for specific functionality. Ensure this file correctly handles inputs and outputs as specified in the assignment description.
+***/
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include "List.h"
+#include &lt;string.h&gt;
+#define MAX_LEN 160
+
+<a name="0"></a><font color="#FF0000"><a href="match82-0.html#0" target="0"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_0_98.gif"/></a>
+
+char* my_strdup(const char* s) {
+    size_t len = strlen(s) + 1;  // +1 for the null terminator
+    char* copy = malloc(len);
+    if (copy) {
+        strcpy(copy, s);
+    }
+    return copy;
+}
+
+int main(int argc, char* argv[]) {
+    List L = newList();
+    if (argc != 3) {
+        printf("Usage: %s &lt;input file&gt; &lt;output file&gt;\n", argv[0]);
+        return EXIT_FAILURE;
+    }
+
+    
+    FILE *in = fopen(argv[1], "r");
+    FILE *out = fopen(argv[2], "w");
+    if (in == NULL) {
+        printf("Unable to open file %s for reading\n", argv[1]);
+        return EXIT_FAILURE;
+    }
+    if (out == NULL) {
+        printf("Unable to open file %s for writing\n", argv[2]);
+        return EXIT_FAILURE;
+    }
+
+    char line[MAX_LEN];
+    char **lines = NULL;
+    int numLines = 0;
+    while (fgets(line, MAX_LEN, in) != NULL) {
+        numLines++;
+        lines = realloc(lines, numLines * sizeof(char*));
+        lines[numLines - 1] = my_strdup(line);
+    }
+
+    List M = newList();
+    
+    for (int i = 0; i &lt; numLines; i++) {
+        moveFront(L);
+        while (index(L) &gt;= 0 &amp;&amp; strcmp(lines[get(L)], lines[i]) &lt; 0) {
+            moveNext(L);
+        }
+        if (index(L) == -1) {
+            append(L, i);
+        } else {
+            insertBefore(L, i);
+        }
+    }
+
+    for (moveFront(L); index(L) &gt;= 0; moveNext(L)) {
+        fprintf(out, "%s", lines[get(L)]);
+    }
+
+    for (int i = 0; i &lt; numLines; i++) {
+        free(lines[i]);
+    }
+    free(lines);
+    freeList(&amp;L);
+    freeList(&amp;M);
+    fclose(in);
+    fclose(out);
+</font>
+    return EXIT_SUCCESS;
+}
+</pre>
+</body>
+</html>

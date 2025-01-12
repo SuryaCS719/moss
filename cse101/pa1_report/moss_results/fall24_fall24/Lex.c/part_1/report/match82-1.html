@@ -1,0 +1,90 @@
+<html>
+<head>
+<title>/fall24/gacleach/pa1/Lex.c</title>
+</head>
+<body bgcolor="white">
+<hr/>
+/fall24/gacleach/pa1/Lex.c<p></p><pre>
+/**
+ * Name: Gavin Leach
+ * CruzID: gacleach
+ * Assignment: PA1
+ */
+
+#include &lt;complex.h&gt;
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;string.h&gt;
+
+#include "List.h"
+
+<a name="0"></a><font color="#FF0000"><a href="match82-0.html#0" target="0"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_0_95.gif"/></a>
+
+int main(int argc, char *argv[]) {
+    if (argc != 3) {
+        fprintf(stderr,
+                "Lex.c needs only two CLI arguments: Input File &amp; Output File");
+        return 7;
+    }
+
+    FILE *inputFile = fopen(argv[1], "r");
+    FILE *outputFile = fopen(argv[2], "w");
+    int lineCount = 0;
+    while (!feof(inputFile)) {
+        if (fgetc(inputFile) == '\n')
+            lineCount++;
+    }
+    rewind(inputFile);
+
+
+    char **inputStrings = calloc(lineCount, sizeof(char *));
+    for (int i = 0; i &lt; lineCount; i++) {
+        int lineLength = 0;
+        while (fgetc(inputFile) != '\n') {
+            lineLength++;
+        }
+        char *line = calloc(lineLength, lineLength + 1);
+        fseek(inputFile, -(lineLength + 1), SEEK_CUR);
+        fgets(line, lineLength + 2, inputFile);
+        inputStrings[i] = line;
+    }
+
+    fclose(inputFile);
+    List indexList = newList();
+
+    for (int i = 0; i &lt; lineCount; i++) {
+        append(indexList, i);
+    }
+
+    while (length(indexList) &gt; 0) {
+        moveBack(indexList);
+        int minIndex = length(indexList)-1;
+        char *minStr = inputStrings[back(indexList)];
+        while (index(indexList) &gt;= 0) {
+            if (strcmp(inputStrings[get(indexList)], minStr) &lt;= 0) {
+                minIndex = index(indexList);
+                minStr = inputStrings[get(indexList)];
+            }
+            movePrev(indexList);
+        }
+        moveFront(indexList);
+        for (int i = 0; i &lt; minIndex; i++) {
+            moveNext(indexList);
+        }
+        delete(indexList);
+        printf("Min %s", minStr);
+        fprintf(outputFile, "%s", minStr);
+    }
+
+    for (int i = 0; i &lt; lineCount; i++) {
+        free(inputStrings[i]);
+    }
+    free(inputStrings);
+    freeList(&amp;indexList);
+
+    fclose(outputFile);
+</font>    return 0;
+}
+</pre>
+</body>
+</html>

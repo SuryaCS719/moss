@@ -1,0 +1,65 @@
+<html>
+<head>
+<title>/fall24/anapered/pa1/Lex.c</title>
+</head>
+<body bgcolor="white">
+<hr/>
+/fall24/anapered/pa1/Lex.c<p></p><pre>
+#include&lt;stdio.h&gt;
+#include&lt;stdlib.h&gt;
+#include&lt;assert.h&gt;
+#include&lt;stdbool.h&gt;
+#include&lt;string.h&gt;
+#include "List.h"
+#include "List.c"
+
+<a name="0"></a><font color="#FF0000"><a href="match119-0.html#0" target="0"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_0_97.gif"/></a>
+
+void Lex (char input[256], char output[256]){
+
+    if (input == NULL || output == NULL) {
+        fprintf(stderr, "Lex.c: Lex requires exactly 2 command line arguments");
+        exit(EXIT_FAILURE);
+    }
+
+    scanf("%s", input);
+    scanf("%s", output);
+    FILE *file1 = fopen(input, "r");
+    FILE *file2 = fopen(output, "r");
+    char** mArray;
+
+    List outList = newList();
+
+    int lines, i = 0;
+    while(!feof(file1)) {
+        i = fgetc(file1);
+        if (i =='\n') {lines++;}
+    }
+
+    i = 0;
+    mArray = (char**)malloc(lines * sizeof(char**));
+    for (int a = 0; a &lt; lines; a++){
+
+        fgets(mArray[a], 512, file1);
+        moveFront(outList);
+        Node N;
+        for (N = outList-&gt;cursor; outList-&gt;cursor != NULL; N = N-&gt;next){
+            
+            if (strcmp(mArray[outList-&gt;cursor-&gt;data], mArray[a])&lt;0){
+
+                insertAfter(outList, a);
+
+            } else if (strcmp(mArray[outList-&gt;cursor-&gt;data], mArray[a])&lt;0){
+
+                insertBefore(outList, a);
+
+            } else {insertBefore(outList, a);}
+</font>
+        }
+    }
+
+    printList(file2, outList);
+}
+</pre>
+</body>
+</html>

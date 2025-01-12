@@ -1,0 +1,122 @@
+<html>
+<head>
+<title>/fall24/kysrodri/pa1/Lex.c</title>
+</head>
+<body bgcolor="white">
+<hr/>
+/fall24/kysrodri/pa1/Lex.c<p></p><pre>
+/********************************************************************************* 
+ * * Kyara Rodriguez kysrodri 1764706
+ * * 2024 Fall CSE101 PA1 
+ * * Lex.c 
+ * * alphabetize a list using List.c and list.h 
+ * *********************************************************************************/
+
+#include&lt;stdio.h&gt;
+#include&lt;stdlib.h&gt;
+#include&lt;string.h&gt;
+#include "List.h"
+
+#define line_size 300
+
+<a name="0"></a><font color="#FF0000"><a href="match22-1.html#0" target="1"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_0_98.gif"/></a>
+
+int main( int argc, char *argv[] ) {
+  if(argc &lt; 3) {
+    fprintf(stderr, "Error! Not enough files.\n");
+  }
+  if(argc &gt; 3) {
+    fprintf(stderr, "Error! Too many files.\n");
+  }
+
+  char* inputFile = argv[1];
+  char* outputFile = argv[2];
+ 
+//count the lines of inputFile
+  FILE* infile = fopen(inputFile, "r");
+  int line_count = 0;
+  char c;
+  if(infile != NULL) {
+    for (c = getc(infile); c != EOF; c = getc(infile)) {
+      if (c == '\n') {
+        line_count++;
+      }
+    }
+  fclose(infile);
+  }
+
+//insert words into double array
+  char** array = NULL;
+  array = calloc(line_count, sizeof(char *));
+  char buf[line_size];
+  int count = 0;
+
+  infile = fopen(inputFile, "r");
+
+  if(infile != NULL) {
+  while(fgets(buf, line_size, infile) != NULL) {
+    buf[strcspn(buf, "\n")] = 0; 
+    int word_length = 0;
+    while(buf[word_length] != '\0') {
+      word_length++;
+    }
+    word_length+=3;
+
+    array[count] =(char *)malloc(sizeof(char)*word_length);
+    strcpy(array[count], buf);
+    
+    count++;
+  }
+  fclose(infile);
+  }
+  
+//indirectly sort the array
+  List A = newList();
+  if(line_count &gt; 0) {
+    append(A, 0);
+    for(int k = 1; k &lt; (line_count); k++) {
+      moveFront(A);
+      int curr;
+      int A_length = 1;
+      while(length(A) == k) {
+        curr = get(A);
+        int a = strcmp(array[curr], array[k]);
+        if(a &gt;= 0) {
+          insertBefore(A, k);
+        }
+        else if((A_length) == k) {
+          insertAfter(A, k);
+        }
+        moveNext(A);
+        A_length++;
+      } 
+    }
+  }
+//print alphabetized array using List A  
+  if(line_count &gt; 0) { 
+    FILE* outFile = fopen(outputFile, "w");
+    if(outFile != NULL) {
+    moveFront(A);
+    while(index(A)&gt;=0){
+      int x = get(A);
+      fprintf(outFile, "%s\n", array[x]);
+      moveNext(A);
+    }
+    fclose(outFile);
+    }
+  }
+
+//free everything
+  freeList(&amp;A);
+
+  for(int j =0; j &lt; line_count; j++) {
+    free(array[j]);
+</font>  }
+  free(array);
+
+  return 0;
+}
+
+</pre>
+</body>
+</html>

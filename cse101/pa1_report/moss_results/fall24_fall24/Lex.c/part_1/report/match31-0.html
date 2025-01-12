@@ -1,0 +1,99 @@
+<html>
+<head>
+<title>/fall24/krajarat/pa1/Lex.c</title>
+</head>
+<body bgcolor="white">
+<hr/>
+/fall24/krajarat/pa1/Lex.c<p></p><pre>
+// Lex.c
+// Name: Kaushik Rajarathinam
+// CruzID: krajarat
+// Assignment: pa1
+
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;string.h&gt;
+#include "List.h"
+
+<a name="0"></a><font color="#FF0000"><a href="match31-1.html#0" target="1"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_0_98.gif"/></a>
+
+void lexicographicSort(const char* inputFile, const char* outputFile) {
+    FILE* in = fopen(inputFile, "r");
+    if (in == NULL) {
+        perror("Error opening input file");
+        return;
+    }
+
+    char **lines = NULL;
+    char buffer[256];
+    int lineCount = 0;
+    while (fgets(buffer, sizeof(buffer), in)) {
+      lines = realloc(lines, sizeof(char*) * (lineCount + 1));
+      if(strlen(buffer) &gt; 1) {
+        lines[lineCount] = (char*)malloc(256);
+        strcpy(lines[lineCount],  buffer);
+        lineCount++;
+      }
+    }
+    fclose(in);
+    List indexList = newList();
+    for (int i = 0; i &lt; lineCount; i++) {
+        append(indexList, i);
+    }
+    for (int i = 0; i &lt; lineCount - 1; i++) {
+        int minIndex = i;
+        moveFront(indexList);
+        for (int j = i + 1; j &lt; lineCount; j++) {
+            moveNext(indexList);
+            if (strcmp(lines[minIndex], lines[j]) &gt; 0) {
+                minIndex = j;
+            }
+        }
+        if (minIndex != i) {
+            char tempstr[200];
+            strcpy(tempstr, lines[minIndex]);
+            strcpy(lines[minIndex], lines[i]);
+            strcpy(lines[i],tempstr);
+        }
+    }
+
+    FILE* out = fopen(outputFile, "w");
+    if (out == NULL) {
+        perror("Error opening output file");
+        return;
+    }
+
+    moveFront(indexList);
+
+    for (int i = 0; i &lt; lineCount; i++) {
+        fprintf(out, "%s", lines[get(indexList)]);
+        moveNext(indexList);
+    }
+    fprintf(out, "%s", "");
+
+    fclose(out);
+
+    // Clean up
+    for (int i = 0; i &lt; lineCount; i++) {
+        free(lines[i]);
+    }
+    free(lines);
+    freeList(&amp;indexList);
+
+}
+
+
+
+int main(int argc, char* argv[]) {
+    if (argc != 3) {
+        fprintf(stderr, "Usage: %s &lt;input file&gt; &lt;output file&gt;\n", argv[0]);
+        return 1;
+    }
+
+    lexicographicSort(argv[1], argv[2]);
+</font>    return 0;
+
+}
+</pre>
+</body>
+</html>

@@ -1,0 +1,621 @@
+<html>
+<head>
+<title>/fall24/mthallet/pa1/List.c</title>
+</head>
+<body bgcolor="white">
+<hr/>
+/fall24/mthallet/pa1/List.c<p></p><pre>
+#include "List.h"
+#include &lt;stdlib.h&gt;
+#include &lt;stdio.h&gt;
+
+<a name="0"></a><font color="#FF0000"><a href="match0-1.html#0" target="1"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_0_99.gif"/></a>
+
+typedef struct NodeObj* Node;
+
+typedef struct NodeObj {
+    int value;
+    Node before;
+    Node next;
+} NodeObj;
+
+typedef struct ListObj {
+    unsigned int cursor; // this will be one-indexed, and 0 is used for when List is empty
+    unsigned int length;
+    Node cursorP;
+    Node front;
+    Node back;
+} ListObj;
+
+
+// Debugging
+
+// Prints state of L sturct to file handle
+void debug(FILE *out, List L) {
+    fprintf(out, "cursor: %u, length: %u, cursorP: %p, front: %p, back: %p\n", L-&gt;cursor, L-&gt;length, L-&gt;cursorP, L-&gt;front, L-&gt;back);
+    return;
+}
+
+List newList() {
+    List L;
+    L = (ListObj*) calloc(1, sizeof(ListObj));
+    if(L == NULL) {
+        fprintf(stderr, "Error occured allocating memory for ListObj in newList(), terminating program\n");
+        exit(1);
+    }
+    return L;
+}
+
+void freeList(List *pL) {
+    // Pre-Conditions
+    if(pL == NULL) {
+        fprintf(stderr, "freeList() was called on a NULL pointer, terminating program\n");
+        exit(1);
+    }
+    List L = *pL;
+    if(L == NULL) {
+        fprintf(stderr, "freeList() was called on a pointer pointing to a NULL list, terminating program\n");
+        exit(1);
+    }
+
+    Node pointer = L-&gt;front;
+    Node nextPointer;
+    while(pointer) {
+        nextPointer = pointer-&gt;next;
+        free(pointer);
+        pointer = nextPointer;
+    }
+    free(L);
+    *pL = NULL;
+    return;
+}
+
+int length(List L) {
+    // Pre-Conditions
+    if(L == NULL) {
+        fprintf(stderr, "length() called on a null pointer, terminating program\n");
+        exit(1);
+    }
+
+    // Actual Work
+    return L-&gt;length;
+}
+
+int index(List L) {
+    // Pre-Conditons
+    if(L == NULL) {
+        fprintf(stderr, "index() called on a null pointer, terminating program\n");
+        exit(1);
+    }
+
+    // Actual work
+    return L-&gt;cursor ? (L-&gt;cursor - 1) : -1; // if cursor is 0, it means that the cursor is undefined, and it will return -1, otherwise, if its true, the cursor will just get returned
+    // but i have to undo the one-indexing and subtract by 1 to go back to zero-indexing
+    // this could just be
+    // return L-&gt;cursor - 1; but i dont know how that would work with an unsigned integer
+}
+
+int front(List L) {
+
+    // Pre-Conditions
+    if(L == NULL) {
+        fprintf(stderr, "front() called on a null pointer, terminating program\n");
+        exit(1);
+    }
+    if(L-&gt;length == 0) {
+        fprintf(stderr, "front() was called on an empty list, terminating program.\n");
+        exit(1);
+    }
+
+    // Actual work
+    return L-&gt;front-&gt;value;
+}
+
+int back(List L) {
+
+    // Pre-Conditions
+    if(L == NULL) {
+        fprintf(stderr, "back() was called on a null pointer, terminating program\n");
+        exit(1);
+    }
+    if(L-&gt;length == 0) {
+        fprintf(stderr, "back() was called on an empty list, terminating program.\n");
+        exit(1);
+    }
+
+    // Actual work
+    return L-&gt;back-&gt;value;
+}
+
+int get(List L) {
+
+    // Pre-Conditions
+    if(L == NULL) {
+        fprintf(stderr, "get() was called on a null pointer, terminating program\n");
+        exit(1);
+    }
+    if(L-&gt;length == 0) {
+        fprintf(stderr, "get() was called on an empty list, terminating program.\n");
+        exit(1);
+    }
+    if(L-&gt;cursor == 0) {
+        fprintf(stderr, "get() was called without a valid cursor, terminating program.\n");
+        exit(1);
+    }
+
+    // Actual work
+    return L-&gt;cursorP-&gt;value;
+}
+
+bool equals(List A, List B) {
+    if(A == NULL || B == NULL) {
+        fprintf(stderr, "equals() was called on a null pointer, list A: %p, list B: %p terminating program\n", A, B);
+        exit(1);
+    }
+    if(A-&gt;length != B-&gt;length) {
+        return false;
+    }
+    Node node1 = A-&gt;front;
+    Node node2 = B-&gt;front;
+
+    while(node1 &amp;&amp; node2) {
+        if(node1-&gt;value != node2-&gt;value) {
+            return false;
+        }
+        node1 = node1-&gt;next;
+        node2 = node2-&gt;next;
+    }
+
+    return true;
+}
+
+void clear(List L) {
+    // Pre-Condition
+    if(L == NULL) {
+        fprintf(stderr, "clear() called on a null pointer, terminating program\n");
+        exit(1);
+    }
+
+
+    // WORK
+    Node pointer = L-&gt;front;
+    Node nextPointer;
+    while(pointer) {
+        nextPointer = pointer-&gt;next;
+        free(pointer);
+        pointer = nextPointer;
+    }
+    L-&gt;front = NULL;
+    L-&gt;back = NULL;
+    L-&gt;cursor = 0;
+    L-&gt;cursorP = NULL;
+    L-&gt;length = 0;
+
+
+
+    return;
+}
+
+void set(List L, int x) {
+
+    // Pre-Conditions
+    if(L == NULL) {
+        fprintf(stderr, "set() was called on a NULL pointer, terminating program\n");
+        exit(1);
+    }
+    if(L-&gt;length == 0) {
+        fprintf(stderr, "set() was called on an empty list, terminating program\n");
+        exit(1);
+    }
+    if(L-&gt;cursor == 0) {
+        fprintf(stderr, "set() was called with an invalid cursor, terminating program\n");
+        exit(1);
+    }
+
+    // Actual work
+    L-&gt;cursorP-&gt;value = x;
+    return;
+}
+
+void moveFront(List L) {
+
+    // Pre-Conditions
+    if(L == NULL) {
+        fprintf(stderr, "moveFront() called on a null pointer, terminating program\n");
+        exit(1);
+    }
+    if(L-&gt;length == 0) {
+        fprintf(stderr, "moveFront() called on empty list, terminating program\n");
+        exit(1);
+    }
+
+    // Actual Work
+    L-&gt;cursor = 1; // one-indexed !!
+    // printf("This is the pointer going into curorP from moveFront(): %p\n", L-&gt;front); // debugging
+    L-&gt;cursorP = L-&gt;front;
+    return;
+}
+
+
+void moveBack(List L) {
+
+    // Pre-Conditions
+    if(L == NULL) {
+        fprintf(stderr, "moveBack() called on a null pointer, terminating program\n");
+        exit(1);
+    }
+    if(L-&gt;length == 0) {
+        fprintf(stderr, "moveBack() called on empty list, terminating program\n");
+        exit(1);
+    }
+
+    // Actual Work
+    L-&gt;cursor = L-&gt;length; // i dont subtract by one again because it is one-indexed
+    L-&gt;cursorP = L-&gt;back;
+    return;
+}
+
+void movePrev(List L) {
+
+    // Pre-Conditions
+    if(L == NULL) {
+        fprintf(stderr, "movePrev() was called on a NULL pointer, terminating program\n");
+        exit(1);
+    }
+
+    if(L-&gt;cursor &gt; 1) { // if the cursor is not at the front (and since its not at the front it has to be defined) move the cursor back one step
+        L-&gt;cursor--;
+        L-&gt;cursorP = L-&gt;cursorP-&gt;before;
+    }
+    else { // if not, then the cursor will go undefined (and if it was undefined before, it won't matter)
+        L-&gt;cursor = 0;
+        L-&gt;cursorP = NULL;
+    }
+
+    return;
+}
+
+void moveNext(List L) {
+
+    // Pre-Conditions
+    if(L == NULL) {
+        fprintf(stderr, "moveNext() was called on a NULL pointer, terminating program\n");
+        exit(1);
+    }
+
+    // Work
+    if(L-&gt;cursor == L-&gt;length || L-&gt;cursor == 0) { // if it is at the back or it is undefined, make sure it is undefined
+        L-&gt;cursor = 0;
+        L-&gt;cursorP = NULL;
+    }
+    else { // else, move it forward
+        L-&gt;cursor++;
+        L-&gt;cursorP = L-&gt;cursorP-&gt;next;
+    }
+    return;
+}
+
+void prepend(List L, int x) {
+    
+    // Pre-Conditions
+    if(L == NULL) {
+        fprintf(stderr, "prepend() was called on a NULL pointer, terminating program..\n");
+        exit(1);
+    }
+
+    // Allocating memory and checking for memory errors
+    Node node = (NodeObj*) malloc(sizeof(NodeObj));
+    if(node == NULL) {
+        fprintf(stderr, "Error occured when allocating memory for new node in prepend(), terminating program\n");
+        exit(1);
+    }
+
+    // Setting fields of node
+    node-&gt;before = NULL;
+    node-&gt;next = L-&gt;front;
+    node-&gt;value = x;
+
+    if(L-&gt;length == 0) {
+        L-&gt;back = node;
+        L-&gt;front = node;
+    }
+    else {
+        L-&gt;front-&gt;before = node;
+        L-&gt;front = node;
+    }
+
+    L-&gt;length++;
+    L-&gt;cursor = (L-&gt;cursor) ? (L-&gt;cursor + 1) : (L-&gt;cursor); // if cursor already exists, shift its place along to keep it pointed on the same element. else keep it undefined (at zero)
+
+
+    return;
+}
+
+
+void append(List L, int x) {
+
+    // Pre-Conditions
+    if(L == NULL) {
+        fprintf(stderr, "append() was called on a NULL pointer, terminating program..\n");
+        exit(1);
+    }
+
+    // Allocating memory and checking for memory errors
+    Node node = (NodeObj*) malloc(sizeof(NodeObj));
+    if(node == NULL) {
+        fprintf(stderr, "Error occured when allocating memory for new node in append(), terminating program\n)");
+        exit(1);
+    }
+
+
+    // Setting fields of node
+    node-&gt;before = L-&gt;back;
+    node-&gt;next = NULL;
+    node-&gt;value = x;
+
+    // If List is empty, do some special stuff:
+    if(L-&gt;length == 0) {
+        L-&gt;front = node;
+        L-&gt;back = node;
+    }
+    else { // else, update last node and only update L-back
+        L-&gt;back-&gt;next = node;
+        L-&gt;back = node;
+    }
+    L-&gt;length++;
+    return;
+}
+
+
+void insertBefore(List L, int x) {
+
+
+    // Pre-Conditions
+    if(L == NULL) {
+        fprintf(stderr, "insertBefore() was called on a NULL pointer! terminating program...\n");
+        exit(1);
+    }
+    if(L-&gt;length == 0) {
+        fprintf(stderr, "insterBefore() was called on an empty List! terminating program...\n");
+        exit(1);
+    }
+    if(L-&gt;cursor == 0) {
+        fprintf(stderr, "insertBefore() was called with an invalid cursor! terminating program...\n");
+        exit(1);
+    }
+
+    // Allocating memory and checking for memory errors
+    Node node = (NodeObj*) malloc(sizeof(NodeObj));
+    if(node == NULL) {
+        fprintf(stderr, "Error when allocating memory for new node, terminating program\n");
+        exit(1);
+    }
+
+
+
+    // Setting fields of node
+    node-&gt;value = x;
+    node-&gt;before = L-&gt;cursorP-&gt;before;
+    node-&gt;next = L-&gt;cursorP;
+
+    // Updating state of list
+    L-&gt;cursor++;
+    if(L-&gt;cursorP-&gt;before) { // if there is actually a node before the cursor, update that node to point at the newly inserted node
+        L-&gt;cursorP-&gt;before-&gt;next = node;
+    }
+    else { // else, since there is no node before this new node, it is the front, so we have to update the front pointer accordingly
+        L-&gt;front = node;
+    }
+    L-&gt;cursorP-&gt;before = node;
+    L-&gt;length++;
+
+
+    return;
+}
+
+
+void insertAfter(List L, int x) {
+
+    // Pre-Conditions
+    if(L == NULL) {
+        fprintf(stderr, "insertAfter() was called on a NULL pointer, terminating program\n");
+        exit(1);
+    }
+    if(L-&gt;length == 0) {
+        fprintf(stderr, "insertAfter() was called on an empty List, terminating program\n");
+        exit(1);
+    }
+    if(L-&gt;cursor == 0) {
+        fprintf(stderr, "insertAfter() was called with an undefined cursor, termating program\n");
+        exit(1);
+    }
+
+
+    // Allocating memory and checking for memory errors
+    Node node = (NodeObj*) malloc(sizeof(NodeObj));
+    if(node == NULL) {
+        fprintf(stderr, "Error when allocating memory for new node, terminating program\n");
+        exit(1);
+    }
+
+    // Setting fields for the node
+    node-&gt;value = x;
+    node-&gt;before = L-&gt;cursorP;
+    // printf("CursorP: %p, index: %u\n", L-&gt;cursorP, L-&gt;cursor); // Debugging
+    node-&gt;next = L-&gt;cursorP-&gt;next;
+
+    if(L-&gt;cursorP-&gt;next) { // if there is actually a node after the cursor, then update that node to point backwards at the new node
+        L-&gt;cursorP-&gt;next-&gt;before = node;
+    }
+    else { // else, update the back of the list accordingly
+        L-&gt;back = node;
+    }
+    L-&gt;cursorP-&gt;next = node; // update the pointed to node
+    L-&gt;length++;
+
+    return;
+}
+
+
+void deleteFront(List L) {
+
+    // Pre-Conditions
+    if(L == NULL) {
+        fprintf(stderr, "deleteFront() was called on a NULL pointer, terminating program\n");
+        exit(1);
+    }
+    if(L-&gt;length == 0) {
+        fprintf(stderr, "deleteFront() was called on an empty list, terminating program\n");
+        exit(1);
+    }
+
+
+    if(L-&gt;cursor &gt; 1) { // if the cursor isn't at the front, then decrement the index to follow the deletion
+        L-&gt;cursor--;
+    }
+    else { // else, set it to undefined because either it was at the front or it was already undefined
+        L-&gt;cursor = 0;
+        L-&gt;cursorP = NULL;
+    }
+
+    if(L-&gt;length == 1) { // if the list is just the first item, then reset the list to factory settings
+        free(L-&gt;front);
+        L-&gt;front = NULL;
+        L-&gt;back = NULL;
+        L-&gt;length = 0;
+    }
+    else { // but if it isn't, then get rid of the first node and make sure to update the list state
+        Node pointer = L-&gt;front;
+        L-&gt;front = pointer-&gt;next;
+        L-&gt;front-&gt;before = NULL;
+        free(pointer);
+        pointer = NULL;
+        L-&gt;length--;
+    }
+
+
+    return;
+}
+
+
+
+void deleteBack(List L) {
+
+    if(L == NULL) {
+        fprintf(stderr, "deleteBack() was called on a NULL pointer, terminating program\n");
+        exit(1);
+    }
+    if(L-&gt;length == 0) {
+        fprintf(stderr, "deleteBack() was called on an empty list, terminating program\n");
+        exit(1);
+    }
+    
+
+
+    if(L-&gt;cursor == L-&gt;length) { // if the cursor is at the back, set the cursor to be undefined when the back gets deleted
+        L-&gt;cursor = 0;
+        L-&gt;cursorP = NULL;
+    }
+
+    if(L-&gt;length == 1) { // if it's just a single node, reset the list state back to the empty state
+        free(L-&gt;back);
+        L-&gt;front = NULL;
+        L-&gt;back = NULL;
+        L-&gt;length = 0;
+    }
+    else {
+        Node pointer = L-&gt;back;
+        L-&gt;back = L-&gt;back-&gt;before;
+        L-&gt;back-&gt;next = NULL;
+        free(pointer);
+        pointer = NULL;
+        L-&gt;length--;
+    }
+
+    return;
+}
+
+void delete(List L) {
+
+
+    // Pre-Conditions
+    if(L == NULL) {
+        fprintf(stderr, "delete() was called on a NULL pointer, terminating program\n");
+        exit(1);
+    }
+    if(L-&gt;length == 0) {
+        fprintf(stderr, "delete() was called on an empty list, terminating program!\n");
+        exit(1);
+    }
+    if(L-&gt;cursor == 0) {
+        fprintf(stderr, "delete() was called with an undefined cursor, terminating program!\n");
+        printf("index: %u, pointer: %p\n", L-&gt;cursor, L-&gt;cursorP);
+        exit(1);
+    }
+
+
+    // Work
+
+    if(L-&gt;cursor == 1) { // if the cursor is at the start of the list, correctly update the front of the list when it is deleted
+        L-&gt;front = L-&gt;cursorP-&gt;next;
+        // printf("This is L-&gt;front right now: %p, and this is L-&gt;length: %u\n", L-&gt;front, L-&gt;length); // Debugging
+        L-&gt;front-&gt;before = NULL;
+    }
+    else if(L-&gt;cursor == L-&gt;length) { // else if the cursor is at the end, do a similar thing but opposite
+        L-&gt;back = L-&gt;cursorP-&gt;before;
+        L-&gt;back-&gt;next = NULL;
+    }
+    else { // else if its just somewhere in the middle, tie the two nodes around the cursor to each other
+        L-&gt;cursorP-&gt;before-&gt;next = L-&gt;cursorP-&gt;next;
+        L-&gt;cursorP-&gt;next-&gt;before = L-&gt;cursorP-&gt;before;
+    }
+
+    free(L-&gt;cursorP);
+    L-&gt;cursorP = NULL;
+    L-&gt;cursor = 0;
+
+    L-&gt;length--;
+    return;
+}
+
+
+// Other Operations
+
+
+void printList(FILE *out, List L) {
+    Node pointer;
+    if(L == NULL) {
+        fprintf(stderr, "printList() was called on a NULL pointer, terminating program\n");
+        exit(1);
+    }
+
+
+    if(L-&gt;length == 0) {
+        fprintf(out, "Empty List\n");
+    }
+    else { // this is ineffecient since there are a lot of calls to fprintf, could possibly be made faster by first making a string and using sprintf and then only one call to fprintf
+        pointer = L-&gt;front;
+        while(pointer-&gt;next) {
+            fprintf(out, "%d ", pointer-&gt;value);
+            pointer = pointer-&gt;next;
+        }
+        fprintf(out, "%d\n", pointer-&gt;value);
+    }
+    return;
+}
+
+List copyList(List L) {
+    if(L == NULL) {
+        fprintf(stderr, "copyList() was called on a NULL pointer, exiting program!");
+    }
+    List list = newList();
+    Node pointer = L-&gt;front;
+    while(pointer) {
+        append(list, pointer-&gt;value);
+        pointer = pointer-&gt;next;
+    }
+    return list;
+</font>}
+</pre>
+</body>
+</html>

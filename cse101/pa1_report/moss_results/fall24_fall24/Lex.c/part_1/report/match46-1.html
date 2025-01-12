@@ -1,0 +1,122 @@
+<html>
+<head>
+<title>/fall24/brcalcan/pa1/Lex.c</title>
+</head>
+<body bgcolor="white">
+<hr/>
+/fall24/brcalcan/pa1/Lex.c<p></p><pre>
+//-----------------------------------------------------------------------------
+// Lex.c
+//
+// Name: Brighton Alcantara 
+// ID: 2071873
+// Assignment name: pa1
+//-----------------------------------------------------------------------------
+
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;stdbool.h&gt;
+#include &lt;string.h&gt;
+#include "List.h"
+
+<a name="0"></a><font color="#FF0000"><a href="match46-0.html#0" target="0"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_0_99.gif"/></a>
+
+extern char* strdup(const char*); // removing this causes a seg fault
+
+int main(int argc, char* argv[]) {
+
+    if (argc != 3) {
+        fprintf(stderr, "Lex error: Lex.c takes 3 arguments, %d given (Usage: Lex &lt;input file&gt; &lt;output file&gt;)\n", argc);
+        exit(EXIT_FAILURE);
+    }
+
+    FILE* input = fopen(argv[1], "r");
+    if (input == NULL) {
+        fprintf(stderr, "Lex error: the input file, %s, is NULL\n", argv[1]);
+        exit(EXIT_FAILURE);
+    }
+    size_t bufferSize = 1024;
+    char buffer[bufferSize];
+
+    // read each line from the file to get the string array size
+    int n = 0;
+    while(fgets(buffer, bufferSize, input)) {
+        if (strtok(buffer, "\n") != NULL) {
+            n++;
+        }
+    }
+    fclose(input);
+
+    char** strings = malloc(sizeof(char*) * n);
+
+    input = fopen(argv[1], "r");
+
+    // read each line from the file to get each string
+    int i = 0;
+
+    while(fgets(buffer, bufferSize, input)) {
+        char* line = strtok(buffer, "\n");
+        if (line != NULL) {
+            strings[i] = strdup(line);
+            i++;
+        }
+    }
+    fclose(input);
+
+    // insertion sort
+    List L = newList();
+
+    int sorted = 0; // represents the current index of the strings array, and also marks the end of the sorted part of the array
+
+    while (sorted &lt; n) {
+        
+        append(L, sorted);
+        if (sorted == 0) {
+            sorted++;
+            continue;
+        }
+        // move cursor to the index in front of the sorted portion
+        moveBack(L);
+        movePrev(L);
+
+        // begin insertion swaps
+        while (index(L) &gt;= 0 &amp;&amp; strcmp(strings[get(L)], strings[sorted]) &gt; 0) {
+
+            // perform swap
+            int temp = get(L);
+            set(L, sorted);
+            moveNext(L);
+            set(L, temp);
+            movePrev(L);
+
+            // move left an index
+            movePrev(L);
+        }
+        // insertion complete, move cursor (next iteration) and sorted portion
+        sorted++;
+    }
+
+    moveFront(L);
+
+    // write to output array
+    FILE *fptr = fopen(argv[2], "w");
+
+    for (i = 0; i &lt; n; i++) {
+        fprintf(fptr, "%s", strings[get(L)]);
+        if (i &lt; n - 1) fprintf(fptr, "\n");
+        moveNext(L);
+    }
+    fclose(fptr);
+
+    // free the List ADT and strings array
+    for (i = 0; i &lt; n; i++) {
+        free(strings[i]);
+    }
+    free(strings);
+
+    freeList(&amp;L);
+
+    return 0;
+</font>}</pre>
+</body>
+</html>

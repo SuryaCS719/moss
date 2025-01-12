@@ -1,0 +1,95 @@
+<html>
+<head>
+<title>/fall24/myara/pa1/Lex.c</title>
+</head>
+<body bgcolor="white">
+<hr/>
+/fall24/jcruz62/pa1/Lex.c<p></p><pre>
+/***
+* Jade Cruz
+* jcruz62
+* 2024 Fall CSE101 PA1
+* Lex.c
+* sorts lexicographically
+***/ 
+
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;string.h&gt;
+#include "List.h"
+
+#define MAX_LEN 255  // Maximum length of each line
+
+int main(int argc, char* argv[]) {
+	if (argc != 3) {
+        	printf("Usage: %s &lt;input file&gt; &lt;output file&gt;\n", argv[0]);
+        	exit(EXIT_FAILURE);
+    	}
+
+    	FILE* inFile = fopen(argv[1], "r");
+	FILE* outFile = fopen(argv[2], "w");
+    	if (inFile == NULL) {
+        	printf("Error: Could not open %s for reading\n", argv[1]);
+        	exit(EXIT_FAILURE);
+    	}
+
+    	if (outFile == NULL) {
+        	printf("Error: Could not open %s for writing\n", argv[2]);
+        	fclose(inFile);
+        	exit(EXIT_FAILURE);
+    	}
+
+    	List sortedList = newList();
+<a name="0"></a><font color="#FF0000"><a href="match207-0.html#0" target="0"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_0_18.gif"/></a>
+
+    	char tempLine[MAX_LEN];
+    	char* lineArray[1000];
+    	int numLines = 0;
+
+    	// Read lines from the input file and store them in lineArray
+    	while (fgets(tempLine, MAX_LEN, inFile) != NULL) {
+        	lineArray[numLines] = malloc(strlen(tempLine) + 1);
+        	strcpy(lineArray[numLines], tempLine);
+        	numLines++;
+</font>   	 }
+
+    	for (int i = 0; i &lt; numLines; i++) {
+        	if (length(sortedList) == 0) {
+            		append(sortedList, i);
+        	}
+	       	else {
+            		moveFront(sortedList);
+            		while (index(sortedList) &gt;= 0 &amp;&amp; strcmp(lineArray[i], lineArray[get(sortedList)]) &gt; 0) {
+				moveNext(sortedList);
+            	}
+			if (index(sortedList) == -1) {
+		    		append(sortedList, i);
+			} 
+			else {
+                		insertBefore(sortedList, i);
+            }
+        }
+    }
+	moveFront(sortedList);
+    	while (index(sortedList) != -1) {
+<a name="1"></a><font color="#00FF00"><a href="match207-0.html#1" target="0"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_1_12.gif"/></a>
+
+        	fprintf(outFile, "%s", lineArray[get(sortedList)]);
+        	moveNext(sortedList);
+    	}
+
+    	// Free all allocated memory for the lines
+    	for (int i = 0; i &lt; numLines; i++) {
+        	free(lineArray[i]);
+    	}
+
+    	freeList(&amp;sortedList);
+    	fclose(inFile);
+    	fclose(outFile);
+</font>
+    	return 0;
+}
+
+</pre>
+</body>
+</html>

@@ -1,0 +1,404 @@
+<html>
+<head>
+<title>/fall24/vngo8/pa1/List.c</title>
+</head>
+<body bgcolor="white">
+<hr/>
+/fall24/vngo8/pa1/List.c<p></p><pre>
+/* Vincent Ngo
+ * vngo8
+ * pa1
+ *
+ * List.c
+ * The implementation for the List ADT
+ */
+
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;stdbool.h&gt;
+#include "List.h"
+//doubly queue using linked list
+
+//private types
+<a name="2"></a><font color="#0000FF"><a href="match53-0.html#2" target="0"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_2_4.gif"/></a>
+
+typedef struct NodeObj* Node;
+
+typedef struct NodeObj{
+  ListElement data;
+  Node next;
+  int index;
+} NodeObj;
+
+typedef struct ListObj{
+  Node front;
+  Node back;
+  int length;
+  int cursor;
+} ListObj;
+
+
+//Constructors and Destructors
+
+Node newNode(ListElement data, int index){
+  Node N = malloc(sizeof(NodeObj));
+  if (N == NULL) {
+    fprintf(stderr, "Memory allocation failed\n");
+    exit(EXIT_FAILURE);
+  }
+  N -&gt; data = data;
+  N -&gt; next = NULL;
+</font>  N -&gt; index = index;
+  return(N);
+}
+
+void freeNode(Node *pN){
+<a name="1"></a><font color="#00FF00"><a href="match53-0.html#1" target="0"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_1_11.gif"/></a>
+
+  if (pN != NULL &amp;&amp; *pN != NULL){
+    free(*pN);
+    *pN = NULL;
+  }
+}
+
+List newList(void){
+  List L = malloc(sizeof(ListObj));
+  if (L == NULL) {
+    fprintf(stderr, "Memory allocation failed\n");
+    exit(EXIT_FAILURE);
+  }
+  L-&gt;front = L-&gt;back = NULL;
+  L-&gt;length = 0;
+  L-&gt;cursor = -1;
+  return(L);
+}
+
+void freeList(List *pL){
+  if (pL == NULL || *pL == NULL){
+    return;
+  }
+
+  while((*pL)-&gt;length &gt; 0){
+    deleteFront(*pL);
+  }
+
+  free(*pL);
+  *pL = NULL;
+
+}
+
+//Access functions
+
+int length(List L){
+  if (L == NULL){
+    fprintf(stderr, "List Error: calling length() on NULL list reference\n");
+    exit(EXIT_FAILURE);
+  }
+  return L-&gt;length;
+}
+
+int index(List L){
+  if (L == NULL){
+    return -1;
+  }
+
+  return L-&gt;cursor;
+}
+
+int front(List L){
+  if (L == NULL){
+    fprintf(stderr, "List Error: calling front() on NULL list reference\n");
+    exit(EXIT_FAILURE);
+  }
+
+  if (L-&gt;length == 0){
+</font>    fprintf(stderr, "Error: Front of list is not defined.\n");
+    exit(EXIT_FAILURE);
+  }
+
+  return L-&gt;front-&gt;data;
+}
+
+int back(List L){
+  if (L == NULL){
+    fprintf(stderr, "List Error: calling back() on NULL list reference\n");
+    exit(EXIT_FAILURE);
+  }
+
+<a name="0"></a><font color="#FF0000"><a href="match53-0.html#0" target="0"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_0_75.gif"/></a>
+
+  if (L-&gt;length == 0){
+    fprintf(stderr, "Error: Back of list is not defined\n");
+    exit(EXIT_FAILURE);
+  }
+  
+  return L-&gt;back-&gt;data;
+}
+
+int get(List L){
+  if (L-&gt;length &lt;= 0 || L-&gt;cursor &lt; 0) {
+     fprintf(stderr, "List Error: calling get() on undefined cursor\n");
+     exit(EXIT_FAILURE);
+  }
+
+  Node current = L-&gt;front;
+  for (int i = 0; i &lt; L-&gt;cursor; i++) {
+      current = current-&gt;next;
+  }
+  return current-&gt;data;
+
+}
+
+bool equals(List A, List B){
+  if (length(A) != length(B)){
+    return false;
+  }
+
+  Node nA = A-&gt; front;
+  Node nB = B-&gt; front;
+
+  while (nA != NULL || nB != NULL){
+    if (nA-&gt;data != nB-&gt; data){
+      return false;
+    }
+    nA = nA-&gt;next;
+    nB = nB-&gt;next;
+  }
+
+  return true;
+}
+
+//Manipulation Functions
+
+void deleteFront(List L){
+  if (L-&gt;length == 1){
+    free(L-&gt;front);
+    L-&gt;front = NULL;
+    L-&gt;back = NULL;
+    L-&gt;length = 0;
+  } else if (L-&gt;length &gt; 0){
+    Node temp = L-&gt;front;
+    L-&gt;front = L-&gt;front-&gt;next;
+    freeNode(&amp;temp);
+    L-&gt;length--;
+  }
+}
+
+void deleteBack(List L){
+  if (L-&gt;length == 1){
+    free(L-&gt;back);
+    L-&gt;front = NULL;
+    L-&gt;back = NULL;
+  } else if (L-&gt;length &gt; 0){
+    Node n = L-&gt;front;
+    while (n != NULL &amp;&amp; n-&gt;index != L-&gt;length-2){
+      n = n-&gt;next;
+    }
+    n-&gt;next = NULL;
+    freeNode(&amp;L-&gt;back);
+    L-&gt;back = n;
+  }
+  L-&gt;length --;
+}
+
+void delete(List L){
+  if (L-&gt;length == 1){
+    free(L-&gt;front);
+    L-&gt;front = NULL;
+    L-&gt;back = NULL;
+  } else if (L-&gt;length &gt; 0){
+    Node n = L-&gt;front;
+    while (n != NULL &amp;&amp; n-&gt;index != L-&gt;cursor - 1){
+      n = n-&gt;next;
+    }
+    Node cursor = n-&gt;next;
+    n-&gt;next = cursor-&gt;next;
+    freeNode(&amp;cursor);
+  }
+  L-&gt;length--;
+}
+
+void clear(List L){
+ if (L == NULL){
+   fprintf(stderr, "List Error: attempting to call clear() on null list\n");
+   exit(EXIT_FAILURE);
+ }
+
+ while(L-&gt;length &gt; 0){
+   deleteFront(L);
+ } 
+ L-&gt;front = NULL;
+ L-&gt;back = NULL;
+ L-&gt;cursor = -1;
+}
+
+void set(List L, int x){
+  if (L-&gt;length &gt; 0 &amp;&amp; x &gt;= 0){
+    Node n = L-&gt;front;
+    while (n != NULL){
+      if (n-&gt;index == L-&gt;cursor){
+        n-&gt;data = x;
+      }
+      n = n-&gt;next;
+    }
+  } else {
+    fprintf(stderr, "List Error: list is empty or specified index is less than 0\n");
+    exit(EXIT_FAILURE);
+  }
+}
+
+void moveFront(List L){
+  if (L -&gt; length &gt; 0){
+    L-&gt;cursor = L-&gt;front-&gt;index;
+  }
+}
+
+void moveBack(List L){
+  if (L -&gt; length &gt; 0){
+    L-&gt;cursor = L-&gt;back-&gt;index;
+  }
+}
+
+void movePrev(List L){
+  if (L -&gt; cursor == -1){
+    return;
+  }
+
+  L-&gt;cursor -= 1;
+}
+
+void moveNext(List L){
+  if (L -&gt; cursor == -1){
+    return;
+  }
+
+  if (L-&gt; cursor + 1 ==  L-&gt;length){
+    L-&gt;cursor = -1;
+    return;
+  }
+
+  L-&gt;cursor += 1;
+}
+
+void prepend(List L, int x){
+  Node newNode = malloc(sizeof(NodeObj));
+  newNode -&gt; data = x;
+  newNode -&gt; next = NULL;
+  newNode -&gt; index = 0;
+
+  if (L-&gt;length == 0){
+    L-&gt;front = newNode;
+    L-&gt;back = newNode;
+  } else {
+    newNode -&gt; next = L-&gt;front;
+    L-&gt;front = newNode;
+
+    Node temp = L-&gt;front-&gt;next;
+    while (temp){
+      temp-&gt;index++;
+      temp = temp-&gt;next;
+    }
+  }
+  L-&gt;length++;
+}
+
+void append(List L, int x){
+  Node newNode = malloc(sizeof(NodeObj));
+  newNode -&gt; data = x;
+  newNode-&gt; next = NULL;
+  newNode -&gt; index = L-&gt;length;
+  if (L-&gt;length == 0){
+    L-&gt;front = newNode;
+    L-&gt;back = newNode;
+  } else {
+    L-&gt;back-&gt;next = newNode;
+    L-&gt;back = newNode;
+  }
+
+  L-&gt;length++;
+}
+
+void insertBefore(List L, int x){
+
+  if (L-&gt;length &lt;= 0){
+    fprintf(stderr, "List Error: attempting to insert before an element that does not exist!\n");
+    exit(EXIT_FAILURE);
+  }
+
+  if (L-&gt;cursor == 0){
+    prepend(L,x);
+    return;
+  }
+
+  //create new node
+
+  Node newNode = malloc(sizeof(NodeObj));
+  newNode -&gt; data = x;
+  newNode -&gt; index = L -&gt; cursor;
+
+
+  Node n = L-&gt;front;
+  Node prev = NULL;
+  while(n != NULL &amp;&amp; n-&gt;index != L-&gt;cursor){
+    prev = n;
+    n = n-&gt;next;
+  }
+
+  prev-&gt;next = newNode;
+  newNode-&gt;next = n;
+  
+  while(n != NULL){
+    n-&gt;index++;
+    n = n-&gt;next;
+  }
+  L-&gt;length++;
+}
+
+void insertAfter(List L, int x){
+  //create new node
+  Node newNode = malloc(sizeof(NodeObj));
+  newNode -&gt; data = x;
+  newNode -&gt; index = L -&gt; cursor + 1;
+  if (L -&gt; length == 0){
+    newNode-&gt;index = 0;
+    append(L,x);
+  } else {
+    Node n = L-&gt;front;
+    while(n != NULL &amp;&amp; n-&gt;index != L-&gt;cursor){
+      n = n -&gt;next;
+    }
+    Node nextNode = n-&gt;next;
+    n-&gt;next = newNode;
+    newNode-&gt;next = nextNode;
+    
+    while (nextNode != NULL){
+      nextNode-&gt;index++;
+      nextNode = nextNode-&gt;next;
+    }
+    L-&gt;length++;
+  }
+}
+
+void printList(FILE *out,List l){
+  Node n = l-&gt;front;
+  while (n != NULL){
+    fprintf(out, "%d ", n-&gt;data);
+</font>    n = n-&gt;next;
+  }
+}
+
+
+List copyList(List l){
+  List nL = newList();
+  Node n = l-&gt;front;
+  while (n != NULL){
+    append(nL, n-&gt;data);
+    n = n-&gt;next;
+  }
+  return nL;
+}
+
+
+</pre>
+</body>
+</html>

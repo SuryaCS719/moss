@@ -1,0 +1,129 @@
+<html>
+<head>
+<title>/fall24/mschemke/pa1/Lex.c</title>
+</head>
+<body bgcolor="white">
+<hr/>
+/fall24/mschemke/pa1/Lex.c<p></p><pre>
+/***
+* Michelle Schemkes 
+* mschemke 
+* 2024 Fall CSE101 PA1 
+* Lex.c
+* Main program which sorts a file lexicographically
+***/
+
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;string.h&gt;
+#include "List.h"
+
+#define MAX_LINE_LENGTH 160
+
+int main(int argc, char* argv[]) {
+    // Verify the number of command line arguments
+    if (argc != 3) {
+        fprintf(stderr, "Usage: %s &lt;input file&gt; &lt;output file&gt;\n", argv[0]);
+        exit(1);
+    }
+
+    // Open the input file
+    FILE* in = fopen(argv[1], "r");
+    if (in == NULL) {
+        fprintf(stderr, "Unable to read from file %s\n", argv[1]);
+        exit(1);
+    }
+
+    // Open the output file
+<a name="0"></a><font color="#FF0000"><a href="match121-0.html#0" target="0"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_0_50.gif"/></a>
+
+    FILE* out = fopen(argv[2], "w");
+    if (out == NULL) {
+        fprintf(stderr, "Unable to write to file %s\n", argv[2]);
+        fclose(in);
+        exit(1);
+    }
+
+
+    // Read the contents of the input file into a string array
+    char** lines = NULL;
+    int lineCount = 0;
+    char buffer[MAX_LINE_LENGTH];
+
+    while (fgets(buffer, MAX_LINE_LENGTH, in) != NULL) {
+        lines = realloc(lines, sizeof(char*) * (lineCount + 1));
+        if (lines == NULL) {
+            fprintf(stderr, "Memory allocation error\n");
+            fclose(in);
+            fclose(out);
+            exit(1);
+        }
+        lines[lineCount] = calloc(MAX_LINE_LENGTH, sizeof(char));
+        if (lines[lineCount] == NULL) {
+            fprintf(stderr, "Memory allocation error\n");
+            fclose(in);
+            fclose(out);
+            exit(1);
+        }
+        strcpy(lines[lineCount], buffer);
+        lineCount++;
+    }
+    fclose(in);  // Close the input file 
+
+    // If the input file was empty, just return
+    if (lineCount == 0) {
+        fclose(out);
+        free(lines);
+        return 0;
+    }
+
+    // Create a List and insert elements using insertion sort logic
+    List indexList = newList();
+
+    // Insert the first element into the list
+    append(indexList, 0);
+
+    // Iterate through each line starting from the second line
+    for (int i = 1; i &lt; lineCount; i++) {
+        moveFront(indexList);
+
+        // compare the current line with the line at the cursor index
+        // Find position to insert the current line based on strcmp
+        while (index(indexList) &gt;= 0) {
+</font>            if (strcmp(lines[i], lines[get(indexList)]) &lt; 0) {
+                insertBefore(indexList, i);
+                break;
+            }
+            moveNext(indexList);
+        }
+
+        // If cursor reached the end of the list, append the current index
+<a name="1"></a><font color="#00FF00"><a href="match121-0.html#1" target="0"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_1_10.gif"/></a>
+
+        if (index(indexList) == -1) {
+            append(indexList, i);
+        }
+    }
+
+    // move the cursor to the front of the list: moveFront(indexList);
+    // Write the sorted contents to the output file
+    moveFront(indexList);
+    while (index(indexList) &gt;= 0) {
+        fprintf(out, "%s", lines[get(indexList)]);
+        moveNext(indexList);
+    }
+
+    fclose(out);  // Close the output file
+
+    // Free the memory allocated for the List and the string array
+    freeList(&amp;indexList);
+    for (int i = 0; i &lt; lineCount; i++) {
+</font>        free(lines[i]);
+    }
+    free(lines);
+
+    return 0;
+}
+</pre>
+</body>
+</html>

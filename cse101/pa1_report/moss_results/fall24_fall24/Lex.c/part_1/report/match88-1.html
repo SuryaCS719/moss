@@ -1,0 +1,101 @@
+<html>
+<head>
+<title>/fall24/andom/pa1/Lex.c</title>
+</head>
+<body bgcolor="white">
+<hr/>
+/fall24/andom/pa1/Lex.c<p></p><pre>
+/*
+Name: Awa Ndom 
+CruzID: andom
+assignment: pa1 
+*/ 
+
+#include&lt;stdio.h&gt;
+#include&lt;stdlib.h&gt;
+#include&lt;stdbool.h&gt;
+#include &lt;string.h&gt;
+#include"List.h"
+
+#define MAX_LEN 300
+
+
+<a name="0"></a><font color="#FF0000"><a href="match88-0.html#0" target="0"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_0_95.gif"/></a>
+
+int main(int argc, char* argv[]){
+    
+    //check args
+    if (argc != 3){
+        fprintf(stderr, "Too many or too few arguments\nFormat: Lex &lt;input file&gt; &lt;output file&gt;\n");
+        exit(EXIT_FAILURE);
+    }
+
+    //open input file
+    FILE *infile;
+    infile = fopen(argv[1], "r");
+    if (infile == NULL){
+        fprintf(stderr, "File did not open &lt;/3\n");
+        exit(EXIT_FAILURE);
+    }
+
+    //count lines
+    int n = 0;
+    char l[MAX_LEN];
+    while ( fgets(l, MAX_LEN, infile) != NULL){
+        n++;
+    }   
+
+    char** arr = calloc(n, 10 * sizeof(char*));
+    rewind(infile);
+
+    // add lines to array
+    int i = 0;
+    while ( i &lt; n){
+        char line[MAX_LEN];
+        fgets(line, MAX_LEN, infile);
+        arr[i] = malloc(strlen(line) + 1);
+        strcpy(arr[i], line);
+        //printf("%s", arr[i]);
+        i += 1;
+    }
+
+    //look through array and indices find order
+    List IS = newList();
+    
+    for (int j = 0; j &lt; n; j++){
+        int ii = 0;
+        for (moveFront(IS); index(IS) &gt; -1; moveNext(IS)){
+            if ( strcmp(arr[j], arr[get(IS)]) &lt; 0){
+                insertBefore(IS, j);
+                ii += 1;
+                break;
+            }
+        }
+        if ( !ii ){
+            append(IS, j);
+        }
+    }
+
+    //open output file
+    FILE *outfile;
+    outfile = fopen(argv[2], "w");
+    if (outfile == NULL){
+        fprintf(stderr, "File did not open &lt;/3\n");
+        exit(EXIT_FAILURE);
+    }
+    for (moveFront(IS); index(IS) &gt; -1; moveNext(IS)){
+        fprintf(outfile, "%s\n", arr[get(IS)]);
+    }
+    
+
+    fclose(infile);
+    for  (int i = 0; i &gt; n; i++){
+</font>        free(arr[i]);
+    }
+    free(arr);
+    freeList(&amp;IS);
+}
+
+</pre>
+</body>
+</html>

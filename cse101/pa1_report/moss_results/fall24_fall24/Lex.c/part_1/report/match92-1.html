@@ -1,0 +1,108 @@
+<html>
+<head>
+<title>/fall24/bcurielm/pa1/Lex.c</title>
+</head>
+<body bgcolor="white">
+<hr/>
+/fall24/bcurielm/pa1/Lex.c<p></p><pre>
+/*
+Name: Boris Curiel Molina
+CruzID: bcurielm
+Assignment: pa1
+
+Here is our main program that will take an input list argument and will output 
+our desired ordered list while also checking for errors.
+*/
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;string.h&gt;
+#include "List.h"
+
+#define MAX_LEN 100
+
+<a name="1"></a><font color="#00FF00"><a href="match92-0.html#1" target="0"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_1_19.gif"/></a>
+
+int main(int argc, char* argv[]) {
+
+    int line_count = 0;
+    int counter = 0;
+    FILE* in, * out;
+    char strLine[MAX_LEN];
+
+    // Check that there are 2 other arguments besides Lex
+    if (argc != 3) {
+        printf("Usage: %s &lt;input file&gt; &lt;output file&gt;\n", argv[0]);
+        exit(1);
+    }
+
+    // We open files for reading and writing
+    in = fopen(argv[1], "r");
+    if (in == NULL) {
+</font>        printf("Unable to open file %s for reading\n", argv[1]);
+        exit(1);
+    }
+    out = fopen(argv[2], "w");
+<a name="0"></a><font color="#FF0000"><a href="match92-0.html#0" target="0"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_0_68.gif"/></a>
+
+    if (out == NULL) {
+        printf("Unable to open file %s for writing\n", argv[2]);
+        exit(1);
+    }
+
+    // Here we count the number of lines n in the input file
+    while (fgets(strLine, MAX_LEN, in) != NULL) {
+        line_count++;
+    }
+
+    rewind(in);
+    char* strArray[line_count];
+    List strList = newList();
+
+    //We dynamically allocate array, initiating with an empty List, 
+    // then insert the indices of the array one by one into the 
+    // appropriate positions of the List.
+    for (int i = 0; i &lt; line_count; i++) {
+        fgets(strLine, MAX_LEN, in);
+        strArray[i] = (char*)malloc(sizeof(strLine));
+        strcpy(strArray[i], strLine);
+    }
+
+    //Sort for lexicographic
+    append(strList, 0);
+    for (int i = 1; i &lt; line_count; i++) {
+        moveFront(strList);
+        while (index(strList) != -1) {
+            if (strcmp(strArray[i], strArray[get(strList)]) &lt; 0) {
+                insertBefore(strList, i);
+                break;
+            }
+            else if (strcmp(strArray[i], strArray[get(strList)]) &gt; 0)
+                moveNext(strList);
+        }
+        if (index(strList) == -1)
+            append(strList, i);
+    }
+
+    //Use the List constructed in (3) to print the array in alphabetical order to the output file
+    moveFront(strList);
+    while (index(strList) != -1) {
+
+        fprintf(out, "%s", strArray[get(strList)]);
+        moveNext(strList);
+    }
+
+    //Freeing the array before exiting
+    for (int i = 0; i &lt; line_count; i++) {
+        free(strArray[i]);
+    }
+
+    //Frees our list and closes both files
+    freeList(&amp;strList);
+    fclose(in);
+    fclose(out);
+</font>
+    return(0);
+}
+</pre>
+</body>
+</html>

@@ -1,0 +1,107 @@
+<html>
+<head>
+<title>/fall24/tlaruiz/pa1/Lex.c</title>
+</head>
+<body bgcolor="white">
+<hr/>
+/fall24/tlaruiz/pa1/Lex.c<p></p><pre>
+/* Tlaloc Ruiz's Lex.c
+tlaruiz@ucsc.edu 1937060 */
+
+#include &lt;stdio.h&gt;
+#include &lt;string.h&gt;
+#include &lt;stdlib.h&gt;
+#include "List.h"
+
+#define LENGTH 200
+//This function ensures we are ready to print out, by ensuring that all things are up and running.
+int main (int argc, char* argv[]) {
+   if (argc != 3) {
+      fprintf(stderr, "Main() Error: argc takes in %d arguments, 3 expected!\n", argc);
+      exit(EXIT_FAILURE);
+   }
+<a name="0"></a><font color="#FF0000"><a href="match101-1.html#0" target="1"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_0_18.gif"/></a>
+
+   FILE* input = fopen(argv[1], "r");
+   FILE* output = fopen(argv[2], "w");
+//Checks if either input or output are null, if so error message, if output error, then you must close input before returning EXIT_FAILURE.
+   if (input == NULL) {
+      fprintf(stderr, "Main() Error: attempting to open null input file %s\n", argv[1]);
+      exit(EXIT_FAILURE);
+   }
+   if (output == NULL) {
+      fprintf(stderr, "Main() Error: attempting to open null output file %s\n", argv[2]);
+</font>      fclose(input);
+<a name="1"></a><font color="#00FF00"><a href="match101-1.html#1" target="1"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_1_10.gif"/></a>
+
+      exit(EXIT_FAILURE);
+   }
+//Array and Link list creation and population
+   char line[LENGTH];
+   int numLines = 0; 
+   while (fgets(line, LENGTH, input) != NULL) {
+      numLines++;
+   }
+   char** Lines = malloc(numLines * sizeof(char*));
+</font>   rewind(input);
+   int x = 0; 
+   while (fgets(line, LENGTH, input) != NULL) {
+      Lines[x] = malloc((strlen(line) + 1) * sizeof(char));
+      strcpy(Lines[x], line);
+      x++; 
+   }
+
+   List tlalocList = newList(); 
+
+   for (int y = 0; y &lt; numLines; y++) {
+      moveFront(tlalocList); 
+      while (index(tlalocList) &gt;= 0 &amp;&amp; strcmp(Lines[y], Lines[get(tlalocList)]) &gt; 0) {
+      moveNext(tlalocList); 
+      }
+      if (index(tlalocList) &gt;= 0) {
+         insertBefore(tlalocList, y);
+      }
+      else {
+        append(tlalocList, y);
+      }
+   }
+   //now we print
+   moveFront(tlalocList);
+   while (index(tlalocList) &gt;= 0) {
+      fprintf(output, "%s", Lines[get(tlalocList)]);
+      moveNext(tlalocList);
+   }
+   //Now we free
+   for (int z = 0; z &lt;numLines; z++) {
+      free(Lines[z]);
+   }
+   fclose(input);
+   fclose(output);
+
+   free(Lines);
+   freeList(&amp;tlalocList);
+
+   return EXIT_SUCCESS;
+}
+/*
+//now we print
+moveFront(tlalocList);
+while (index(tlalocList) &gt;= 0) {
+   fprintf(output, "%s", Line[get(tlalocList)]);
+   moveNext(tlalocList);
+}
+//Now we free
+for (int z = 0; k &lt;numLines; z++) {
+  free(Line[z]); 
+}
+free(Line);
+freeList(&amp;tlalocList); 
+//Now we close
+fclose(input); 
+fclose(output); 
+//Now we celebrate
+return EXIT_SUCCESS;
+*/
+</pre>
+</body>
+</html>

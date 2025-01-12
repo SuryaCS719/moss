@@ -1,0 +1,143 @@
+<html>
+<head>
+<title>/fall24/jchoi142/pa1/Lex.c</title>
+</head>
+<body bgcolor="white">
+<hr/>
+/fall24/jchoi142/pa1/Lex.c<p></p><pre>
+
+
+/***
+* Johnathan Choi
+* jchoi142
+* 2024 Fall CSE101 PA1
+* Lex.c
+* Main file for pa1
+***/
+
+
+
+
+#include&lt;stdio.h&gt;
+#include&lt;stdlib.h&gt;
+#include&lt;stdbool.h&gt;
+#include&lt;string.h&gt;
+#include "List.h"
+
+
+#define MAX_LEN 300
+
+
+//so far this main reads the input file and counts the number of words.
+
+
+<a name="0"></a><font color="#FF0000"><a href="match19-0.html#0" target="0"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_0_99.gif"/></a>
+
+int main(int argc, char * argv[]){
+
+
+   List A = newList();
+   int line_count= 0;
+   FILE *in, *out;
+   char line[MAX_LEN];
+   //char* token;
+
+
+   // check command line for correct number of arguments
+   if( argc != 3 ){
+      printf("Usage: %s &lt;input file&gt; &lt;output file&gt;\n", argv[0]);
+      exit(EXIT_FAILURE);
+   }
+
+
+   // open files for reading and writing
+   in = fopen(argv[1], "r");
+   if( in==NULL ){
+      printf("Unable to open file %s for reading\n", argv[1]);
+      exit(EXIT_FAILURE);
+   }
+
+
+   out = fopen(argv[2], "w");
+   if( out==NULL ){
+      printf("Unable to open file %s for writing\n", argv[2]);
+      exit(EXIT_FAILURE);
+   }
+
+
+   //first pass to get the num of tokens
+   while (fgets(line, MAX_LEN, in) != NULL){
+      line_count++;
+     
+   }
+
+
+   //creat space for lines array
+   char **linesArray = malloc((line_count +1) * sizeof(char*));
+   if(linesArray == NULL){
+      exit(EXIT_FAILURE);
+   }
+
+
+   rewind(in);
+
+
+   
+   //read lines into array
+   for (int i=0;i&lt;line_count;i++){
+      linesArray[i] = (char *)malloc(MAX_LEN * sizeof(char));
+      if(linesArray == NULL){
+         exit(EXIT_FAILURE);
+      }
+      if (fgets(linesArray[i], MAX_LEN, in)!= NULL){
+         if(i==line_count - 1 &amp;&amp;linesArray[i][strlen(linesArray[i])-1] != '\n'){
+            linesArray[i][strlen(linesArray[i])] = '\n';
+            linesArray[i][strlen(linesArray[i])+1]= '\0';
+         }
+      }
+   }
+   
+
+
+   append(A,0);
+   //places in correct loco
+   for(int i = 1; i&lt;line_count; i++){
+      moveFront(A);
+      while (index(A)&gt;=0 &amp;&amp; strcmp(linesArray[get(A)],linesArray[i])&lt;0){
+         moveNext(A);
+      }
+      if(index(A) == -1){
+         append(A,i);
+      }else{
+         insertBefore(A,i);
+      }
+   }
+
+
+   //print lines to out
+   for(moveFront(A); index(A)&gt;=0; moveNext(A)){
+      int ind = get(A);
+      fprintf(out,"%s", linesArray[ind]);
+   }
+
+
+
+
+   fclose(in);
+   fclose(out);
+
+
+   for (int i=0; i&lt;line_count; i++){
+      free(linesArray[i]);
+   }
+   free(linesArray);
+   freeList(&amp;A);
+</font>   return 0;
+
+
+}
+
+
+</pre>
+</body>
+</html>

@@ -1,0 +1,407 @@
+<html>
+<head>
+<title>/fall24/jsbaath/pa1/List.c</title>
+</head>
+<body bgcolor="white">
+<hr/>
+/fall24/jsbaath/pa1/List.c<p></p><pre>
+/*
+ * List.c
+ * Makes the List ADT for Lex.c
+*/
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;assert.h&gt;
+#include &lt;stdbool.h&gt;
+#include "List.h"
+
+//private Strct Def--------------------------------------------------
+
+<a name="1"></a><font color="#00FF00"><a href="match19-0.html#1" target="0"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_1_38.gif"/></a>
+
+typedef struct NodeObj {
+    ListElement data;
+    Node next;
+    Node prev;
+}NodeObj;
+
+typedef struct ListObj{
+    Node front;
+    Node back;
+    Node cursor;
+    int length;
+    int cursorPos; //Index for Cursor
+}ListObj;
+
+// Constructors-Destructors-----------------------------------------
+// Create A list
+List newList(void){
+    List L = calloc(sizeof(List), sizeof(List));
+    assert(L != NULL);
+    L-&gt;length = 0;
+    L-&gt;cursorPos = -1;
+    L-&gt;front = L-&gt;back = L-&gt;cursor = NULL;
+    return(L);
+}
+
+// Frees a List
+void freeList(List *pL){
+    if (*pL != NULL &amp;&amp; pL != NULL){
+        clear(*pL);
+    }
+    free(*pL);
+}
+
+// Creates a new node
+Node newNode(int data){
+    Node node = malloc(sizeof(NodeObj));
+    assert(node != NULL);
+    node-&gt;data = data;
+    node-&gt;next = node-&gt;prev = NULL;
+    return(node);
+}
+
+// Access functions--------------------------------------------------
+int length(List L){
+    return(L-&gt;length);
+}
+
+int index(List L){
+    return(L-&gt;cursorPos);
+}
+
+int front(List L){
+    if (L-&gt;length &gt; 0){
+        return(L-&gt;front-&gt;data);
+    }else{
+        printf("List Error: calling front() on an empty List\n");
+        exit(EXIT_FAILURE);
+    }
+}
+
+int back(List L){
+    if (L-&gt;length &gt; 0){
+        return(L-&gt;back-&gt;data);
+    }else{
+        printf("List Error: calling back() on an empty List\n");
+        exit(EXIT_FAILURE);
+    }
+}
+
+int get(List L){
+    if (L-&gt;length &gt; 0 &amp;&amp; L-&gt;cursorPos &gt;= 0){
+        return(L-&gt;cursor-&gt;data);
+    }else if (L-&gt;length &lt;= 0){
+        printf("List Error: calling get() on an empty List\n");
+        exit(EXIT_FAILURE);
+    }else {
+        printf("List Error: calling get() without a cursor set\n");
+        exit(EXIT_FAILURE);
+    }
+}
+
+bool equals(List A, List B){
+    if (A-&gt;length != B-&gt;length){
+        return (false);
+    }else {
+        int index1 = index(A);
+        int index2 = index(B);
+        moveFront(A);
+        moveFront(B);
+        for (int i = 0; i &lt; A-&gt;length; ++i) {
+            if (A-&gt;cursor-&gt;data == B-&gt;cursor-&gt;data){
+                moveNext(A);
+                moveNext(B);
+            }else{
+                if (index1 == -1){
+                    A-&gt;cursor = NULL;
+                    A-&gt;cursorPos = index1;
+                }else {
+                    moveFront(A);
+                    for (int j = 0; j &lt; index1; j++) {
+                        moveNext(A);
+                    }
+                }
+                if (index2 == -1){
+                    B-&gt;cursor = NULL;
+                    B-&gt;cursorPos = index2;
+                } else {
+                    moveFront(B);
+                    for (int a = 0; a &lt; index2; a++) {
+                        moveNext(B);
+                    }
+                }
+                return (false);
+            }
+        }
+        if (index1 == -1){
+            A-&gt;cursor = NULL;
+            A-&gt;cursorPos = index1;
+        }else {
+            moveFront(A);
+            for (int j = 0; j &lt; index1; j++) {
+                moveNext(A);
+            }
+        }
+        if (index2 == -1){
+            B-&gt;cursor = NULL;
+            B-&gt;cursorPos = index2;
+        } else {
+            moveFront(B);
+            for (int a = 0; a &lt; index2; a++) {
+                moveNext(B);
+            }
+        }
+        return (true);
+    }
+}
+
+
+// Manipulation procedures --------------------------------------------
+// Clears the list
+void clear(List L){
+    L-&gt;cursor = NULL;
+    L-&gt;cursorPos = -1;
+    while (L-&gt;front != NULL){
+        deleteFront(L);
+    }
+    L-&gt;back = NULL;
+}
+
+//
+void set(List L, int x){
+    if (L-&gt;length != 0 &amp;&amp; L-&gt;cursorPos &gt;= 0){
+        L-&gt;cursor-&gt;data = x;
+    } else if (L-&gt;length == 0){
+        printf("List Error: calling set() on an empty List\n");
+        exit(EXIT_FAILURE);
+    }else {
+        printf("List Error: calling set() without a cursor set\n");
+        exit(EXIT_FAILURE);
+    }
+}
+
+//
+void moveFront(List L){
+    if (L-&gt;length != 0){
+        L-&gt;cursor = L-&gt;front;
+        L-&gt;cursorPos = 0;
+    }
+}
+
+void moveBack(List L){
+    if (L-&gt;length != 0){
+        L-&gt;cursor = L-&gt;back;
+        L-&gt;cursorPos = L-&gt;length - 1;
+    }
+}
+
+void movePrev(List L){
+    if (L-&gt;cursor != NULL){
+</font>        if (L-&gt;cursor == L-&gt;front){
+            L-&gt;cursor = NULL;
+            L-&gt;cursorPos = -1;
+        } else{
+            L-&gt;cursor = L-&gt;cursor-&gt;prev;
+            L-&gt;cursorPos--;
+        }
+    }
+}
+
+void moveNext(List L){
+    if (L-&gt;cursor != NULL){
+        if (L-&gt;cursor == L-&gt;back){
+            L-&gt;cursor = NULL;
+            L-&gt;cursorPos = -1;
+<a name="0"></a><font color="#FF0000"><a href="match19-0.html#0" target="0"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_0_55.gif"/></a>
+
+        } else{
+            L-&gt;cursor = L-&gt;cursor-&gt;next;
+            L-&gt;cursorPos++;
+        }
+    }
+}
+
+// Adds a new node to the back
+void prepend(List L, int x){
+    if(index(L) != -1){
+        L-&gt;cursorPos++;
+    }
+    if (L-&gt;length == 0){
+        Node n = newNode(x);
+        L-&gt;front = L-&gt;back = n;
+        L-&gt;length++;
+    } else{
+        Node n = newNode(x);
+        n-&gt;next = L-&gt;front;
+        L-&gt;front-&gt;prev = n;
+        L-&gt;front = n;
+        L-&gt;length++;
+    }
+}
+
+// Adds a new node to the front
+void append(List L, int x){
+    if (L-&gt;length == 0){
+        Node n = newNode(x);
+        L-&gt;front = L-&gt;back = n;
+        L-&gt;length++;
+    }else{
+        Node n = newNode(x);
+        n-&gt;prev = L-&gt;back;
+        L-&gt;back-&gt;next = n;
+        L-&gt;back = n;
+        L-&gt;length++;
+    }
+}
+
+void insertBefore(List L, int x){
+    if (L-&gt;length != 0 &amp;&amp; L-&gt;cursorPos &gt;= 0) {
+        if (index(L) == 0) {
+            prepend(L, x);
+        } else {
+            Node n = newNode(x);
+            n-&gt;prev = L-&gt;cursor-&gt;prev;
+            L-&gt;cursor-&gt;prev-&gt;next = n;
+            n-&gt;next = L-&gt;cursor;
+            L-&gt;cursor-&gt;prev = n;
+            L-&gt;length++;
+            L-&gt;cursorPos++;
+        }
+
+    } else if (L-&gt;length == 0){
+        printf("List Error: calling insertBefore() on an empty List\n");
+        exit(EXIT_FAILURE);
+    }else {
+        printf("List Error: calling insertBefore() without a cursor set\n");
+        exit(EXIT_FAILURE);
+    }
+}
+
+void insertAfter(List L, int x){
+    if (L-&gt;length != 0 &amp;&amp; L-&gt;cursorPos &gt;= 0){
+        if (index(L) == L-&gt;length-1) {
+            append(L, x);
+        } else {
+            Node n = newNode(x);
+            n-&gt;next = L-&gt;cursor-&gt;next;
+            L-&gt;cursor-&gt;next-&gt;prev = n;
+            n-&gt;prev = L-&gt;cursor;
+            L-&gt;cursor-&gt;next = n;
+            L-&gt;length++;
+        }
+    } else if (L-&gt;length == 0){
+        printf("List Error: calling insertAfter() on an empty List\n");
+        exit(EXIT_FAILURE);
+    } else {
+        printf("List Error: calling insertAfter() without a cursor set\n");
+        exit(EXIT_FAILURE);
+    }
+}
+
+void deleteFront(List L) {
+    if (L-&gt;length == 1){
+        free(L-&gt;front);
+        L-&gt;front = L-&gt;back = L-&gt;cursor = NULL;
+        L-&gt;cursorPos = -1;
+        L-&gt;length--;
+    } else if (L-&gt;length != 0){
+        if (L-&gt;cursor == L-&gt;front){
+            L-&gt;cursor = NULL;
+            L-&gt;cursorPos = -1;
+        } else if (index(L) != -1){
+            L-&gt;cursorPos--;
+        }
+        L-&gt;front = L-&gt;front-&gt;next;
+        free(L-&gt;front-&gt;prev);
+        L-&gt;front-&gt;prev = NULL;
+        L-&gt;length--;
+
+    } else {
+        printf("List Error: calling deleteFront() on an empty List\n");
+        exit(EXIT_FAILURE);
+    }
+}
+
+void deleteBack(List L){
+    if (L-&gt;length == 1){
+        deleteFront(L);
+    } else if (L-&gt;length != 0){
+        if (L-&gt;cursor == L-&gt;back){
+            L-&gt;cursor = NULL;
+            L-&gt;cursorPos = -1;
+        }
+        L-&gt;back = L-&gt;back-&gt;prev;
+        free(L-&gt;back-&gt;next);
+        L-&gt;back-&gt;next = NULL;
+        L-&gt;length--;
+    } else {
+        printf("List Error: calling deleteFront() on an empty List\n");
+        exit(EXIT_FAILURE);
+    }
+}
+
+void delete(List L){
+    if (L-&gt;length != 0 &amp;&amp; L-&gt;cursorPos &gt;= 0){
+        if (L-&gt;cursor == L-&gt;front){
+            deleteFront(L);
+        } else if (L-&gt;cursor == L-&gt;back){
+            deleteBack(L);
+        } else {
+            L-&gt;cursor-&gt;prev-&gt;next = L-&gt;cursor-&gt;next;
+            L-&gt;cursor-&gt;next-&gt;prev = L-&gt;cursor-&gt;prev;
+            L-&gt;cursor-&gt;next = NULL;
+            L-&gt;cursor-&gt;prev = NULL;
+            free(L-&gt;cursor);
+            L-&gt;cursor = NULL;
+            L-&gt;cursorPos = -1;
+            L-&gt;length--;
+        }
+    } else if (L-&gt;length == 0){
+        printf("List Error: calling delete() on an empty List\n");
+        exit(EXIT_FAILURE);
+    } else {
+        printf("List Error: calling delete() without a cursor set\n");
+        exit(EXIT_FAILURE);
+    }
+}
+// Other Operations ------------------------------------------------------------------
+void printList(FILE* out, List L){
+    int curr = L-&gt;cursorPos;
+    moveFront(L);
+    while (L-&gt;cursorPos != -1){
+        fprintf(out, "%d ", get(L));
+        moveNext(L);
+    }
+    if (curr == -1){
+        L-&gt;cursor = NULL;
+        L-&gt;cursorPos = -1;
+    } else {
+        moveFront(L);
+        for (int i = 0; i &lt; curr; ++i) {
+            moveNext(L);
+        }
+    }
+}
+
+List copyList(List L){
+    List out = newList();
+    int LCursorPos = index(L);
+    moveFront(L);
+    for (int i = 0; i &lt; L-&gt;length; ++i) {
+        append(out, get(L));
+        moveNext(L);
+    }
+    if (LCursorPos == -1){
+        L-&gt;cursor = NULL;
+        L-&gt;cursorPos = LCursorPos;
+    }else{
+        moveFront(L);
+        for (int i = 0; i &lt; LCursorPos; ++i) {
+            moveNext(L);
+</font>        }
+    }
+    return out;
+}</pre>
+</body>
+</html>

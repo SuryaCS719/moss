@@ -1,0 +1,113 @@
+<html>
+<head>
+<title>/fall24/sgstearn/pa1/Lex.c</title>
+</head>
+<body bgcolor="white">
+<hr/>
+/fall24/sgstearn/pa1/Lex.c<p></p><pre>
+/***
+* Shane Stearns
+* sgstearn
+* 2024 Fall CSE101
+* Lex.c
+* Main function that uses List ADT to organize a file alphabetically by line.
+***/
+#include &lt;string.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;stdio.h&gt;
+#include "List.h"
+#define MAX_LEN 300
+<a name="1"></a><font color="#00FF00"><a href="match105-0.html#1" target="0"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_1_26.gif"/></a>
+
+int main(int argc, char * argv[]){
+   char* stupid_strdup(const char* str) {
+      char* copy = malloc(strlen(str) + 1);  // Allocate memory for the copy
+      if (copy) {
+         strcpy(copy, str);  // Copy the string
+      }
+      return copy;
+   }
+   List list = newList();
+   int line_count = 0;
+   FILE *in, *out;
+   char line[MAX_LEN];
+   char **lineArray;
+
+   // check command line for correct number of arguments
+   if( argc != 3 ){
+      printf("Usage: %s &lt;input file&gt; &lt;output file&gt;\n", argv[0]);
+      exit(1);
+   }
+
+   // open files for reading and writing
+   in = fopen(argv[1], "r");
+      if( in==NULL ){
+</font>      printf("Unable to open file %s for reading\n", argv[1]);
+      exit(1);
+   }
+
+   out = fopen(argv[2], "w");
+<a name="0"></a><font color="#FF0000"><a href="match105-0.html#0" target="0"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_0_43.gif"/></a>
+
+   if( out==NULL ){
+      printf("Unable to open file %s for writing\n", argv[2]);
+      exit(1);
+   }
+   while (fgets(line, MAX_LEN, in) != NULL) {
+      line_count++;
+   }
+
+   lineArray = calloc(line_count, sizeof(char*));
+   if (lineArray == NULL) {
+      printf("Allocation failed\n");
+      exit(1);
+   }
+   rewind(in);
+   for (int i = 0; i &lt; line_count; i++) {
+      fgets(line, MAX_LEN, in);
+      if (strcmp(line, "\n") == 0) {
+         continue;
+      }
+
+      lineArray[i] = stupid_strdup(line);
+      if (lineArray[i] == NULL) {
+         printf("Memory allocation for line %d failed\n", i);
+         exit(1);
+      }
+   }
+    append(list, 0);
+
+    for (int i = 1; i &lt; line_count; i++) {
+        if (lineArray[i] == NULL) continue;
+        moveFront(list);
+
+        while (index(list) &gt;= 0 &amp;&amp; strcmp(lineArray[i], lineArray[get(list)]) &gt; 0) {
+            moveNext(list);
+</font>        }
+        if (index(list) &gt;= 0) {
+            insertBefore(list, i);
+        } else {
+            append(list, i);
+        }
+    }
+
+    moveFront(list);
+    while (index(list) &gt;= 0) {
+        fprintf(out, "%s", lineArray[get(list)]);
+        moveNext(list);
+    }
+
+    for (int i = 0; i &lt; line_count; i++) {
+        free(lineArray[i]);
+    }
+    free(lineArray);
+    freeList(&amp;list);
+
+   fclose(in);
+   fclose(out);
+
+   return(0);
+}
+</pre>
+</body>
+</html>

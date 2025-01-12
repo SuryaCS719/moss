@@ -1,0 +1,130 @@
+<html>
+<head>
+<title>/fall24/akoilada/pa1/Lex.c</title>
+</head>
+<body bgcolor="white">
+<hr/>
+/fall24/bdelinel/pa1/Lex.c<p></p><pre>
+//-----------------------------------------------------------------------------
+// Name: BRIAN DELINELA
+// CruzID: 2083430
+// Assignment: PA1
+//
+// Lex.C
+// Main program, lexicographic orderer using the implemented List ADT
+//
+//-----------------------------------------------------------------------------
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;string.h&gt;
+#include "List.h"
+
+#define MAX_LEN 160
+
+int main(int argc, char* argv[]) {
+    // Check for correct number of command line arguments
+    if (argc != 3) {
+        fprintf(stderr, "Usage: %s &lt;input file&gt; &lt;output file&gt;\n", argv[0]);
+        exit(EXIT_FAILURE);
+    }
+
+    // Open the input file for reading
+    FILE* inFile = fopen(argv[1], "r");
+    if (inFile == NULL) {
+        fprintf(stderr, "Unable to open file %s for reading\n", argv[1]);
+        exit(EXIT_FAILURE);
+    }
+
+    // Open the output file for writing
+    FILE* outFile = fopen(argv[2], "w");
+    if (outFile == NULL) {
+        fprintf(stderr, "Unable to open file %s for writing\n", argv[2]);
+        exit(EXIT_FAILURE);
+    }
+
+    // Count the number of lines in the input file
+<a name="1"></a><font color="#00FF00"><a href="match160-0.html#1" target="0"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_1_8.gif"/></a>
+
+    char buffer[MAX_LEN];
+    int lineCount = 0;
+    while (fgets(buffer, MAX_LEN, inFile) != NULL) {
+        lineCount++;
+    }
+
+    // Allocate memory for the array of strings
+    char** lines = calloc(lineCount, sizeof(char*));
+</font>    if (lines == NULL) {
+        fprintf(stderr, "Memory allocation failed\n");
+        exit(EXIT_FAILURE);
+    }
+
+    // Rewind the file to read the lines again
+    rewind(inFile);
+
+    // Read the lines into the array, manually copying them
+    int i = 0;
+    while (fgets(buffer, MAX_LEN, inFile) != NULL) {
+        // Allocate memory for each line and copy it
+        lines[i] = malloc((strlen(buffer) + 1) * sizeof(char)); 
+        if (lines[i] == NULL) {
+            fprintf(stderr, "Memory allocation failed\n");
+            exit(EXIT_FAILURE);
+        }
+        strcpy(lines[i], buffer); 
+        i++;
+    }
+
+    // Create an empty List of indices
+    List indexList = newList();
+    append(indexList, 0); 
+
+    // Perform an insertion sort on the indices based on the lines
+    for (i = 1; i &lt; lineCount; i++) {
+        char* currentString = lines[i];
+        moveFront(indexList);
+
+        // Traverse the list to find the correct insertion point
+        while (index(indexList) &gt;= 0) {
+            int currentIndex = get(indexList);
+            char* listString = lines[currentIndex];
+
+            if (strcmp(currentString, listString) &lt; 0) {
+                insertBefore(indexList, i);
+                break;
+            }
+            moveNext(indexList);
+        }
+
+        // If we reached the end of the list, append at the end
+<a name="0"></a><font color="#FF0000"><a href="match160-0.html#0" target="0"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_0_13.gif"/></a>
+
+        if (index(indexList) == -1) {
+            append(indexList, i);
+        }
+    }
+
+    // Use the ordered list of indices to print lines in sorted order to the output file
+    moveFront(indexList);
+    while (index(indexList) &gt;= 0) {
+        fprintf(outFile, "%s", lines[get(indexList)]);
+        moveNext(indexList);
+    }
+
+    // Free allocated memory
+    for (i = 0; i &lt; lineCount; i++) {
+        free(lines[i]);
+    }
+    free(lines);
+</font>
+    // Close files
+    fclose(inFile);
+    fclose(outFile);
+
+    // Free the List
+    freeList(&amp;indexList);
+
+    return 0;
+}
+</pre>
+</body>
+</html>

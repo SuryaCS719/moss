@@ -1,0 +1,101 @@
+<html>
+<head>
+<title>/fall24/rpunji/pa1/Lex.c</title>
+</head>
+<body bgcolor="white">
+<hr/>
+/fall24/rpunji/pa1/Lex.c<p></p><pre>
+/*
+Rahul Punji
+rpunji
+pa1
+Lex.c
+*/
+#include "List.h"
+#include &lt;string.h&gt;
+
+<a name="0"></a><font color="#FF0000"><a href="match48-0.html#0" target="0"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_0_85.gif"/></a>
+
+char *strdup(const char *s);
+
+int main(int argc, char *argv[]){
+    if (argc != 3) {
+        fprintf(stderr, "Error: Incorrect usage. Please use the format: %s &lt;input_file&gt; &lt;output_file&gt;\n", argv[0]);
+        exit(1);
+    }
+    FILE *inputFile = fopen(argv[1], "r");
+    FILE *outputFile = fopen(argv[2], "w");
+    if (inputFile == NULL){
+        fprintf(stderr, "Error: Could not read from file '%s'. Ensure it exists.\n", argv[1]);
+        fclose(outputFile);
+        exit(1);
+    }
+    if (outputFile == NULL){
+        fprintf(stderr, "Error: Unable to create or write to file '%s'.\n", argv[2]);
+        fclose(inputFile);
+        fclose(outputFile);
+        exit(1);
+    }
+    char buffer[160];
+    int lineCount = 0;
+    while (fgets(buffer, sizeof(buffer), inputFile) != NULL){
+        lineCount++;
+    }
+    char **linesArray = malloc(lineCount * sizeof(char *));
+    if (linesArray == NULL){
+        fprintf(stderr, "Error: Memory allocation failed while creating line storage.\n");
+        fclose(inputFile);
+        fclose(outputFile);
+        exit(1);
+    }
+    rewind(inputFile);
+    for (int i = 0; i &lt; lineCount; i++){
+        fgets(buffer, sizeof(buffer), inputFile);
+        linesArray[i] = strdup(buffer);
+        if (linesArray[i] == NULL) {
+            fprintf(stderr, "Error: Insufficient memory to store line %d from input file.\n", i + 1);
+            for (int j = 0; j &lt; i; j++) {
+                free(linesArray[j]); 
+            }
+            free(linesArray);
+            fclose(inputFile);
+            fclose(outputFile);
+            exit(1);
+        }
+    }
+    List indexList = newList();
+    for (int i = 0; i &lt; lineCount; i++){
+        append(indexList, i);
+    }
+    clear(indexList);
+    for (int i = 0; i &lt; lineCount; i++){
+        char *currentString = linesArray[i];
+        moveFront(indexList);
+        while (index(indexList) &gt;= 0 &amp;&amp; strcmp(currentString, linesArray[get(indexList)]) &gt; 0){
+            moveNext(indexList);
+        }
+        if (index(indexList) == -1){
+            append(indexList, i);
+        } 
+        else{
+            insertBefore(indexList, i);
+</font>        }
+    }
+    moveFront(indexList);
+    while (index(indexList) &gt;= 0){
+        fprintf(outputFile, "%s", linesArray[get(indexList)]);
+        moveNext(indexList);
+    }
+    for (int i = 0; i &lt; lineCount; i++){
+        free(linesArray[i]);
+    }
+    free(linesArray);
+    freeList(&amp;indexList);
+    fclose(inputFile);
+    fclose(outputFile);
+
+    return 0;
+}
+</pre>
+</body>
+</html>

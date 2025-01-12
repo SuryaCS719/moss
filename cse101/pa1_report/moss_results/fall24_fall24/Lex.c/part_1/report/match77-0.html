@@ -1,0 +1,128 @@
+<html>
+<head>
+<title>/fall24/jidy/pa1/Lex.c</title>
+</head>
+<body bgcolor="white">
+<hr/>
+/fall24/jidy/pa1/Lex.c<p></p><pre>
+//
+// Name: John Francis Dy
+// CruzID: jidy
+// Assignment: pa1
+//
+//
+//
+
+#include&lt;stdio.h&gt;
+#include&lt;stdlib.h&gt;
+#include&lt;stdbool.h&gt;
+#include&lt;string.h&gt;
+#include "List.h"
+
+#define MAX_LEN 300
+
+<a name="1"></a><font color="#00FF00"><a href="match77-1.html#1" target="1"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_1_18.gif"/></a>
+
+int main(int argc, char * argv[])
+{
+   int line_count;
+   FILE *in, *out;
+   char line[MAX_LEN];
+   
+   int delulu = 0;
+
+   //char** inputStrings = (char **)malloc(delulu * sizeof(char *));
+
+   line_count = 0;
+   if ( argc != 3 )
+   {
+       printf("Usage: %s &lt;input file&gt; &lt;output file&gt;\n", argv[0]);
+       exit(1);
+   }
+   in = fopen(argv[1], "r");
+   if( in==NULL )
+</font>   {
+       printf("Unable to open file %s for reading\n", argv[1]);
+       exit(1);
+   }
+
+   out = fopen(argv[2], "w");
+<a name="0"></a><font color="#FF0000"><a href="match77-1.html#0" target="1"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_0_69.gif"/></a>
+
+   if ( out == NULL )
+   {
+       printf("Unable to open file %s for writing\n", argv[2]);
+       exit(1);
+   }
+
+   while (fgets(line, MAX_LEN, in) != NULL) {
+       delulu++;
+   }
+   rewind(in);
+   char** inputStrings = (char **)malloc(delulu * sizeof(char *));
+   while (fgets(line, MAX_LEN, in) != NULL)
+   {
+       int inputStringLength = strlen(line);
+       //inputStrings = (char **)realloc(inputStrings, sizeof(char *)*(line_count + 1));
+       
+       line[inputStringLength - 1] = '\0';
+       //inputStringLength--;
+       inputStrings[line_count] = (char *)malloc(inputStringLength * sizeof(char));
+
+       //printf("%s\n", line);
+       strcpy(inputStrings[line_count], line);
+       line_count = line_count + 1;
+   }
+   
+   List L = newList();
+   append(L, 0);
+   // moveFront(L);
+   for (int i = 1; i &lt; line_count; i++)
+   {
+       moveBack(L);
+              
+       int curData = get(L);
+       int curNodeIndex = index(L);
+       while (curNodeIndex &gt; -1)
+       {
+           if (strcmp(inputStrings[i], inputStrings[curData]) &gt; 0)
+	   {
+               insertAfter(L, i);
+	       break;
+	   }
+	   movePrev(L);
+	   curNodeIndex = index(L);
+	   curData = get(L);
+       }
+       if (curNodeIndex == -1)
+       {
+           prepend(L, i);
+       }
+       
+   }
+   
+   moveFront(L);
+   int x;
+   while (index(L)&gt;=0)
+   {
+       x = get(L);
+       fprintf(out, "%s\n", inputStrings[x]);
+       moveNext(L);
+   }
+      
+   freeList(&amp;L);
+   
+   for (int i = 0; i &lt; line_count; i++)
+   {
+       free(inputStrings[i]);
+</font>   }
+   free(inputStrings);
+   
+
+   fclose(in);
+   fclose(out);
+
+}
+</pre>
+</body>
+</html>

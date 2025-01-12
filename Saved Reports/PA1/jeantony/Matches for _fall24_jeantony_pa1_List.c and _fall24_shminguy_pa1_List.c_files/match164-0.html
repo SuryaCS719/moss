@@ -1,0 +1,475 @@
+
+<!-- saved from url=(0114)file:///Users/surya/Desktop/moss/cse101/pa1_report/moss_results/fall24_fall24/List.c/part_1/report/match164-0.html -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>/fall24/jeantony/pa1/List.c</title>
+</head>
+<body bgcolor="white">
+<hr>
+/fall24/jeantony/pa1/List.c<p></p><pre>/*
+Jeffrey Antony
+2051767
+pa1
+List.c
+*/
+
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;string.h&gt;
+#include &lt;stdbool.h&gt;
+#include "List.h"
+
+//Cursor used for iteration
+//2 ends -- front and back
+//Should export a List type along with operations in the handout
+
+//Constructors-Destructors
+
+
+List newList(void){
+// Creates and returns a new empty list
+    List L = calloc(1, sizeof(struct ListObj));
+    if (!L) {
+        printf("Error: Memory allocation for new list failed\n");
+        exit(EXIT_FAILURE);
+    }
+    L-&gt;front = NULL;
+    L-&gt;back = NULL;
+    L-&gt;current = NULL;
+    L-&gt;len = 0;
+    L-&gt;index = -1;
+    return L;
+}
+
+
+void freeList(List* pL){
+// Frees all heap memory associates with *pL, and sets it to null
+    if(pL != NULL &amp;&amp; *pL != NULL){
+        while(length(*pL) &gt; 0){
+            deleteFront(*pL);
+        }
+        free(*pL);
+        *pL = NULL;
+    }
+}
+
+Node newNode(int data){
+    Node newNode = calloc(1, sizeof(struct NodeObj));
+    newNode-&gt;data = data;
+    newNode-&gt;prev = NULL;
+    newNode-&gt;next = NULL;
+    return newNode;
+}
+
+void freeNode(Node *pN){
+    if (pN != NULL &amp;&amp; *pN != NULL) {
+        free(*pN);
+        *pN = NULL;
+    }
+}
+
+
+//Access functions
+
+
+int length(List L){
+// Returns the number of elements in L
+    if(!L){
+        printf("Error: L doesn't exist\n");
+        exit(EXIT_FAILURE);
+    }else{
+        return(L-&gt;len);
+    }
+}
+
+
+int index(List L){
+// Returns index of cursor, if undefined, return -1
+    if(!L){
+        printf("Error: L doesn't exist\n");
+        exit(EXIT_FAILURE);
+    }
+    return(L-&gt;index);
+}
+
+
+int front(List L){
+// Returns front element of L.
+//pre: length()&gt;0
+    if(!L){
+        printf("Error: L doesn't exist\n");
+        exit(EXIT_FAILURE);
+    }
+    if(L-&gt;len == 0){
+        printf("Error: L is empty\n");
+        exit(EXIT_FAILURE);
+    }else{
+        return(L-&gt;front-&gt;data);
+    }
+}
+
+
+int back(List L){
+// Returns back element of L.
+//pre: length()&gt;0
+    if(!L){
+        printf("Error: L doesn't exist\n");
+        exit(EXIT_FAILURE);
+    }
+    if(L-&gt;len == 0){
+        printf("Error: L is empty\n");
+        exit(EXIT_FAILURE);
+    }else{
+        return(L-&gt;back-&gt;data);
+    }
+}
+
+
+int get(List L){
+// Returns cursor element.
+//pre: length()&gt;0, index()&gt;=0
+    if(!L){
+        printf("Error: L doesn't exist\n");
+        exit(EXIT_FAILURE);
+    }
+    if(L-&gt;len == 0){
+        printf("Error: L is empty\n");
+        exit(EXIT_FAILURE);
+    }else if(L-&gt;index &lt; 0){
+        printf("Error: Cursor is undefined\n");
+        exit(EXIT_FAILURE);
+    }else{
+        return(L-&gt;current-&gt;data);
+    }
+}
+
+
+bool equals(List A, List B){
+// Return true iff A and B contain the same sequence of elements
+    if(!A &amp;&amp; !B){
+        return true;
+    }
+    if(!A || !B){
+        return false;
+    }
+    if(A-&gt;len != B-&gt;len){
+        return false;
+    }
+    bool check = true;
+    Node aNode = A-&gt;front;
+    Node bNode = B-&gt;front;
+    while(aNode &amp;&amp; bNode){
+        if(aNode-&gt;data != bNode-&gt;data){
+            check = false;
+        }
+        aNode = aNode-&gt;next;
+        bNode = bNode-&gt;next;
+    }
+    return check;
+}
+
+
+void clear(List L){
+
+<a name="7"></a><font color="#0000FF"><a href="file:///Users/surya/Desktop/moss/cse101/pa1_report/moss_results/fall24_fall24/List.c/part_1/report/match164-1.html#7" target="1"><img align="left" alt="other" border="0" src="./tm_2_1.gif"></a>
+
+    if(!L){
+        printf("Error: L doesn't exist\n");
+        exit(EXIT_FAILURE);
+    }
+    while(length(L) &gt; 0){
+        deleteFront(L);
+    }
+    L-&gt;back = NULL;
+    L-&gt;current = NULL;
+    L-&gt;front = NULL;
+</font>    L-&gt;index = -1;
+    L-&gt;len = 0;
+}
+
+void set(List L, int x){
+    if(!L){
+        printf("Error: L doesn't exist\n");
+<a name="4"></a><font color="#FF00FF"><a href="file:///Users/surya/Desktop/moss/cse101/pa1_report/moss_results/fall24_fall24/List.c/part_1/report/match164-1.html#4" target="1"><img align="left" alt="other" border="0" src="./tm_4_2.gif"></a>
+
+        exit(EXIT_FAILURE);
+    }
+    if(L-&gt;index &lt; 0){
+        printf("Error: Index not defined\n");
+        exit(EXIT_FAILURE);
+    }
+    if(L-&gt;len &lt;= 0){
+        printf("Error: List empty\n");
+        exit(EXIT_FAILURE);
+    }
+    L-&gt;current-&gt;data = x;
+
+}
+
+void moveFront(List L){
+    if(!L){
+</font>        printf("Error: L doesn't exist\n");
+        exit(EXIT_FAILURE);
+    }
+    if(L-&gt;len &gt; 0){
+        L-&gt;current = L-&gt;front;
+        L-&gt;index = 0;
+    }
+}
+
+void moveBack(List L){
+    if(!L){
+        printf("Error: L doesn't exist\n");
+        exit(EXIT_FAILURE);
+    }
+    if(L-&gt;len &gt; 0){
+        L-&gt;current = L-&gt;back;
+        L-&gt;index = length(L) - 1;
+    }
+}
+
+void movePrev(List L){
+    if(!L){
+        printf("Error: L doesn't exist\n");
+        exit(EXIT_FAILURE);
+    }
+    if(L-&gt;len &lt; 0){
+        printf("Error: List is empty\n");
+        exit(EXIT_FAILURE);
+    }
+    if(L-&gt;index == 0){
+        L-&gt;current = NULL;
+        L-&gt;index = -1;
+    } else if(L-&gt;index != -1){
+        L-&gt;index--;
+        L-&gt;current = L-&gt;current-&gt;prev;
+    }
+}
+
+void moveNext(List L){
+    if(!L){
+        printf("Error: L doesn't exist\n");
+        exit(EXIT_FAILURE);
+    }
+    if(L-&gt;index == length(L) - 1){
+        L-&gt;index = -1;
+        L-&gt;current = NULL;
+    } else if(L-&gt;index != -1){
+        L-&gt;index++;
+        L-&gt;current = L-&gt;current-&gt;next;
+    }
+}
+
+void prepend(List L, int x){
+<a name="2"></a><font color="#0000FF"><a href="file:///Users/surya/Desktop/moss/cse101/pa1_report/moss_results/fall24_fall24/List.c/part_1/report/match164-1.html#2" target="1"><img align="left" alt="other" border="0" src="./tm_2_2.gif"></a>
+
+    if(!L){
+        printf("Error: L doesn't exist\n");
+        exit(EXIT_FAILURE);
+    }
+    Node new = newNode(x);
+    if(L-&gt;len &lt;= 0){
+        L-&gt;front = new;
+        L-&gt;back = new;
+    }else{
+        L-&gt;front-&gt;prev = new;
+        new-&gt;next = L-&gt;front;
+</font>        L-&gt;front = new;
+    }
+    L-&gt;len++;
+    if(L-&gt;current){
+        L-&gt;index++;
+    }
+}
+
+void append(List L, int x){
+    if(!L){
+        printf("Error: L doesn't exist\n");
+        exit(EXIT_FAILURE);
+    }
+    Node new = newNode(x);
+    if(!new){
+        printf("Error: Memory allocation for new node failed\n");
+        exit(EXIT_FAILURE);
+    }
+    if(L-&gt;len &lt;= 0){
+        L-&gt;front = new;
+        L-&gt;back = new;
+    }else{
+        L-&gt;back-&gt;next = new;
+        new-&gt;prev = L-&gt;back;
+        L-&gt;back = new;
+    }
+    L-&gt;len++;
+}
+
+void insertBefore(List L, int x){
+    if(!L){
+        printf("Error: L doesn't exist\n");
+        exit(EXIT_FAILURE);
+    }
+    if(L-&gt;len &lt;= 0){
+        printf("Error: List empty\n");
+        exit(EXIT_FAILURE);
+    }
+<a name="5"></a><font color="#FF0000"><a href="file:///Users/surya/Desktop/moss/cse101/pa1_report/moss_results/fall24_fall24/List.c/part_1/report/match164-1.html#5" target="1"><img align="left" alt="other" border="0" src="./tm_0_2.gif"></a>
+
+    if(L-&gt;index &lt; 0){
+        printf("Error: Cursor not defined\n");
+        exit(EXIT_FAILURE);
+    }
+    Node new = newNode(x);
+    if(L-&gt;current == L-&gt;front){
+        L-&gt;front = new;
+    }else{
+        L-&gt;current-&gt;prev-&gt;next = new;
+</font>        new-&gt;prev = L-&gt;current-&gt;prev;
+    }
+    L-&gt;current-&gt;prev = new;
+    new-&gt;next = L-&gt;current;
+    L-&gt;index++;
+    L-&gt;len++;
+}
+
+void insertAfter(List L, int x){
+    if(!L){
+        printf("Error: L doesn't exist\n");
+        exit(EXIT_FAILURE);
+    }
+        if(L-&gt;len &lt;= 0){
+        printf("Error: List empty\n");
+        exit(EXIT_FAILURE);
+    }
+<a name="6"></a><font color="#00FF00"><a href="file:///Users/surya/Desktop/moss/cse101/pa1_report/moss_results/fall24_fall24/List.c/part_1/report/match164-1.html#6" target="1"><img align="left" alt="other" border="0" src="./tm_1_2.gif"></a>
+
+    if(L-&gt;index &lt; 0){
+        printf("Error: Cursor not defined\n");
+        exit(EXIT_FAILURE);
+    }
+    Node new = newNode(x);
+    if(L-&gt;current == L-&gt;back){
+        L-&gt;back = new;
+    }else{
+        L-&gt;current-&gt;next-&gt;prev = new;
+</font>        new-&gt;next = L-&gt;current-&gt;next;
+    }
+    L-&gt;current-&gt;next =  new;
+    new-&gt;prev = L-&gt;current;
+    L-&gt;len++;
+}
+
+
+void deleteFront(List L){
+    if(!L){
+<a name="0"></a><font color="#FF0000"><a href="file:///Users/surya/Desktop/moss/cse101/pa1_report/moss_results/fall24_fall24/List.c/part_1/report/match164-1.html#0" target="1"><img align="left" alt="other" border="0" src="./tm_0_4.gif"></a>
+
+        printf("Error: L doesn't exist\n");
+        exit(EXIT_FAILURE);
+    }
+    if(L-&gt;len &lt;= 0){
+        printf("Error: List empty\n");
+        exit(EXIT_FAILURE);
+    }
+    if(L-&gt;current == L-&gt;front){
+        L-&gt;current = NULL;
+        L-&gt;index = -1;
+    }else if(L-&gt;index != -1){
+        L-&gt;index--;
+    }
+    Node N = L-&gt;front;
+    if(L-&gt;len &gt; 1){
+        L-&gt;front = L-&gt;front-&gt;next;
+</font>        L-&gt;front-&gt;prev = NULL;
+    }else{
+        L-&gt;front = NULL;
+        L-&gt;back = NULL;
+    }
+    L-&gt;len--;
+    freeNode(&amp;N);
+}
+
+void deleteBack(List L){
+    if(!L){
+<a name="1"></a><font color="#00FF00"><a href="file:///Users/surya/Desktop/moss/cse101/pa1_report/moss_results/fall24_fall24/List.c/part_1/report/match164-1.html#1" target="1"><img align="left" alt="other" border="0" src="./tm_1_4.gif"></a>
+
+        printf("Error: L doesn't exist\n");
+        exit(EXIT_FAILURE);
+    }
+        if(L-&gt;len &lt;= 0){
+        printf("Error: List empty\n");
+        exit(EXIT_FAILURE);
+    }
+    if(L-&gt;current == L-&gt;back){
+        L-&gt;current = NULL;
+        L-&gt;index = -1;
+    }
+    Node N = L-&gt;back;
+    if(L-&gt;len &gt; 1){
+        L-&gt;back = L-&gt;back-&gt;prev;
+        L-&gt;back-&gt;next = NULL;
+</font>    }else{
+        L-&gt;front = NULL;
+        L-&gt;back = NULL;
+    }
+    L-&gt;len--;
+    freeNode(&amp;N);
+}
+
+void delete(List L){
+    if(!L){
+        printf("Error: L doesn't exist\n");
+<a name="3"></a><font color="#00FFFF"><a href="file:///Users/surya/Desktop/moss/cse101/pa1_report/moss_results/fall24_fall24/List.c/part_1/report/match164-1.html#3" target="1"><img align="left" alt="other" border="0" src="./tm_3_2.gif"></a>
+
+        exit(EXIT_FAILURE);
+    }
+    if(L-&gt;len &lt;= 0){
+        printf("Error: List empty\n");
+        exit(EXIT_FAILURE);
+    }
+    if(L-&gt;index &lt; 0){
+        printf("Error: Cursor not defined\n");
+        exit(EXIT_FAILURE);
+    }
+    if(L-&gt;current == L-&gt;front){
+        deleteFront(L);
+    } else if(L-&gt;current == L-&gt;back){
+</font>        deleteBack(L);
+    } else{
+        Node N = L-&gt;current;
+        L-&gt;current-&gt;prev-&gt;next = L-&gt;current-&gt;next;
+        L-&gt;current-&gt;next-&gt;prev = L-&gt;current-&gt;prev;
+        L-&gt;current = NULL;
+        L-&gt;index = -1;
+        L-&gt;len--;
+        freeNode(&amp;N);
+    }
+}
+
+void printList(FILE* out, List L){
+    if(!L){
+        printf("NULL");
+    }else{
+        Node new = L-&gt;front;
+        while(new != NULL){
+            fprintf(out, "%d ", new-&gt;data);
+            new = new-&gt;next;
+        }
+        fprintf(out, "\n");
+    }
+}
+
+List copyList (List L){
+    if(!L){
+        return NULL;
+    }
+    List dup = newList();
+    Node N = L-&gt;front;
+    while(N != NULL){
+        append(dup, N-&gt;data);
+        N = N-&gt;next;
+    }
+    return dup;
+}
+</pre>
+
+
+</body></html>

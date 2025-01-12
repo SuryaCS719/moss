@@ -1,0 +1,104 @@
+<html>
+<head>
+<title>/fall24/cli166/pa1/Lex.c</title>
+</head>
+<body bgcolor="white">
+<hr/>
+/fall24/cli166/pa1/Lex.c<p></p><pre>
+/****************************************************************************************
+*  Calvin Li
+*  Cli166
+*  Pa1
+*  Lex.c
+*  Assignment to return Lexicograph using insertion sort
+*****************************************************************************************/
+
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;string.h&gt;
+#include "List.h"
+
+
+int main(int argc, char* argv[]) {
+    if (argc != 3) {
+<a name="0"></a><font color="#FF0000"><a href="match3-1.html#0" target="1"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_0_94.gif"/></a>
+
+        fprintf(stderr, "Usage: %s &lt;input file&gt; &lt;output file&gt;\n", argv[0]);
+        return EXIT_FAILURE;
+    }
+
+    FILE* inputFile = fopen(argv[1], "r");
+    if (inputFile == NULL) {
+        perror("Error opening input file");
+        return EXIT_FAILURE;
+    }
+
+    int numLines = 0;
+    char buffer[256];
+    while (fgets(buffer, sizeof(buffer), inputFile) != NULL) {
+        numLines++;
+    }
+
+    char** stringArray = (char**)malloc(numLines * sizeof(char*));
+    if (stringArray == NULL) {
+        perror("Memory allocation failed");
+        fclose(inputFile);
+        return EXIT_FAILURE;
+    }
+
+    rewind(inputFile);
+    for (int i = 0; i &lt; numLines; i++) {
+        fgets(buffer, sizeof(buffer), inputFile);
+        size_t len = strlen(buffer);
+        if (buffer[len - 1] == '\n') {
+            buffer[len - 1] = '\0'; 
+            len--;
+        }
+        stringArray[i] = (char*)malloc((len + 1) * sizeof(char));
+        if (stringArray[i] == NULL) {
+            perror("Memory allocation failed for a line");
+            fclose(inputFile);
+            for (int j = 0; j &lt; i; j++) free(stringArray[j]); 
+            free(stringArray);
+            return EXIT_FAILURE;
+        }
+        strcpy(stringArray[i], buffer);
+    }
+
+
+    fclose(inputFile);
+
+    for (int i = 1; i &lt; numLines; i++) {
+        char* key = stringArray[i];
+        int j = i - 1;
+        while (j &gt;= 0 &amp;&amp; strcmp(stringArray[j], key) &gt; 0) {
+            stringArray[j + 1] = stringArray[j];
+            j--;
+        }
+        stringArray[j + 1] = key;
+    }
+
+    FILE* outputFile = fopen(argv[2], "w");
+    if (outputFile == NULL) {
+        perror("Error opening output file");
+        for (int i = 0; i &lt; numLines; i++) free(stringArray[i]);
+        free(stringArray);
+        return EXIT_FAILURE;
+    }
+
+    for (int i = 0; i &lt; numLines; i++) {
+        fprintf(outputFile, "%s\n", stringArray[i]);
+    }
+
+    fclose(outputFile);
+
+    for (int i = 0; i &lt; numLines; i++) {
+        free(stringArray[i]);
+    }
+    free(stringArray);
+
+    return 0;
+</font>}
+</pre>
+</body>
+</html>

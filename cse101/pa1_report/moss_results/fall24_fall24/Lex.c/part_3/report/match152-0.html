@@ -1,0 +1,91 @@
+<html>
+<head>
+<title>/fall24/nrliu/pa1/Lex.c</title>
+</head>
+<body bgcolor="white">
+<hr/>
+/fall24/nrliu/pa1/Lex.c<p></p><pre>
+/***
+* Nathan Liu // First and Last Name
+* nrliu // UCSC UserID
+* 2024 Fall CSE101 PA1 // Replace ID with assignment number 
+* Lex.c // FileName
+* The Lexicographical Sorting file. This is where the sorting happens! // Description
+***/ 
+
+#include &lt;stdio.h&gt;
+#include &lt;string.h&gt;
+#include &lt;stdlib.h&gt;
+#include "List.h"
+
+<a name="1"></a><font color="#00FF00"><a href="match152-1.html#1" target="1"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_1_11.gif"/></a>
+
+char *strdup(const char *s) {
+    size_t size = strlen(s) + 1;
+    char *p = malloc(size);
+    if (p != NULL) {
+        memcpy(p, s, size);
+    }
+    return p;
+</font>}
+
+size_t count_lines(FILE *infile) {
+  size_t n = 0;
+  char buf[100];
+  while (fgets(buf, 100, infile) != NULL) {
+    n++;
+  }
+  return n;
+}
+
+<a name="0"></a><font color="#FF0000"><a href="match152-1.html#0" target="1"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_0_11.gif"/></a>
+
+int main(int argc, char **argv) {
+	if (argc != 3) {
+		fprintf(stderr, "There should be 2 arguments.");
+		return 1;
+	}
+	char *filename = argv[1];
+	char *outputfile = argv[2];
+</font>	FILE *infile = fopen(filename, "r");
+	size_t num_lines = count_lines(infile);
+	char** str_arr = NULL;
+	str_arr = (char **) malloc(sizeof(char*) * num_lines);
+	fseek(infile, 0, SEEK_SET);
+	char buf[256];
+	for (int i = 0; i &lt; num_lines; i++) {
+		fgets(buf, 100, infile);
+		str_arr[i] = strdup(buf);
+	}
+	List res = newList();
+	append(res, 0);
+	moveFront(res);
+	for (int i = 1; i &lt; num_lines; i++) {
+		while (index(res) &gt;= 0 &amp;&amp; strcmp(str_arr[i], str_arr[get(res)]) &gt; 0) {
+ 			moveNext(res);
+		}
+		if (index(res) &gt;= 0){
+			insertBefore(res, i);
+		}else{
+			append(res, i);
+		}
+		moveFront(res);
+	}
+	fclose(infile);
+	moveFront(res);
+	FILE *outfile = fopen(outputfile, "w");
+	while(index(res) != -1) {
+		fprintf(outfile, str_arr[get(res)]);
+		moveNext(res);
+	}
+	fclose(outfile);
+	for (size_t i = 0; i &lt; num_lines; i++){
+		free(str_arr[i]);
+	}
+	freeList(&amp;res);
+	free(str_arr);
+	return 0;
+}
+</pre>
+</body>
+</html>

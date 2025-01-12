@@ -1,0 +1,92 @@
+<html>
+<head>
+<title>/fall24/akuma820/pa1/Lex.c</title>
+</head>
+<body bgcolor="white">
+<hr/>
+/fall24/akuma820/pa1/Lex.c<p></p><pre>
+#include "List.h"
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;stdbool.h&gt;
+#include &lt;string.h&gt;
+
+#define MAX_LEN 300
+
+<a name="0"></a><font color="#FF0000"><a href="match72-1.html#0" target="1"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_0_90.gif"/></a>
+
+int main(int argc, char *argv[])
+{
+    int n;
+    FILE *in, *out;
+    char line[MAX_LEN];
+    if (argc != 3)
+    {
+        fprintf(stderr, "Usage: %s &lt;input file&gt; &lt;output file&gt;\n", argv[0]);
+        exit(EXIT_FAILURE);
+    }
+    in = fopen(argv[1], "r");
+    if (in == NULL)
+    {
+        printf("Unable to open file %s for reading\n", argv[1]);
+        exit(EXIT_FAILURE);
+    }
+    out = fopen(argv[2], "w");
+    if (out == NULL)
+    {
+        printf("Unable to open file %s for writing\n", argv[2]);
+        exit(EXIT_FAILURE);
+    }
+    n = 0;
+    List indices = newList();
+    append(indices, 0);
+    char **stringArray = malloc(n * sizeof(char *));
+    while (fgets(line, MAX_LEN, in) != NULL)
+    {
+        moveFront(indices);
+        n++;
+        stringArray = realloc(stringArray, n * sizeof(char *));
+        stringArray[n - 1] = malloc((strlen(line) + 1) * sizeof(char));
+        strcpy(stringArray[n - 1], line);
+        if (n == 1)
+        {
+            continue;
+        }
+        if (strcmp(stringArray[n - 1], stringArray[front(indices)]) &lt;= 0)
+        {
+            prepend(indices, n - 1);
+        }
+        else if (strcmp(stringArray[n - 1], stringArray[back(indices)]) &gt;= 0)
+        {
+            append(indices, n - 1);
+        }
+        else
+        {
+            for (moveFront(indices); index(indices) &gt;= 0; moveNext(indices))
+            {
+                if ((strcmp(stringArray[n - 1], stringArray[get(indices)]) &lt;= 0))
+                {
+                    insertBefore(indices, n - 1);
+                    break;
+                }
+            }
+        }
+    }
+    for (moveFront(indices); index(indices) &gt;= 0; moveNext(indices))
+    {
+        fprintf(out, "%s", stringArray[get(indices)]);
+    }
+    clear(indices);
+    freeList(&amp;indices);
+    for (int i = 0; i &lt; n; i++)
+</font>    {
+        free(stringArray[i]);
+    }
+    free(stringArray);
+    fclose(in);
+    fclose(out);
+
+    return (0);
+}</pre>
+</body>
+</html>

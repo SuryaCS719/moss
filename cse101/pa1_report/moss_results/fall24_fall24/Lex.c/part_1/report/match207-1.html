@@ -1,0 +1,103 @@
+<html>
+<head>
+<title>/fall24/nbillimo/pa1/Lex.c</title>
+</head>
+<body bgcolor="white">
+<hr/>
+/fall24/ssidor/pa1/Lex.c<p></p><pre>
+// Sebastian Sidor, ssidor, pa1
+// ----------------------------------------------------------------
+// Lex.c will take two CLI arguments, an input file and an output file.
+// It will read the input file, sort the lines alphabetically, and write the sorted lines to the output file.
+// Sketch:
+// Check for two CLI arguments.
+// Count number of lines n in the input file. Create a string array of length n and read in the lines of the file as strings, storing them in the array.
+// Allocate array from heap using calloc() and malloc().
+// Create a list whose elements are the indices of the string array. Indices should be arranged in an order that indirectly sorts the array.
+// Use insertion sort algorithm as a guide. You may only use ListADT operations to sort the list.
+// ----------------------------------------------------------------
+
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;string.h&gt;
+#include "List.h"
+
+int main(int argc, char *argv[]){
+    if (argc != 3){
+        fprintf(stderr, "Usage Error: %s &lt;input file&gt; &lt;output file&gt;\n", argv[0]);
+<a name="0"></a><font color="#FF0000"><a href="match207-0.html#0" target="0"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_0_9.gif"/></a>
+
+        exit(1);
+    }
+    // Open files
+    FILE *in = fopen(argv[1], "r");
+    FILE *out = fopen(argv[2], "w");
+    if (in == NULL || out == NULL){
+</font>        fprintf(stderr, "File Error: %s or %s could not be opened for reading or writing\n", argv[1], argv[2]);
+        exit(1);
+    }
+    // Count lines
+    int n = 0;
+    char ch;
+    while ((ch = fgetc(in)) != EOF) {
+        if (ch == '\n') {
+            n++;
+        }
+    }
+    // String array initialization
+    char **lines = (char **)malloc(n * sizeof(char *));
+    if (lines == NULL) {
+        fprintf(stderr, "Memory allocation failed\n");
+        exit(1);
+    }
+    // Read lines into array
+    rewind(in);
+    for (int i = 0; i &lt; n; i++) {
+        char buffer[256];
+        fgets(buffer, sizeof(buffer), in);
+        buffer[strcspn(buffer, "\n")] = '\0';
+        lines[i] = strdup(buffer);
+    }
+    // List initialization and sorting
+    List indices = newList();
+    if(n == 0){
+        fprintf(stderr, "Input file is empty\n");
+        exit(1);
+    }else if(n == 1){
+        append(indices, 0);
+    }else{
+<a name="1"></a><font color="#00FF00"><a href="match207-0.html#1" target="0"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_1_9.gif"/></a>
+
+        append(indices, 0);
+        for(int i = 1; i &lt; n; i++){
+            moveFront(indices);
+            while(index(indices) != -1 &amp;&amp; strcmp(lines[i], lines[get(indices)]) &gt; 0){
+</font><a name="2"></a><font color="#0000FF"><a href="match207-0.html#2" target="0"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_2_9.gif"/></a>
+
+                moveNext(indices);
+            }
+            if(index(indices) == -1){
+                append(indices, i);
+            }
+            else{
+                insertBefore(indices, i);
+            }
+        }
+    }
+    // Print sorted lines to output file
+    moveFront(indices);
+    while(index(indices) != -1){
+        fprintf(out, "%s\n", lines[get(indices)]);
+</font>        moveNext(indices);
+    }
+    freeList(&amp;indices);
+    for (int i = 0; i &lt; n; i++) {
+        free(lines[i]);
+    }
+    free(lines);
+    fclose(in);
+    fclose(out);
+    return 0;
+}</pre>
+</body>
+</html>

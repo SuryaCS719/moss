@@ -1,0 +1,422 @@
+<html>
+<head>
+<title>/fall24/bcurielm/pa1/List.c</title>
+</head>
+<body bgcolor="white">
+<hr/>
+/fall24/pjha2/pa1/List.c<p></p><pre>
+/*
+    Name: Pranav Jha
+    CruzID: pjha2
+*/
+
+#include&lt;stdio.h&gt;
+#include&lt;stdlib.h&gt;
+#include&lt;assert.h&gt;
+#include&lt;stdbool.h&gt;
+#include "List.h"
+
+
+// structs --------------------------------------------------------------------
+
+// private NodeObj type
+typedef struct NodeObj{
+   int data;
+   struct NodeObj* previous;
+   struct NodeObj* next;
+} NodeObj;
+
+// private ListObj type
+typedef struct ListObj{
+    Node front;
+    Node back;
+    Node cursor;
+    int length;
+    int index;
+} ListObj;
+
+// Constructors-Destructors ---------------------------------------------------
+
+// newNode()
+// Returns reference to new Node object. Initializes next and data fields.
+Node newNode(int data){
+    Node N = malloc(sizeof(NodeObj));
+    assert( N!=NULL );
+    N-&gt;data = data;
+    N-&gt;next = NULL;
+    return(N);
+}
+
+// freeNode()
+// Frees heap memory pointed to by *pN, sets *pN to NULL.
+void freeNode(Node* pN){
+    if( pN!=NULL &amp;&amp; *pN!=NULL ){
+        free(*pN);
+        *pN = NULL;
+    }
+}
+
+// newList()
+// Returns reference to new empty List object.
+List newList(){
+    List L;
+    L = malloc(sizeof(ListObj));
+    L-&gt;front = L-&gt;back = L-&gt;cursor = NULL;
+    L-&gt;length = 0;
+    L-&gt;index = -1;
+    return(L);
+}
+
+// freeList()
+// Frees all heap memory associated with List *pL, and sets *pL to NULL.
+void freeList(List* pL) {
+    if(pL!=NULL &amp;&amp; *pL!=NULL) { 
+        clear(*pL);
+        free(*pL);
+        *pL = NULL;
+    }
+}
+
+
+// Access functions -----------------------------------------------------------
+
+// length()
+// Returns the length of L.
+int length(List L) {
+    return(L-&gt;length);
+}
+
+// index()
+// Returns the current index of L.
+int index(List L) {
+    return(L-&gt;index);
+}
+
+// front()
+// Returns the value at the front of L.
+int front(List L) {
+    return(L-&gt;front-&gt;data);
+}
+
+// back()
+// Returns the value at the front of L.
+int back(List L) {
+    return(L-&gt;back-&gt;data);
+}
+
+// get()
+// Returns the value at the cursor.
+int get(List L) {
+    return(L-&gt;cursor-&gt;data);
+}
+
+// equals()
+// Returns true if A is same int sequence as B, false otherwise.
+bool equals(List A, List B){
+    bool eq = false;
+    Node N = NULL;
+    Node M = NULL;
+
+    eq = (length(A) == length(B));
+    N = A-&gt;front;
+    M = B-&gt;front;
+    while (eq &amp;&amp; N != NULL) {
+        eq = (N-&gt;data == M-&gt;data);
+        N = N-&gt;next;
+        M = M-&gt;next;
+    }
+    return eq;
+}
+
+// Manipulation procedures ----------------------------------------------------
+
+// clear()
+// Resets L to its original empty state.
+void clear(List L) {
+    if( L == NULL ) {
+        fprintf(stderr, "clear() failed\n");
+        exit(EXIT_FAILURE);
+    }
+
+    if (L-&gt;length == 0) return;
+
+    Node curr = L-&gt;front;
+    while (curr != NULL) {
+        Node temp = curr-&gt;next;
+        freeNode(&amp;curr);
+        curr = temp;
+    }
+    L-&gt;front = NULL;
+<a name="1"></a><font color="#00FF00"><a href="match49-0.html#1" target="0"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_1_6.gif"/></a>
+
+    L-&gt;back = NULL;
+    L-&gt;length = 0;
+    L-&gt;index = -1;
+}
+
+// set()
+// Overwrites the cursor element’s data with x.
+// Pre: length() &gt; 0, index() &gt;= 0
+void set(List L, int x) {
+    L-&gt;cursor-&gt;data = x;
+}
+
+// moveFront()
+// If L is non-empty, sets cursor under the front element, otherwise does nothing.
+void moveFront(List L) {
+    if (L-&gt;length &gt; 0) {
+        L-&gt;index = 0;
+        L-&gt;cursor = L-&gt;front;
+    }
+}
+
+// moveBack()
+// If L is non-empty, sets cursor under the back element, otherwise does nothing.
+void moveBack(List L) {
+    if (L-&gt;length &gt; 0) {
+        L-&gt;cursor = L-&gt;back;
+</font>        L-&gt;index = L-&gt;length - 1;
+    }
+}
+
+// movePrev()
+// Moves cursor back one space
+void movePrev(List L) {
+    if (L-&gt;cursor == NULL) {
+        return;
+    }
+
+<a name="3"></a><font color="#00FFFF"><a href="match49-0.html#3" target="0"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_3_3.gif"/></a>
+
+    if (L-&gt;length != L-&gt;front) {
+        L-&gt;index -= 1;
+        L-&gt;cursor = L-&gt;cursor-&gt;previous;
+    } else {
+        L-&gt;cursor = NULL;
+        L-&gt;index = -1;
+    }
+}
+
+// moveNext()
+// Moves cursor forward one space
+void moveNext(List L) {
+</font>    if (L == NULL) {
+        fprintf(stderr, "moveNext() failed\n");
+        exit(EXIT_FAILURE);
+    }
+    if (L-&gt;cursor != NULL) {
+        if (L-&gt;cursor == L-&gt;back) {
+            L-&gt;cursor = NULL;
+            L-&gt;index = -1;
+        } else {
+            L-&gt;cursor = L-&gt;cursor-&gt;next;
+            L-&gt;index++;
+        }
+    }
+}
+
+// prepend()
+// Insert new element into L. If L is non-empty, insertion takes place before front element.
+void prepend(List L, int x) {
+    Node New = newNode(x);
+    if (L-&gt;length == 0) {
+        L-&gt;front = New;
+        L-&gt;back = New;
+        L-&gt;cursor = New;
+        L-&gt;index = 0;
+    } else {
+        New-&gt;next = L-&gt;front;
+        L-&gt;front-&gt;previous = New;
+        L-&gt;front = New;
+        L-&gt;index++;
+    }
+    L-&gt;length++;
+}
+
+// append()
+// Insert new element into L. If L is non-empty, insertion takes place after back element.
+void append(List L, int x) {
+    Node new = newNode(x);
+    if( L-&gt;length &lt;= 0 ) {
+        L-&gt;front = L-&gt;back = new;
+    } else {
+        new-&gt;previous = L-&gt;back;
+        L-&gt;back-&gt;next = new;
+<a name="0"></a><font color="#FF0000"><a href="match49-0.html#0" target="0"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_0_13.gif"/></a>
+
+        L-&gt;back = new;
+    }
+    L-&gt;length += 1;
+}
+
+// insertBefore()
+// Insert new element before cursor.
+// Pre: length()&gt;0, index()&gt;=0
+void insertBefore(List L, int x) {
+    if( L-&gt;cursor == L-&gt;front ) {
+        prepend(L, x);
+        return;
+    }
+
+    Node new = newNode(x);
+
+    Node tempCursor = L-&gt;cursor-&gt;previous;
+    new-&gt;next = L-&gt;cursor;
+    new-&gt;previous = tempCursor;
+    L-&gt;cursor-&gt;previous = new;
+    tempCursor-&gt;next = new;
+
+    L-&gt;length += 1;
+    L-&gt;index += 1;
+}
+
+// insertAfter()
+// Insert new element after cursor.
+// Pre: length()&gt;0, index()&gt;=0
+void insertAfter(List L, int x) {
+    if( L-&gt;cursor == L-&gt;back ) {
+        append(L, x);
+        return;
+    }
+
+    Node new = newNode(x);
+
+    Node tempCursor = L-&gt;cursor-&gt;next;
+    new-&gt;previous = L-&gt;cursor;
+    new-&gt;next = tempCursor;
+    L-&gt;cursor-&gt;next = new;
+    tempCursor-&gt;previous = new;
+    L-&gt;length += 1;
+}
+
+// deleteFront()
+// Delete the front element. Pre: length()&gt;0
+void deleteFront(List L) {
+</font>    if (L == NULL) {
+        fprintf(stderr, "calling deleteFront() on NULL List reference\n");
+        exit(EXIT_FAILURE);
+    }
+
+    if (L-&gt;length &gt; 0) {
+        Node n = L-&gt;front;
+        if (L-&gt;cursor == L-&gt;front) {
+            L-&gt;cursor = NULL;
+            L-&gt;index = -1;
+        }
+
+        if (L-&gt;length &gt; 1) {
+            L-&gt;front = L-&gt;front-&gt;next;
+            L-&gt;front-&gt;previous = NULL;
+            if(L-&gt;index != -1){
+                L-&gt;index -= 1;
+            }    
+        } else {
+            L-&gt;front = L-&gt;back = NULL;
+            if(L-&gt;index != -1){
+                L-&gt;index -= 1;
+            }
+        }
+        L-&gt;length -= 1;
+        freeNode(&amp;n);
+    }
+}
+
+// deleteBack()
+// Delete the back element. Pre: length()&gt;0
+void deleteBack(List L) {
+    if (length(L) &lt;= 0) {
+        printf("calling deleteBack() on an empty List\n");
+        exit(EXIT_FAILURE);
+    }
+
+    Node temp = L-&gt;back;
+    if (L-&gt;cursor == L-&gt;back) {
+        L-&gt;cursor = NULL;
+        L-&gt;index = -1;
+    }
+
+    if (length(L) == 1) {
+        L-&gt;front = NULL;
+        L-&gt;back = NULL;
+        L-&gt;length = 0;
+        freeNode(&amp;temp);
+    } else {
+        L-&gt;back = temp-&gt;previous;
+        L-&gt;back-&gt;next = NULL;
+        L-&gt;length--;
+        freeNode(&amp;temp);
+    }
+}
+
+// delete()
+// Delete cursor element, making cursor undefined.
+// Pre: length()&gt;0, index()&gt;=0
+<a name="4"></a><font color="#FF00FF"><a href="match49-0.html#4" target="0"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_4_2.gif"/></a>
+
+void delete(List L) {
+    if (L-&gt;cursor == L-&gt;front) {
+        deleteFront(L);
+        return;
+    }
+
+    if (L-&gt;cursor == L-&gt;back) {
+        deleteBack(L);
+        return;
+    }
+
+    Node oldCursor = L-&gt;cursor-&gt;previous;
+</font><a name="5"></a><font color="#FF0000"><a href="match49-0.html#5" target="0"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_0_2.gif"/></a>
+
+    Node newCursor = L-&gt;cursor-&gt;next;
+
+    if (oldCursor)
+        oldCursor-&gt;next = newCursor;
+    if (newCursor)
+        newCursor-&gt;next = oldCursor;
+
+    L-&gt;cursor = NULL;
+    L-&gt;index = -1;
+    freeNode(&amp;L-&gt;cursor);
+</font>    L-&gt;length -= 1;
+}
+
+// Other Functions ------------------------------------------------------------
+
+// printList()
+// Prints a string representation of L consisting of a space separated list 
+// of ints to stdout.
+void printList(FILE* out, List L){
+    Node N = NULL;
+
+    if( L==NULL ){
+        fprintf(stderr, "List Error: calling printList() on NULL List reference\n");
+        exit(EXIT_FAILURE);
+    }
+
+    for(N = L-&gt;front; N != NULL; N = N-&gt;next){
+        fprintf(out, "%d", N-&gt;data);
+    }
+    printf("\n");
+}
+
+// Returns a new List representing the same integer sequence as L.
+<a name="2"></a><font color="#0000FF"><a href="match49-0.html#2" target="0"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_2_3.gif"/></a>
+
+List copyList(List L) {
+    List tempList = newList();
+    int indexL = index(L);
+    moveFront(L);
+    while(index(L) &gt;= 0) {
+        int x = get(L);
+        append(tempList, x);
+        moveNext(L);
+    }
+    moveFront(L);
+    while (index(L) != indexL) {
+        moveNext(L);
+    }
+    return tempList;
+</font>}
+</pre>
+</body>
+</html>

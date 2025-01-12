@@ -1,0 +1,93 @@
+<html>
+<head>
+<title>/fall24/odoruk/pa1/Lex.c</title>
+</head>
+<body bgcolor="white">
+<hr/>
+/fall24/odoruk/pa1/Lex.c<p></p><pre>
+/*
+ * Name: Omer Doruk
+ * CruzID: odoruk
+ * Assignment: pa1
+ */
+
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;string.h&gt;
+#include "List.h"
+
+#define MAX_LEN 255
+
+int main(int argc, char* argv[]) {
+    if (argc != 3) {
+        fprintf(stderr, "Usage: %s &lt;input file&gt; &lt;output file&gt;\n", argv[0]);
+        exit(EXIT_FAILURE);
+    }
+
+    FILE* in = fopen(argv[1], "r");
+<a name="0"></a><font color="#FF0000"><a href="match97-1.html#0" target="1"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_0_84.gif"/></a>
+
+    FILE* out = fopen(argv[2], "w");
+    if (in == NULL || out == NULL) {
+        fprintf(stderr, "Error: cannot open file.\n");
+        exit(EXIT_FAILURE);
+    }
+
+    fseek(in, 0, SEEK_END);
+    long fileSize = ftell(in);
+    rewind(in);
+
+    char* buffer = malloc(fileSize + 1);
+    fread(buffer, 1, fileSize, in);
+    buffer[fileSize] = '\0';
+
+    char* line = strtok(buffer, "\n");
+    char** lines = NULL;
+    int lineCount = 0;
+    while (line != NULL) {
+        lines = realloc(lines, (lineCount + 1) * sizeof(char*));
+        lines[lineCount] = malloc(strlen(line) +1);
+        if (lines[lineCount] != NULL) {
+                strcpy(lines[lineCount], line);
+        }
+        lineCount++;
+        line = strtok(NULL, "\n");
+    }
+
+    List L = newList();
+    append(L, 0);
+
+    for (int i = 1; i &lt; lineCount; i++) {
+        moveFront(L);
+        while (index(L) &gt;= 0) {
+            if (strcmp(lines[i], lines[get(L)]) &lt;= 0) {
+                insertBefore(L, i);
+                break;
+            }
+            moveNext(L);
+        }
+
+    if (index(L) &lt; 0) {
+        append(L, i);
+    }
+}
+
+    moveFront(L);
+    while (index(L) &gt;= 0) {
+        fprintf(out, "%s\n", lines[get(L)]);
+        moveNext(L);
+    }
+
+    for (int i = 0; i &lt; lineCount; i++) {
+        free(lines[i]);
+    }
+    free(lines);
+    free(buffer);
+    freeList(&amp;L);
+    fclose(in);
+    fclose(out);
+</font>
+    return 0;
+}</pre>
+</body>
+</html>

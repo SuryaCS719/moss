@@ -1,0 +1,89 @@
+<html>
+<head>
+<title>/fall24/eforster/pa1/Lex.c</title>
+</head>
+<body bgcolor="white">
+<hr/>
+/fall24/hdonthul/pa1/Lex.c<p></p><pre>
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;string.h&gt;
+#include "List.h"
+
+#define _GNU_SOURCE
+#define MAX_LEN 160
+
+int main(int argc, char* argv[]) {
+    if (argc != 3) {
+        fprintf(stderr, "Usage: %s &lt;input file&gt; &lt;output file&gt;\n", argv[0]);
+        return EXIT_FAILURE;
+    }
+
+    FILE* in = fopen(argv[1], "r");
+    FILE* out = fopen(argv[2], "w");
+
+    if (in == NULL || out == NULL) {
+        fprintf(stderr, "Error: could not open input/output file.\n");
+        return EXIT_FAILURE;
+    }
+
+    char line[MAX_LEN];
+    int lineCount = 0;
+
+    // First pass: count lines
+    while (fgets(line, MAX_LEN, in) != NULL) {
+        lineCount++;
+    }
+
+    // Rewind to read lines into array
+    rewind(in);
+    char** lines = calloc(lineCount, sizeof(char*));
+
+<a name="0"></a><font color="#FF0000"><a href="match235-0.html#0" target="0"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_0_14.gif"/></a>
+
+    for (int i = 0; i &lt; lineCount; i++) {
+        fgets(line, MAX_LEN, in);
+	lines[i] = malloc(strlen(line) + 1);
+	strcpy(lines[i], line);
+    }
+
+    // Create a List for the indices
+    List indices = newList();
+</font>    append(indices, 0);  // Start with first line
+
+    // Insertion sort indices based on lexicographic order
+    for (int i = 1; i &lt; lineCount; i++) {
+        moveFront(indices);
+        while (index(indices) &gt;= 0 &amp;&amp; strcmp(lines[i], lines[get(indices)]) &gt; 0) {
+            moveNext(indices);
+        }
+        if (index(indices) == -1) {
+            append(indices, i);  // Append if it belongs at the end
+        } else {
+<a name="1"></a><font color="#00FF00"><a href="match235-0.html#1" target="0"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_1_13.gif"/></a>
+
+            insertBefore(indices, i);  // Insert at correct position
+        }
+    }
+
+    // Write sorted lines to output file
+    moveFront(indices);
+    while (index(indices) &gt;= 0) {
+        fprintf(out, "%s", lines[get(indices)]);
+        moveNext(indices);
+    }
+
+    // Free allocated memory
+    freeList(&amp;indices);
+    for (int i = 0; i &lt; lineCount; i++) {
+</font>        free(lines[i]);
+    }
+    free(lines);
+    fclose(in);
+    fclose(out);
+
+    return EXIT_SUCCESS;
+}
+</pre>
+</body>
+</html>

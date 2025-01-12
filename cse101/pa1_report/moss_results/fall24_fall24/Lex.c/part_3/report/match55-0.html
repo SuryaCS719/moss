@@ -1,0 +1,118 @@
+<html>
+<head>
+<title>/fall24/pshapoor/pa1/Lex.c</title>
+</head>
+<body bgcolor="white">
+<hr/>
+/fall24/pshapoor/pa1/Lex.c<p></p><pre>
+/***
+* Parisa Shapoorian 
+* pshapoor 
+* 2024 Fall CSE101 PA1  
+* Lex.c // 
+* A program that reads a file, sorts its lines lexicographically, 
+* and writes the sorted lines to another file, utilizing a doubly-linked 
+* list data structure for efficient sorting.
+***/ 
+
+
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;string.h&gt;
+#include "List.h"
+
+#define MAX_LENGTH 200
+
+int main(int argc, char* argv[]) {
+    if (argc != 3) {
+        fprintf(stderr, "Usage: %s &lt;input file&gt; &lt;output file&gt;\n", argv[0]);
+        exit(EXIT_FAILURE);
+    }
+
+<a name="0"></a><font color="#FF0000"><a href="match55-1.html#0" target="1"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_0_23.gif"/></a>
+
+    FILE *in = fopen(argv[1], "r");
+    FILE *out = fopen(argv[2], "w");
+
+    if (in == NULL || out == NULL) {
+        fprintf(stderr, "Error opening file.\n");
+        exit(EXIT_FAILURE);
+    }
+
+    char line[MAX_LENGTH];
+    int count = 0;
+
+    // First, count the number of lines in the input file
+    while (fgets(line, MAX_LENGTH, in) != NULL) {
+        count++;
+    }
+
+    // Go back to the beginning of the input file
+    rewind(in);
+
+    // Allocate memory for the array of strings
+    char **tokenlist = calloc(count, sizeof(char*));
+</font>
+    // Read lines into the tokenlist
+    int n = 0;
+    while (fgets(line, MAX_LENGTH, in) != NULL) {
+        // Strip the newline character, if present
+        strtok(line, "\n");
+
+        // Allocate memory for the current line and store it in the array
+        tokenlist[n] = malloc(strlen(line) + 1);  // Allocate exact memory
+        strcpy(tokenlist[n], line);               // Copy the line into the array
+        n++;
+    }
+
+    // Create a new List to store the indices in sorted order
+    List L = newList();
+
+    // Perform an indirect insertion sort of the indices
+    for (int j = 0; j &lt; count; j++) {
+        char* temp = tokenlist[j];
+
+        if (length(L) == 0) {
+            // If the list is empty, append the first index
+            append(L, j);
+        } else {
+            moveFront(L);
+            while (index(L) &gt;= 0 &amp;&amp; strcmp(temp, tokenlist[get(L)]) &gt; 0) {
+                moveNext(L);
+            }
+
+            // Insert the index of the current string in the appropriate position
+            if (index(L) == -1) {
+                // If we've reached the end of the list, append the index
+                append(L, j);
+            } else {
+                // Insert the index before the current cursor position
+<a name="1"></a><font color="#00FF00"><a href="match55-1.html#1" target="1"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_1_12.gif"/></a>
+
+                insertBefore(L, j);
+            }
+        }
+    }
+
+    // Now print the strings in lexicographic order based on the sorted indices in L
+    moveFront(L);
+    while (index(L) &gt;= 0) {
+        fprintf(out, "%s\n", tokenlist[get(L)]);
+        moveNext(L);
+    }
+
+    // Free the memory used for the List and strings
+    freeList(&amp;L);
+    for (int i = 0; i &lt; count; i++) {
+</font>        free(tokenlist[i]);
+    }
+    free(tokenlist);
+
+    // Close the files
+    fclose(in);
+    fclose(out);
+
+    return 0;
+}</pre>
+</body>
+</html>

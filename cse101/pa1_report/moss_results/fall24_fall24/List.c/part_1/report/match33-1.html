@@ -1,0 +1,512 @@
+<html>
+<head>
+<title>/fall24/skarnawa/pa1/List.c</title>
+</head>
+<body bgcolor="white">
+<hr/>
+/fall24/skarnawa/pa1/List.c<p></p><pre>
+//Servesh Karnawat
+//skarnawa
+//pa1
+
+
+
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;stdbool.h&gt;
+#include "List.h"
+#include&lt;string.h&gt;
+
+//nodes
+
+//bidirectional queue that holds nodes
+typedef struct NodeObj* Node;
+
+typedef struct NodeObj{
+    int data;
+<a name="2"></a><font color="#0000FF"><a href="match33-0.html#2" target="0"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_2_2.gif"/></a>
+
+    struct NodeObj *next;
+    struct NodeObj *prev;
+
+} NodeObj;
+
+typedef struct ListObj{
+    Node head;
+    Node tail;
+    Node current;
+    int length;
+    int index;
+} ListObj;
+
+
+
+// Constructors-Destructors ---------------------------------------------------
+List newList(void){
+    List L = malloc(sizeof(ListObj));
+</font>    L-&gt;head = NULL;
+    L-&gt;tail = NULL;
+    L-&gt;current = NULL;
+    L-&gt;length = 0;
+    L-&gt;index = -1;
+    return L;
+    } // Creates and returns a new empty List.
+void freeList(List* pL){
+    if(pL != NULL &amp;&amp; *pL != NULL){
+        clear(*pL);
+        free(*pL);
+        *pL= NULL;
+    }
+    } // Frees all heap memory associated with *pL, and sets
+ // *pL to NULL.
+ // Access functions -----------------------------------------------------------
+int length(List L){
+    return L-&gt;length;
+    } // Returns the number of elements in L.
+<a name="0"></a><font color="#FF0000"><a href="match33-0.html#0" target="0"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_0_67.gif"/></a>
+
+int index(List L){
+    
+    return L-&gt;index;
+
+    } // Returns index of cursor element if defined, -1 otherwise.
+int front(List L){
+    if(L-&gt;length &gt; 0 ){
+        return (L-&gt;head)-&gt;data;
+
+    }
+    else{
+        fprintf(stderr, "called front() on empty list");
+        return -1;
+    }
+
+} // Returns front element of L. Pre: length()&gt;0
+int back(List L){
+    if(L-&gt;length &gt; 0 ){
+        return (L-&gt;tail)-&gt;data;
+
+    }
+    else{
+        fprintf(stderr, "called back() on empty list");
+        return -1;
+    }
+    } // Returns back element of L. Pre: length()&gt;0
+int get(List L){
+    if(L-&gt;length &gt;0 &amp;&amp; index &gt;=0){
+        return (L-&gt;current)-&gt;data;
+    }
+    else{
+        fprintf(stderr,"called get() on undefined element");
+        return -1;
+    }
+
+} // Returns cursor element of L. Pre: length()&gt;0, index()&gt;=0
+bool equals(List A, List B){
+    //check if theyre even the same length
+    if(A-&gt;length != B-&gt;length){
+        return false;
+
+    }
+    //go through each value now
+
+    //set up temp variables to save where before this
+
+    Node tempA = A-&gt;current;
+    Node tempB = B-&gt;current;
+
+    //set current to front to start traversal
+    A-&gt;current= A-&gt;head;
+    B-&gt;current= B-&gt;head;
+    for (int i=0; i&lt; A-&gt;length ; i++){
+        if(A-&gt;current-&gt;data != B-&gt;current-&gt;data){
+            A-&gt;current = tempA;
+            B-&gt;current = tempB;
+            return false;
+
+        }
+        A-&gt;current = A-&gt;current-&gt;next;
+        B-&gt;current = B-&gt;current-&gt;next;
+
+
+
+    }
+
+
+    A-&gt;current = tempA;
+    B-&gt;current = tempB;
+    return true;
+} // Returns true iff Lists A and B contain the same
+ // sequence of elements, returns false otherwise.
+
+
+
+// Manipulation procedures ----------------------------------------------------
+void clear(List L){
+    L-&gt;current = L-&gt;head;
+    while(L-&gt;length &gt;0){
+        deleteFront(L);
+    }
+    L-&gt;current = NULL;
+    L-&gt;head = NULL;
+    L-&gt;tail = NULL;
+    L-&gt;index=-1;
+    L-&gt;length = 0;
+
+} // Resets L to its original empty state.
+void set(List L, int x){
+    if(length(L) &gt; 0 &amp;&amp; index(L)&gt;=0){
+        (L-&gt;current)-&gt;data = x;
+
+    }
+    else{
+        fprintf(stderr, "called set() and called on an invalid position");
+    }
+
+} // Overwrites the cursor element’s data with x.
+ // Pre: length()&gt;0, index()&gt;=0
+void moveFront(List L){
+    if(L-&gt;length != 0){
+        L-&gt;current = L-&gt;head;
+        L-&gt;index=0;
+
+    }
+} // If L is non-empty, sets cursor under the front element,
+ // otherwise does nothing.
+void moveBack(List L){
+        if(L-&gt;length != 0){
+        L-&gt;current = L-&gt;tail;
+        L-&gt;index=L-&gt;length -1;
+        
+    }
+} // If L is non-empty, sets cursor under the back element,
+ // otherwise does nothing.
+void movePrev(List L){
+    //exists and is not first means there is at least one before it
+    if(L-&gt;current!= NULL) {
+        //exists and at the front
+        if (L-&gt;index == 0){
+            L-&gt;current = NULL;
+            L-&gt;index = -1;
+
+        }
+        //exists and not at front
+        else{
+            L-&gt;current = (L-&gt;current)-&gt;prev;
+            L-&gt;index--;
+        }
+        
+    }
+     
+
+
+} // If cursor is defined and not at front, move cursor one
+ // step toward the front of L; if cursor is defined and at
+ // front, cursor becomes undefined; if cursor is undefined
+ // do nothing
+void moveNext(List L){
+    if(L-&gt;current!= NULL) {
+        //exists and at the back
+        if (L-&gt;index == (L-&gt;length) -1){
+            L-&gt;current = NULL;
+            L-&gt;index = -1;
+
+        }
+        //exists and not at back
+        else{
+            L-&gt;current = (L-&gt;current)-&gt;next;
+            L-&gt;index++;
+        }
+        
+    }
+} // If cursor is defined and not at back, move cursor one
+ // step toward the back of L; if cursor is defined and at
+ // back, cursor becomes undefined; if cursor is undefined
+ // do nothing
+ void prepend(List L, int x){
+    Node n = malloc(sizeof(NodeObj));
+    //if this is an empty list
+    n-&gt;data = x;
+    n-&gt;prev = NULL;
+    if(L-&gt;length == 0){
+        n-&gt;next = NULL;
+        L-&gt;tail = n;
+        //i will add to length regardless so set length to 0 so that its not -1 anymore and then 0+1 will be 1
+        L-&gt;length = 0;
+    }
+    //list is not empty so there is something in front of it 
+    else{
+        n-&gt;next = L-&gt;head;
+        //the item that used to be first set the new thing as its prev
+        (L-&gt;head)-&gt;prev = n;
+        if(L-&gt;index &gt;=0){
+            L-&gt;index++;
+        }
+    }
+    L-&gt;length++;
+    L-&gt;head = n;
+ } // Insert new element into L. If L is non-empty,
+ // insertion takes place before front element.
+void append(List L, int x){
+    Node n = malloc(sizeof(NodeObj));
+    
+    n-&gt;data = x;
+    n-&gt;next = NULL;
+    //if this is an empty list
+    if(L-&gt;length == 0){
+        n-&gt;prev = NULL;
+        L-&gt;head = n;
+        
+        //i will add to length regardless so set length to 0 so that its not -1 anymore and then 0+1 will be 1
+        L-&gt;length = 0;
+    }
+    //list is not empty so there is something in back of it 
+    else{
+        n-&gt;prev = L-&gt;tail;
+        //the item that used to be last set the new thing as its next
+        (L-&gt;tail)-&gt;next = n;
+    }
+    L-&gt;length++;
+    L-&gt;tail = n;
+
+} // Insert new element into L. If L is non-empty,
+ // insertion takes place after back element.
+void insertBefore(List L, int x){
+    //check to make sure cursor even real:
+    if(L-&gt;current != NULL){
+        //cursor exists implies there is at least one element so no need to worry new list start or whats next
+        Node n = malloc(sizeof(NodeObj));
+        n-&gt;data = x;
+        n-&gt;next = L-&gt;current;
+        //if cursor is at begining
+        if(L-&gt;index ==0){
+            n-&gt;prev = NULL;
+            L-&gt;head = n;
+            //if there is a number after then increase index
+            
+
+
+
+        }
+        //cursor in middle
+        else{
+            n-&gt;prev = (L-&gt;current)-&gt;prev;
+            L-&gt;current-&gt;prev-&gt;next= n;
+
+
+        }
+        (L-&gt;current)-&gt;prev = n;
+        L-&gt;length++;
+        L-&gt;index++;
+
+
+
+    }
+} // Insert new element before cursor.
+ // Pre: length()&gt;0, index()&gt;=0
+void insertAfter(List L, int x){
+    //check to make sure cursor even real:
+    if(L-&gt;current != NULL){
+        //cursor exists implies there is at least one element so no need to worry new list start or whats next
+        Node n = malloc(sizeof(NodeObj));
+        n-&gt;data = x;
+        n-&gt;prev = L-&gt;current;
+        //if cursor is at ending
+        if(L-&gt;index == (L-&gt;length )-1){
+            n-&gt;next = NULL;
+            L-&gt;tail = n;
+
+
+
+        }
+        //cursor in middle
+        else{
+            n-&gt;next = (L-&gt;current)-&gt;next;
+            L-&gt;current-&gt;next-&gt;prev= n;
+            
+
+
+        }
+        (L-&gt;current)-&gt;next = n;
+        L-&gt;length++;
+
+
+    }
+} // Insert new element after cursor.
+ // Pre: length()&gt;0, index()&gt;=0
+void deleteFront(List L){
+    //make sure the list isn't empty
+    if(L-&gt;length &gt;0){
+        Node oldhead = L-&gt;head;
+        //if only one item
+        if(L-&gt;index&lt;0){
+            L-&gt;index = 0;
+        }
+        if(L-&gt;length == 1){
+            L-&gt;head = NULL;
+            L-&gt;tail = NULL;
+            L-&gt;current = NULL;
+            //index 0 because end will default substract one so it will be -1 after
+            L-&gt;index = 0;
+
+        }
+        //make sure index is right
+
+        
+        
+
+        
+        //if multiple items then something need to move up and be new head
+        else{
+            
+            L-&gt;head = L-&gt;head-&gt;next;
+            L-&gt;head-&gt;prev = NULL;
+
+
+
+        }
+
+        //also check to make sure cursor isn't the one at front being removed
+        if(L-&gt;index == 0){
+            L-&gt;current = NULL;
+            L-&gt;index = 0;
+
+        }
+        L-&gt;index--;
+        L-&gt;length--;
+        free(oldhead);
+    }
+
+    
+} // Delete the front element. Pre: length()&gt;0
+void deleteBack(List L){
+    //make sure the list isn't empty
+    if(L-&gt;length &gt;0){
+        Node oldtail = L-&gt;tail;
+        //if only one item
+        if(L-&gt;index&lt;0){
+            L-&gt;index = -1;
+        }
+        if(L-&gt;length == 1){
+            L-&gt;head = NULL;
+            L-&gt;tail = NULL;
+            L-&gt;current = NULL;
+            //index 0 because end will default substract one so it will be -1 after
+            L-&gt;index = -1;
+</font>
+        }
+
+        
+        
+        
+
+        
+        //if multiple items then something need to move up and be new tail
+        else{
+            
+            L-&gt;tail = L-&gt;tail-&gt;prev;
+            L-&gt;tail-&gt;next = NULL;
+
+
+
+        }
+
+        //also check to make sure cursor isn't the one at front being removed
+<a name="1"></a><font color="#00FF00"><a href="match33-0.html#1" target="0"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_1_21.gif"/></a>
+
+        if(L-&gt;index == (L-&gt;length)-1){
+            L-&gt;current = NULL;
+            L-&gt;index = -1;
+
+        }
+        L-&gt;length--;
+        free(oldtail);
+}
+} // Delete the back element. Pre: length()&gt;0
+
+void delete(List L){
+
+    if(L-&gt;length &gt; 0 &amp;&amp; L-&gt;index&gt;=0  ){
+        //only item in the list
+        if(L-&gt;length == 1){
+            L-&gt;head = NULL;
+            L-&gt;tail = NULL;
+            //index 0 because end will default substract one so it will be -1 after
+            L-&gt;index = -1;
+            free(L-&gt;current);
+            L-&gt;length--;
+            L-&gt;current = NULL;
+        }
+        //delete regularly now
+        else{
+
+            //if it is at the front
+            if(L-&gt;index == 0){
+                deleteFront(L);
+
+
+            }
+            //at back
+            else if(L-&gt;index == (L-&gt;length)-1 ){
+                deleteBack(L);
+            }
+            //in middle
+            else{
+                L-&gt;current-&gt;prev-&gt;next = L-&gt;current-&gt;next;
+                L-&gt;current-&gt;next-&gt;prev = L-&gt;current-&gt;prev;
+                free(L-&gt;current);
+                L-&gt;length--;
+                L-&gt;index = -1;
+                L-&gt;current = NULL;
+
+                
+            }
+        }
+
+
+
+    }
+    else{
+        fprintf(stderr, "deleting not possible");
+    }
+
+
+    
+} // Delete cursor element, making cursor undefined.
+ // Pre: length()&gt;0, index()&gt;=0
+// Other operations -----------------------------------------------------------
+void printList(FILE* out, List L){
+    if(L-&gt;length &gt;=1){
+    //need a temporary start before I traverse
+    Node temp = L-&gt;current;
+    L-&gt;current = L-&gt;head;
+    for (int i = 0; i&lt; L-&gt;length; i++){
+        fprintf(out, "%d ", L-&gt;current-&gt;data );
+        L-&gt;current = L-&gt;current-&gt;next;
+
+    }
+    printf("\n");
+    L-&gt;current = temp;
+    }
+} // Prints to the file pointed to by out, a
+ // string representation of L consisting
+// of a space separated sequence of integers,
+// with front on left.
+List copyList(List L){
+    List newL = newList();
+    Node temp = L-&gt;current;
+    L-&gt;current = L-&gt;head;
+    for (int i = 0; i&lt; L-&gt;length; i++){
+        append(newL, L-&gt;current-&gt;data);
+        L-&gt;current = L-&gt;current-&gt;next;
+
+    }
+    L-&gt;current = temp;
+</font>    return newL;
+    }
+
+ // Returns a new List representing the same integer
+ // sequence as L. The cursor in the new list is undefined,
+// regardless of the state of the cursor in L. The state
+// of L is unchanged.</pre>
+</body>
+</html>

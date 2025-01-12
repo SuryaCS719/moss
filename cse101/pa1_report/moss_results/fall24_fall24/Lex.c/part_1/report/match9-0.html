@@ -1,0 +1,135 @@
+<html>
+<head>
+<title>/fall24/nlafredo/pa1/Lex.c</title>
+</head>
+<body bgcolor="white">
+<hr/>
+/fall24/nlafredo/pa1/Lex.c<p></p><pre>
+//Nick Lafredo
+//1961880  nlafredo
+//11 October 2024
+//pa1
+#include "List.h"
+
+#include	&lt;stdio.h&gt;
+#include	&lt;stdlib.h&gt;
+#include	&lt;string.h&gt;
+#include	&lt;memory.h&gt;
+
+#define		MAX_STRING_LENGTH 256
+
+<a name="0"></a><font color="#FF0000"><a href="match9-1.html#0" target="1"><img align="left" alt="other" border="0" src="http://moss.stanford.edu/bitmaps/tm_0_99.gif"/></a>
+
+int main(int argc, char* argv[])
+{
+	int	i = 0;
+
+	if (argc != 3)
+	{
+		fprintf(stderr, "ERROR - Usage: %s input-name output-name\n", argv[0]);
+		return 1;
+	}
+
+	for (i = 0; i &lt; argc; i++)
+	{
+		printf("%s\n", argv[i]);
+	}
+
+ 	FILE	*fi = fopen(argv[1], "r");
+	// count the number of lines in the file
+	int inCount = 0;
+	while (!feof(fi))
+	{
+		char buf[MAX_STRING_LENGTH];
+		memset(buf, 0, MAX_STRING_LENGTH);
+		fgets(buf, MAX_STRING_LENGTH, fi);
+
+		// ignore blank lines
+		if (strlen(buf))
+			inCount++;
+	}
+
+	// Allocate memory for an array of string pointers
+	char	**inStringArray = (char **)calloc(inCount, sizeof(char *));
+	if (NULL == inStringArray) {
+		fprintf(stderr, "ERROR: LexADT, inStringArray memory allocation failed");
+		exit(-1);
+	}
+
+	// Allocate memory for each string
+	for (i = 0; i &lt; inCount; i++) {
+		inStringArray[i] = (char *)calloc(MAX_STRING_LENGTH, sizeof(char));
+
+		if (NULL == inStringArray[i]) {
+			fprintf(stderr, "ERROR: LexADT, inStringArray passed char is NULL");
+			exit(-1);
+		}
+	}
+	
+	// go back to the beginning of the file
+	rewind(fi);
+
+	i = 0;
+	while ((!feof(fi)) &amp;&amp; (i &lt; inCount))
+	{
+		char buf[MAX_STRING_LENGTH];
+		memset(buf, 0, MAX_STRING_LENGTH);
+		fgets(buf, MAX_STRING_LENGTH, fi);
+
+		// ignore blank lines
+		if (strlen(buf))
+		{
+			strcpy(inStringArray[i], buf);
+			printf("%s", inStringArray[i]);
+		}
+		i++;
+	}
+
+	fclose(fi);
+
+	List sL = newList();
+
+	append(sL, 0);
+
+
+	//strcmp(s1,s2) less than 0 if in order, greater than 0 if reverse order, 0 if same
+	for (i = 1; i &lt; inCount; i++) {
+		moveFront(sL);
+		while (strcmp(inStringArray[sL-&gt;cursor-&gt;data], inStringArray[i]) &lt; 0) {
+			moveNext(sL);
+			if (NULL == sL-&gt;cursor) {
+				append(sL, i);
+				break;
+			}
+		}
+		if (NULL != sL-&gt;cursor)
+			insertBefore(sL, i);
+	}
+
+	FILE* fo = fopen(argv[2], "w+");
+	if (NULL == fo) {
+		fprintf(stderr, "ERROR: LexADT, tried to open NULL output file %s", argv[2]);
+		exit(-1);
+	}
+
+	moveFront(sL);
+	for (i = 0; i &lt; inCount; i++) {
+		fprintf(fo, "%s", inStringArray[sL-&gt;cursor-&gt;data]);
+		moveNext(sL);
+	}
+	fclose(fo);
+
+	for (i = 0; i &lt; inCount; i++) {
+		free(inStringArray[i]);
+		inStringArray[i] = NULL;
+	}
+	free(inStringArray);
+	inStringArray = NULL;
+
+	freeList(&amp;sL);
+
+	return 0;
+</font>}
+</pre>
+</body>
+</html>
